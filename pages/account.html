@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Account Management</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/account.css"
+    >
+
+    <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="account-page">
+
+    <div class="account-container">
+
+        <div class="account-header">
+
+            <div>
+                <h1>
+                    Account Management
+                </h1>
+
+                <p>
+                    Manage your personal account information.
+                </p>
+            </div>
+
+            <a
+                href="dashboard.html"
+                class="back-button"
+            >
+                ← Back to Dashboard
+            </a>
+
+        </div>
+
+
+        <div class="account-card">
+
+            <div class="profile-section">
+
+                <div class="account-avatar-wrapper">
+
+                        <img
+                            id="accountAvatarImage"
+                            class="large-avatar-image"
+                            alt="Profile picture"
+                            style="display: none;"
+                        >
+
+                        <div
+                            class="large-avatar"
+                            id="accountAvatar"
+                        >
+                            --
+                        </div>
+
+                        <label
+                            for="profilePictureInput"
+                            class="change-photo-button"
+                        >
+                            Change Photo
+                        </label>
+
+                        <input
+                            type="file"
+                            id="profilePictureInput"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                        >
+
+                </div>
+
+                <div>
+
+                    <h2 id="accountDisplayName">
+                        Loading...
+                    </h2>
+
+                    <p id="accountDisplayRole">
+                        Loading...
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="account-divider"></div>
+
+
+            <form id="accountForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="fullName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="fullName"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="role">
+                            Role
+                        </label>
+
+                        <input
+                            type="text"
+                            id="role"
+                            readonly
+                            class="readonly-input"
+                        >
+
+                        <span class="field-note">
+                            Role cannot be changed.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="password-section">
+
+                    <h3>
+                        Change Password
+                    </h3>
+
+                    <p>
+                        Leave these fields blank to keep your
+                        current password.
+                    </p>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label for="newPassword">
+                                New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="newPassword"
+                                autocomplete="new-password"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="confirmPassword">
+                                Confirm New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                autocomplete="new-password"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="accountMessage"
+                    class="account-message"
+                ></div>
+
+
+                <div class="account-actions">
+
+                    <a
+                        href="dashboard.html"
+                        class="cancel-button"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="save-button"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script
+    type="module"
+    src="../js/account.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+</body>
+
+</html>

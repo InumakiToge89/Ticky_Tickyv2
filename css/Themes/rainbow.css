@@ -1,0 +1,723 @@
+/* =========================================================
+   TICKY TICKY
+   RAINBOW THEME
+   ========================================================= */
+
+[data-theme="rainbow"] {--primary-green: #22c55e;--dark-green: #7c3aed;--medium-green: #3b82f6;--rainbow-pink: #ec4899;--rainbow-orange: #f97316;--rainbow-yellow: #eab308;--rainbow-green: #22c55e;--rainbow-blue: #3b82f6;--rainbow-purple: #8b5cf6;--light-green:
+        #dcfce7;--very-light-green:
+        #fff7fc;--background:
+        #fff9fe;--white:
+        #ffffff;--text-primary:
+        #172033;--text-secondary:
+        #64748b;--border:
+        rgba(
+            139,
+            92,
+            246,
+            0.20
+        );--gold:
+        #eab308;--danger:
+            #ef4444;--warning:
+            #f97316;--success:
+            #22c55e;--card-background:
+        rgba(
+            255,
+            255,
+            255,
+            0.88
+        );--input-background:
+        rgba(
+            255,
+            255,
+            255,
+            0.90
+        );--soft-background:
+        #fff7fc;--sidebar-bg:
+        rgba(
+            255,
+            255,
+            255,
+            0.94
+        );--sidebar-hover-bg:
+        linear-gradient(
+            90deg,
+            rgba(236, 72, 153, 0.08),
+            rgba(139, 92, 246, 0.08),
+            rgba(59, 130, 246, 0.06)
+        );--sidebar-active-bg:
+        linear-gradient(
+            90deg,
+            rgba(236, 72, 153, 0.16),
+            rgba(139, 92, 246, 0.14),
+            rgba(59, 130, 246, 0.12)
+        );--sidebar-text:
+        #475569;--sidebar-active-text:
+        #7c3aed;--brand-mascot:
+        url("../../assets/branding/rainbow/mascot.png");--brand-favicon:
+        url("../../assets/branding/rainbow/favicon.png");--brand-dashboard:
+        url("../../assets/branding/rainbow/dashboard.png");--brand-profiling:
+        url("../../assets/branding/rainbow/profiling.png");--brand-work-activity:
+        url("../../assets/branding/rainbow/work-activity.png");--brand-teams:
+        url("../../assets/branding/rainbow/teams.png");--brand-history:
+        url("../../assets/branding/rainbow/history.png");--brand-reports:
+        url("../../assets/branding/rainbow/reports.png");--brand-logout:
+        url("../../assets/branding/rainbow/logout.png");color-scheme: light;}
+
+/* =========================================================
+   RAINBOW BRAND ASSETS
+   ========================================================= */
+
+
+/* =========================================================
+   🌈 RAINBOW THEME SWITCHER
+   ========================================================= */
+
+[data-theme="rainbow"] .color-mode-switcher {
+
+    background:
+        rgba(255, 255, 255, 0.92) !important;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.22) !important;
+
+    box-shadow:
+        0 10px 30px
+        rgba(139, 92, 246, 0.14) !important;
+}
+
+
+/* Rainbow button */
+
+[data-theme="rainbow"]
+.color-mode-button[data-theme="rainbow"] {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ec4899,
+            #f97316,
+            #eab308,
+            #22c55e,
+            #3b82f6,
+            #8b5cf6
+        ) !important;
+
+    color:
+        #ffffff !important;
+
+    box-shadow:
+        0 4px 12px
+        rgba(139, 92, 246, 0.20);
+
+}
+
+
+/* Rainbow button hover */
+
+[data-theme="rainbow"]
+.color-mode-button[data-theme="rainbow"]:hover {
+
+    transform:
+        translateY(-2px)
+        scale(1.05);
+
+}
+
+/* =========================================================
+   🌈 RAINBOW THEME
+   ========================================================= */
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+/* =========================================================
+   KEEP CONTENT ABOVE DECORATION
+   ========================================================= */
+
+[data-theme="rainbow"] .dashboard-content,
+[data-theme="rainbow"] .page-content,
+[data-theme="rainbow"] .topbar {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+[data-theme="rainbow"] .topbar {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.82
+        ) !important;
+
+    backdrop-filter:
+        blur(16px);
+
+    border-bottom:
+        1px solid
+        rgba(
+            139,
+            92,
+            246,
+            0.18
+        ) !important;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+[data-theme="rainbow"] .sidebar {
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.94),
+            rgba(249,247,255,0.92)
+        ) !important;
+
+    backdrop-filter:
+        blur(16px);
+
+    border-right:
+        1px solid
+        rgba(
+            139,
+            92,
+            246,
+            0.18
+        ) !important;
+}
+
+
+/* =========================================================
+   RAINBOW GLASS CARDS
+   ========================================================= */
+
+[data-theme="rainbow"] .section-card,
+[data-theme="rainbow"] .stat-card,
+[data-theme="rainbow"] .profiling-card,
+[data-theme="rainbow"] .report-kpi-card,
+[data-theme="rainbow"] .report-filter-card {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.86
+        ) !important;
+
+    backdrop-filter:
+        blur(10px);
+
+    -webkit-backdrop-filter:
+        blur(10px);
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.75
+        ) !important;
+
+    box-shadow:
+        0 10px 30px
+        rgba(
+            139,
+            92,
+            246,
+            0.10
+        ) !important;
+
+}
+
+
+/* =========================================================
+   RAINBOW CARD STRIPE
+   ========================================================= */
+
+[data-theme="rainbow"] .section-card::before,
+[data-theme="rainbow"] .stat-card::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    left:
+        0;
+
+    right:
+        0;
+
+    height:
+        3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ec4899,
+            #f97316,
+            #eab308,
+            #22c55e,
+            #3b82f6,
+            #8b5cf6
+        );
+
+    border-radius:
+        999px 999px 0 0;
+}
+
+
+/* =========================================================
+   TEXT
+   ========================================================= */
+
+[data-theme="rainbow"] .welcome-title,
+[data-theme="rainbow"] .page-title,
+[data-theme="rainbow"] .section-title {
+
+    color:
+        #172033 !important;
+}
+
+
+[data-theme="rainbow"] .welcome-subtitle,
+[data-theme="rainbow"] .page-subtitle {
+
+    color:
+        #64748b !important;
+}
+
+
+[data-theme="rainbow"] .stat-card-label {
+
+    color:
+        #475569 !important;
+}
+
+
+[data-theme="rainbow"] .stat-card-value {
+
+    color:
+        #172033 !important;
+}
+
+
+/* =========================================================
+   ACTIVE SIDEBAR
+   ========================================================= */
+
+[data-theme="rainbow"] .sidebar .nav-item.active {
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(236,72,153,0.16),
+            rgba(139,92,246,0.14),
+            rgba(59,130,246,0.12)
+        ) !important;
+
+    color:
+        #7c3aed !important;
+
+    border-left:
+        4px solid #ec4899 !important;
+}
+
+
+[data-theme="rainbow"]
+.sidebar
+.nav-item.active
+> span:not(.nav-icon) {
+
+    color:
+        #7c3aed !important;
+}
+
+
+/* =========================================================
+   RAINBOW BUTTONS
+   ========================================================= */
+
+[data-theme="rainbow"] .btn-primary,
+[data-theme="rainbow"] .primary-button,
+[data-theme="rainbow"] .save-button,
+[data-theme="rainbow"] .add-button {
+
+    background:
+        linear-gradient(
+            90deg,
+            #ec4899,
+            #f97316,
+            #eab308,
+            #22c55e,
+            #3b82f6,
+            #8b5cf6
+        ) !important;
+
+    color:
+        #ffffff !important;
+
+    border:
+        none !important;
+
+    box-shadow:
+        0 8px 20px
+        rgba(
+            139,
+            92,
+            246,
+            0.18
+        ) !important;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+[data-theme="rainbow"] input,
+[data-theme="rainbow"] select,
+[data-theme="rainbow"] textarea {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.90
+        ) !important;
+
+    color:
+        #172033 !important;
+
+    border:
+        1px solid
+        rgba(
+            139,
+            92,
+            246,
+            0.22
+        ) !important;
+}
+
+
+/* =========================================================
+   PROGRESS BARS
+   ========================================================= */
+
+[data-theme="rainbow"]
+.time-breakdown-fill,
+[data-theme="rainbow"]
+.prod-fill {
+
+    background:
+        linear-gradient(
+            90deg,
+            #ec4899,
+            #f97316,
+            #eab308,
+            #22c55e,
+            #3b82f6,
+            #8b5cf6
+        ) !important;
+}
+
+
+/* =========================================================
+   PRODUCTIVITY SUMMARY
+   ========================================================= */
+
+[data-theme="rainbow"]
+.productivity-summary-item {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.92
+        ) !important;
+
+    border:
+        1px solid
+        rgba(
+            139,
+            92,
+            246,
+            0.18
+        ) !important;
+}
+
+
+[data-theme="rainbow"]
+.productivity-summary-label {
+
+    color:
+        #64748b !important;
+}
+
+
+[data-theme="rainbow"]
+.productivity-summary-value {
+
+    color:
+        #172033 !important;
+}
+
+/* =========================================================
+   🌈 RAINBOW FULL-PAGE BACKGROUND
+   ========================================================= */
+
+html[data-theme="rainbow"],
+html[data-theme="rainbow"] body {
+
+    min-height: 100%;
+
+    background:
+        #fff9fe
+        url("../../assets/branding/rainbow/reinbow.jpg")
+        center center / cover
+        fixed
+        no-repeat !important;
+
+}
+
+
+/* Main application background must stay transparent */
+
+html[data-theme="rainbow"] .dashboard-main,
+html[data-theme="rainbow"] .main-content,
+html[data-theme="rainbow"] .dashboard-content,
+html[data-theme="rainbow"] .page-content {
+
+    background:
+        transparent !important;
+
+}
+
+
+/* Keep the background visible through empty space */
+
+html[data-theme="rainbow"] .dashboard-main,
+html[data-theme="rainbow"] .main-content {
+
+    min-height:
+        100vh;
+
+}
+
+/* =========================================================
+   🌈 RAINBOW - REMOVE APP WRAPPER BACKGROUND
+   ========================================================= */
+
+html[data-theme="rainbow"] .dashboard-layout {
+
+    background:
+        transparent !important;
+
+}
+
+
+html[data-theme="rainbow"] .dashboard-main,
+html[data-theme="rainbow"] .main-content {
+
+    background:
+        transparent !important;
+
+}
+
+/* =========================================================
+   🌈 RAINBOW - ACTUAL PAGE BACKGROUND
+   ========================================================= */
+
+html[data-theme="rainbow"],
+html[data-theme="rainbow"] body {
+
+    background-image:
+        url("../../assets/branding/rainbow/reinbow.jpg") !important;
+
+    background-size:
+        cover !important;
+
+    background-position:
+        center center !important;
+
+    background-repeat:
+        no-repeat !important;
+
+    background-attachment:
+        fixed !important;
+
+}
+
+/* =========================================================
+   RAINBOW BACKGROUND ASSET INTEGRATION
+   Separate files expected in:
+   ../../assets/branding/rainbow/
+   ========================================================= */
+
+[data-theme="rainbow"] {
+    --rainbow-sidebar-bg: url("../../assets/branding/rainbow/reinbowsidebar.jpg");
+    --rainbow-header-bg: url("../../assets/branding/rainbow/reinbowheaderbg.jpg");
+   /* --rainbow-topbar-overlay: url("../../assets/branding/rainbow/topbar-overlay.png"); */
+    --rainbow-sidebar-active: url("../../assets/branding/rainbow/sidebar-active-indicator.png");
+}
+
+/* =========================================================
+   RAINBOW TOPBAR ASSET
+   ========================================================= */
+
+[data-theme="rainbow"] .topbar {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--rainbow-header-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18) !important;
+}
+
+[data-theme="rainbow"] .topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--rainbow-topbar-overlay) center / cover no-repeat;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="rainbow"] .topbar > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   RAINBOW SIDEBAR ASSET
+   ========================================================= */
+
+[data-theme="rainbow"] .sidebar {
+    position: fixed;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--rainbow-sidebar-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(139, 92, 246, 0.18) !important;
+}
+
+[data-theme="rainbow"] .sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 180px;
+    background: var(--rainbow-sidebar-bottom) bottom center / cover no-repeat;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="rainbow"] .sidebar > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   RAINBOW SIDEBAR BRAND ASSET
+   ========================================================= */
+
+[data-theme="rainbow"] .sidebar-brand {
+    position: relative;
+    overflow: hidden;
+    background: var(--rainbow-sidebar-logo-bg) center / cover no-repeat;
+}
+
+/* =========================================================
+   RAINBOW ACTIVE NAVIGATION ASSET
+   ========================================================= */
+
+[data-theme="rainbow"] .sidebar .nav-item.active {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+        90deg,
+        rgba(236, 72, 153, 0.16),
+        rgba(139, 92, 246, 0.14),
+        rgba(59, 130, 246, 0.12)
+    ) !important;
+    color: #7c3aed !important;
+    border-left: 4px solid #ec4899 !important;
+}
+
+[data-theme="rainbow"] .sidebar .nav-item.active::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 18px;
+    background: var(--rainbow-sidebar-active) center / cover no-repeat;
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+/* Keep navigation text and icons above the decorative active asset */
+[data-theme="rainbow"] .sidebar .nav-item.active > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   OPTIONAL RAINBOW PAGE WAVE DECORATION
+   Uses the separate decorative-wave.png asset without
+   covering page content.
+   ========================================================= */
+
+[data-theme="rainbow"] .dashboard-content,
+[data-theme="rainbow"] .page-content {
+    position: relative;
+    isolation: isolate;
+}
+
+[data-theme="rainbow"] .dashboard-content::after,
+[data-theme="rainbow"] .page-content::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 260px;
+    background: var(--rainbow-decorative-wave) bottom center / cover no-repeat;
+    pointer-events: none;
+    opacity: 0.45;
+    z-index: 0;
+}
+
+[data-theme="rainbow"] .dashboard-content > *,
+[data-theme="rainbow"] .page-content > * {
+    position: relative;
+    z-index: 1;
+}
+

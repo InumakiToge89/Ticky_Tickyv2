@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | History</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/history.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    id="tickyNavMascot"
+                    class="ticky-brand-image"
+                    src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                    alt="Ticky Ticky"
+                >
+            </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+
+            <!-- DASHBOARD -->
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <!-- PROFILING -->
+
+            <a
+                href="profiling.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Profiling
+
+            </a>
+
+
+            <a
+                href="work-timer.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Work Activity
+
+            </a>
+
+
+            <a 
+            
+                href="teams.html" id="teamsNavItem" class="nav-item"
+            >
+                <span class="nav-icon">👥</span>
+                <span>Teams</span>
+            </a>
+
+            <!-- HISTORY -->
+
+            <a
+                href="history.html"
+                class="nav-item active"
+            >
+
+                <span class="nav-icon">
+                    ▤
+                </span>
+
+                History
+
+            </a>
+
+            <a
+                href="reports.html"
+                id="reportsNavItem"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ▥
+                </span>
+
+                Reports
+            </a>
+
+
+        </nav>
+
+
+        <!-- LOGOUT -->
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                id="logoutButton"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ↪
+                </span>
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="dashboard-main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                History
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    id="userAvatar"
+                    class="user-avatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        id="userName"
+                        class="user-name"
+                    >
+                        Loading...
+                    </div>
+
+
+                    <div
+                        id="userRole"
+                        class="user-role"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="dashboard-content history-content">
+
+
+            <!-- PAGE HEADER -->
+
+            <div class="page-header">
+
+                <h1 class="page-title">
+                    Profiling History
+                </h1>
+
+
+                <p class="page-subtitle">
+                    View your completed productivity monitoring sessions.
+                </p>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FILTERS
+                 ================================================= -->
+
+            <section class="history-filter-card">
+
+
+                <div class="filter-header">
+
+                    <div>
+
+                        <h2 class="filter-title">
+                            Search & Filter
+                        </h2>
+
+                        <p class="filter-subtitle">
+                            Find your completed profiling records.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="resetFiltersButton"
+                        class="btn btn-secondary"
+                    >
+                        Reset
+                    </button>
+
+                </div>
+
+
+
+                <div class="filter-grid">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="searchInput"
+                            class="filter-label"
+                        >
+                            Search Team
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search team name or team ID..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+
+                    <!-- FROM DATE -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="fromDate"
+                            class="filter-label"
+                        >
+                            From Date
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="fromDate"
+                        >
+
+                    </div>
+
+
+
+                    <!-- TO DATE -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="toDate"
+                            class="filter-label"
+                        >
+                            To Date
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="toDate"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SUMMARY
+                 ================================================= -->
+
+            <div class="history-summary">
+
+                <div>
+
+                    <span
+                        id="recordCount"
+                        class="record-count"
+                    >
+                        0
+                    </span>
+
+                    <span class="record-label">
+                        completed profiling sessions
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <span class="record-label">
+                        Total Productivity:
+                    </span>
+
+                    <span
+                        id="filteredTotalTime"
+                        class="record-total"
+                    >
+                        00:00:00
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 HISTORY TABLE
+                 ================================================= -->
+
+            <section class="section-card history-table-card">
+
+
+                <div class="table-container">
+
+                    <table class="data-table history-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Team
+                                </th>
+
+                                <th>
+                                    Team ID
+                                </th>
+
+                                <th>
+                                    Members
+                                </th>
+
+                                <th>
+                                    Teams Time
+                                </th>
+
+                                <th>
+                                    Members Time
+                                </th>
+
+                                <th>
+                                    Total Time
+                                </th>
+
+                                <th>
+                                    Completed
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="historyTableBody"
+                        >
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="status-empty"
+                                >
+                                    Loading history...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                    
+
+                </div>
+
+                <div class="history-pagination" id="historyPagination">
+
+                <div class="history-pagination-info">
+                    <span id="historyPaginationInfo">
+                        Showing 0–0 of 0 records
+                    </span>
+                </div>
+
+                <div class="history-pagination-controls">
+
+                    <button
+                        type="button"
+                        id="historyPreviousPage"
+                        class="history-page-button"
+                    >
+                        ← Previous
+                    </button>
+
+                    <span
+                        id="historyPageIndicator"
+                        class="history-page-indicator"
+                    >
+                        Page 1 of 1
+                    </span>
+
+                    <button
+                        type="button"
+                        id="historyNextPage"
+                        class="history-page-button"
+                    >
+                        Next →
+                    </button>
+
+                </div>
+
+                </div>
+
+
+            </section>
+
+
+            <br></br>
+
+                <!-- =================================================
+                WORK ACTIVITY HISTORY
+                ================================================= -->
+
+            <section class="section-card history-table-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2 class="section-title">
+                            Work Activity History
+                        </h2>
+
+                        <p class="filter-subtitle">
+                            View your completed production and non-production activities.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table class="data-table history-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Category
+                                </th>
+
+                                <th>
+                                    Activity
+                                </th>
+
+                                <th>
+                                    Started
+                                </th>
+
+                                <th>
+                                    Finished
+                                </th>
+
+                                <th>
+                                    Duration
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="workActivityTableBody"
+                        >
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="status-empty"
+                                >
+                                    Loading work activity history...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                    <div
+                        class="history-pagination"
+                        id="workActivityPagination"
+                    >
+
+                        <div class="history-pagination-info">
+
+                            <span id="workActivityPaginationInfo">
+                                Showing 0–0 of 0 records
+                            </span>
+
+                        </div>
+
+                        <div class="history-pagination-controls">
+
+                            <button
+                                type="button"
+                                id="workActivityPreviousPage"
+                                class="history-page-button"
+                            >
+                                ← Previous
+                            </button>
+
+                            <span
+                                id="workActivityPageIndicator"
+                                class="history-page-indicator"
+                            >
+                                Page 1 of 1
+                            </span>
+
+                            <button
+                                type="button"
+                                id="workActivityNextPage"
+                                class="history-page-button"
+                            >
+                                Next →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- =================================================
+                 ERROR
+                 ================================================= -->
+
+            <div
+                id="historyError"
+                class="history-error"
+            ></div>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+<!-- =====================================================
+     HISTORY DETAILS MODAL
+     ===================================================== -->
+
+<div
+    id="historyModal"
+    class="history-modal"
+    style="display: none;"
+>
+
+    <div class="history-modal-overlay"></div>
+
+
+    <div class="history-modal-card">
+
+
+        <button
+            type="button"
+            id="closeHistoryModal"
+            class="history-modal-close"
+        >
+            ×
+        </button>
+
+
+        <div class="history-modal-header">
+
+            <div>
+
+                <div class="history-modal-label">
+                    PROFILING DETAILS
+                </div>
+
+
+                <h2
+                    id="modalTeamName"
+                    class="history-modal-title"
+                >
+                    --
+                </h2>
+
+
+                <div
+                    id="modalTeamId"
+                    class="history-modal-team-id"
+                >
+                    Team ID: --
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="history-detail-grid">
+
+
+            <div class="history-detail-card">
+
+                <div class="history-detail-label">
+                    Teams Profiling
+                </div>
+
+                <div
+                    id="modalTeamTime"
+                    class="history-detail-value"
+                >
+                    00:00:00
+                </div>
+
+            </div>
+
+
+
+            <div class="history-detail-card">
+
+                <div class="history-detail-label">
+                    Members Profiling
+                </div>
+
+                <div
+                    id="modalMembersTime"
+                    class="history-detail-value"
+                >
+                    00:00:00
+                </div>
+
+            </div>
+
+
+
+            <div class="history-detail-card">
+
+                <div class="history-detail-label">
+                    Total Productivity
+                </div>
+
+                <div
+                    id="modalTotalTime"
+                    class="history-detail-value total"
+                >
+                    00:00:00
+                </div>
+
+            </div>
+
+
+
+            <div class="history-detail-card">
+
+                <div class="history-detail-label">
+                    Total Members
+                </div>
+
+                <div
+                    id="modalMemberCount"
+                    class="history-detail-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="history-detail-times">
+
+
+            <div>
+
+                <span>
+                    Started
+                </span>
+
+                <strong
+                    id="modalStartedAt"
+                >
+                    --
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Completed
+                </span>
+
+                <strong
+                    id="modalFinishedAt"
+                >
+                    --
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="history-modal-actions">
+
+            <button
+                type="button"
+                id="closeHistoryModalButton"
+                class="btn btn-secondary"
+            >
+                Close
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     WORK ACTIVITY DETAILS MODAL
+     ===================================================== -->
+
+<div
+    id="workActivityModal"
+    class="history-modal"
+    style="display: none;"
+>
+
+    <div class="history-modal-overlay"></div>
+
+
+    <div class="history-modal-card">
+
+        <button
+            type="button"
+            id="closeWorkActivityModal"
+            class="history-modal-close"
+        >
+            ×
+        </button>
+
+
+        <div class="history-modal-header">
+
+            <div>
+
+                <div class="history-modal-label">
+                    WORK ACTIVITY DETAILS
+                </div>
+
+
+                <h2
+                    id="workActivityModalTitle"
+                    class="history-modal-title"
+                >
+                    --
+                </h2>
+
+
+                <div
+                    id="workActivityModalCategory"
+                    class="history-modal-team-id"
+                >
+                    --
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="history-details-grid">
+
+            <div class="history-detail-item">
+
+                <span>
+                    Started
+                </span>
+
+                <strong
+                    id="workActivityModalStarted"
+                >
+                    --
+                </strong>
+
+            </div>
+
+
+            <div class="history-detail-item">
+
+                <span>
+                    Finished
+                </span>
+
+                <strong
+                    id="workActivityModalFinished"
+                >
+                    --
+                </strong>
+
+            </div>
+
+
+            <div class="history-detail-item">
+
+                <span>
+                    Active Working Time
+                </span>
+
+                <strong
+                    id="workActivityModalDuration"
+                >
+                    00:00:00
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="work-activity-timeline-section">
+
+            <h3>
+                Activity Timeline
+            </h3>
+
+
+            <div
+                id="workActivityTimeline"
+                class="work-activity-timeline"
+            >
+
+                Loading activity events...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+
+<script
+    type="module"
+    src="../js/account-menu.js"
+></script>
+
+<script
+    type="module"
+    src="../js/history.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Team Management | Ticky Ticky</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+    <link
+    rel="stylesheet"
+    href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/teams.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    id="tickyNavMascot"
+                    class="ticky-brand-image"
+                    src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                    alt="Ticky Ticky"
+                >
+            </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">▦</span>
+                <span>Dashboard</span>
+            </a>
+
+
+            <a
+                href="profiling.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">◷</span>
+                <span>Profiling</span>
+            </a>
+
+
+            <a
+                href="work-timer.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Work Activity
+
+            </a>
+
+
+             <a
+                href="teams.html"
+                class="nav-item active"
+            >
+                <span class="nav-icon">👥</span>
+                <span>Teams</span>
+            </a>
+
+
+            <a
+                href="history.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">▤</span>
+                <span>History</span>
+            </a>
+
+
+            <a
+                href="reports.html"
+                class="nav-item"
+                id="reportsNavItem"
+            >
+                <span class="nav-icon">▥</span>
+                <span>Reports</span>
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                class="nav-item"
+                id="logoutButton"
+            >
+                <span class="nav-icon">↪</span>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="dashboard-main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div class="topbar-title">
+                Team Management
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    class="user-avatar"
+                    id="userAvatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        class="user-name"
+                        id="userName"
+                    >
+                        Loading...
+                    </div>
+
+
+                    <div
+                        class="user-role"
+                        id="userRole"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- TEAMS PAGE -->
+        <section class="page-content">
+
+            <div class="teams-page-header">
+
+                <div>
+
+                    <h1>
+                        Manage Teams
+                    </h1>
+
+                    <p>
+                        Import, create, and manage teams for profiling.
+                    </p>
+
+                </div>
+
+
+                <div class="teams-header-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="importExcelButton"
+                    >
+                        Import Excel
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="addTeamButton"
+                    >
+                        + Add Team
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- SEARCH -->
+            <section class="card teams-search-card">
+
+                <div class="form-group">
+
+                    <label for="teamSearch">
+                        Search Teams
+                    </label>
+
+                    <input
+                        type="text"
+                        id="teamSearch"
+                        placeholder="Search by Team ID or Team Name..."
+                    >
+
+                </div>
+
+            </section>
+
+
+            <!-- TABLE -->
+            <section class="card teams-table-card">
+
+                <div class="table-card-header">
+
+                    <div>
+
+                        <h3>
+                            Saved Teams
+                        </h3>
+
+                        <p>
+                            Teams available for profiling.
+                        </p>
+
+                    </div>
+
+
+                    <span
+                        class="team-count"
+                        id="teamCount"
+                    >
+                        0 Teams
+                    </span>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+
+                                <th class="select-column">
+                                    <input
+                                        type="checkbox"
+                                        id="selectAllTeams"
+                                        aria-label="Select all teams"
+                                    >
+                                </th>
+
+                                <th>
+                                    Team ID
+                                </th>
+
+                                <th>
+                                    Team Name
+                                </th>
+
+                                <th>
+                                    Members
+                                </th>
+
+                                <th class="actions-column">
+                                    Actions
+                                </th>
+
+                            </tr>
+                        </thead>
+
+
+                        <tbody id="teamsTableBody">
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="empty-table"
+                                >
+                                    Loading teams...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+            <div
+                class="bulk-delete-container"
+                id="bulkDeleteContainer"
+            >
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    id="bulkDeleteButton"
+                >
+                    🗑 Delete Selected
+                    <span id="selectedTeamCount">
+                        (0)
+                    </span>
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ADD / EDIT TEAM MODAL -->
+    <div
+        class="modal-overlay"
+        id="teamModal"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h3 id="teamModalTitle">
+                    Add Team
+                </h3>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeTeamModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="teamForm">
+
+                <div class="form-group">
+
+                    <label for="modalTeamId">
+                        Team ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="modalTeamId"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="modalTeamName">
+                        Team Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="modalTeamName"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="modalMemberCount">
+                        Number of Members
+                    </label>
+
+                    <input
+                        type="number"
+                        id="modalMemberCount"
+                        min="1"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelTeamButton"
+                    >
+                        Cancel
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Save Team
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- IMPORT EXCEL MODAL -->
+    <div
+        class="modal-overlay"
+        id="importModal"
+    >
+
+        <div class="modal import-modal">
+
+            <div class="modal-header">
+
+                <h3>
+                    Import Teams
+                </h3>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeImportModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="import-content">
+
+                <p>
+                    Upload an Excel file containing the following columns:
+                </p>
+
+
+                <div class="excel-format">
+
+                    <strong>
+                        TEAM_ID
+                    </strong>
+
+                    <strong>
+                        TEAM_NAME
+                    </strong>
+
+                    <strong>
+                        NO_OF_MEMBERS
+                    </strong>
+
+                </div>
+
+
+                <input
+                    type="file"
+                    id="excelFileInput"
+                    accept=".xlsx,.xls"
+                >
+
+
+                <p class="import-note">
+                    The first row must contain the column headers.
+                </p>
+
+
+                <div
+                    class="import-error"
+                    id="importError"
+                ></div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelImportButton"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="confirmImportButton"
+                >
+                    Import Teams
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ERROR -->
+    <div
+        class="page-error"
+        id="teamsError"
+    ></div>
+
+</div>
+
+<!-- SUCCESS MODAL -->
+<div
+    class="teams-success-overlay"
+    id="teamsSuccessModal"
+>
+    <div class="teams-success-modal">
+
+        <div class="teams-success-icon">
+            ✓
+        </div>
+
+        <h3
+            id="teamsSuccessTitle"
+        >
+            Success
+        </h3>
+
+        <p
+            id="teamsSuccessMessage"
+        >
+        </p>
+
+        <button
+            type="button"
+            class="btn btn-primary teams-success-button"
+            onclick="document.getElementById('teamsSuccessModal').classList.remove('active')"
+        >
+            OK
+        </button>
+
+    </div>
+</div>
+
+<!-- =========================================
+     DELETE CONFIRMATION MODAL
+========================================= -->
+
+<div
+    class="modal-overlay"
+    id="deleteConfirmModal"
+>
+
+    <div class="custom-confirm-modal">
+
+        <div class="confirm-modal-icon">
+            🗑
+        </div>
+
+        <h2 id="deleteConfirmTitle">
+            Delete Teams?
+        </h2>
+
+        <p id="deleteConfirmMessage">
+            Are you sure you want to delete the selected teams?
+        </p>
+
+        <div class="confirm-modal-actions">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelDeleteConfirm"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                id="confirmDeleteButton"
+            >
+                Delete
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script
+    type="module"
+    src="../js/account-menu.js"
+></script>
+
+<!-- SheetJS: reads Excel files -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<!-- Teams page -->
+<script
+    type="module"
+    src="../js/teams.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+</body>
+</html>

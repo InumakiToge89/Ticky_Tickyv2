@@ -1,0 +1,1436 @@
+/* =========================================================
+   TICKY TICKY
+   EMERALD THEME
+   ========================================================= */
+
+[data-theme="emerald"] {--primary-green: #059669;--dark-green: #047857;--medium-green: #10b981;--light-green: #d1fae5;--very-light-green: #ecfdf5;--background: #ecfdf5;--white: #ffffff;--text-primary: #123126;--text-secondary: #527467;--border: #a7f3d0;--gold: #b68b2c;--danger: #dc2626;--warning: #d97706;--success: #059669;--card-background: #f5fffa;--input-background: #f7fffb;--soft-background: #ecfdf5;--nav-background:
+        #f0fdf7;--sidebar-bg:
+        #f0fdf7;--sidebar-hover-bg:
+        #d1fae5;--sidebar-active-bg:
+        #bbf7d0;--sidebar-text:
+        #166534;--sidebar-active-text:
+        #065f46;--brand-mascot:
+        url("../../assets/branding/emerald/ticky-ticky-emerald-mascot.png");--brand-favicon:
+        url("../../assets/branding/emerald/ticky-ticky-favicon-emerald.png");--brand-dashboard:
+        url("../../assets/branding/emerald/01-dashboard.png");--brand-profiling:
+        url("../../assets/branding/emerald/02-profiling.png");--brand-work-activity:
+        url("../../assets/branding/emerald/03-work-activity.png");--brand-teams:
+        url("../../assets/branding/emerald/04-teams.png");--brand-history:
+        url("../../assets/branding/emerald/05-history.png");--brand-reports:
+        url("../../assets/branding/emerald/06-reports.png");--brand-logout:
+        url("../../assets/branding/emerald/07-logout.png");--emerald-main: #059669;--emerald-dark: #047857;--emerald-deep: #065f46;--emerald-bg: #ecfdf5;--emerald-surface: #f5fffa;--emerald-soft: #d1fae5;--emerald-border: #86efac;--accent: #059669;--accent-dark: #047857;--accent-deep: #065f46;--accent-soft: #d1fae5;--accent-border: #34d399;}
+
+/* =========================================================
+   EMERALD BRAND ASSETS
+   ========================================================= */
+
+
+/* =========================================================
+   EMERALD LIGHT MODE
+   STRONGER GREEN THEME - LESS WHITE
+   ========================================================= */
+
+
+/* =========================================================
+   PAGE BACKGROUND
+   ========================================================= */
+
+[data-theme="emerald"] body {
+
+    background:
+        #ecfdf5 !important;
+
+    color:
+        #123126 !important;
+
+}
+
+
+/* =========================================================
+   MAIN CONTENT AREA
+   ========================================================= */
+
+[data-theme="emerald"] .dashboard-main {
+
+    background:
+        #ecfdf5 !important;
+
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+[data-theme="emerald"] .topbar {
+
+    background:
+        #f5fffa !important;
+
+    border-bottom:
+        1px solid #a7f3d0 !important;
+
+}
+
+
+[data-theme="emerald"] .topbar-title {
+
+    color:
+        #065f46 !important;
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+[data-theme="emerald"] .sidebar {
+
+    background:
+        #f0fdf7 !important;
+
+    border-right:
+        1px solid #a7f3d0 !important;
+
+}
+
+
+/* Sidebar brand */
+
+[data-theme="emerald"] .sidebar-brand {
+
+    border-bottom:
+        1px solid #a7f3d0 !important;
+
+}
+
+
+[data-theme="emerald"] .sidebar-title {
+
+    color:
+        #064e3b !important;
+
+}
+
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+   ========================================================= */
+
+[data-theme="emerald"] .sidebar .nav-item {
+
+    color:
+        #166534 !important;
+
+}
+
+
+[data-theme="emerald"] .sidebar .nav-item:hover {background:
+        #d1fae5 !important;color: #047857 !important;}
+
+
+/* Active item */
+
+[data-theme="emerald"]
+.sidebar
+.nav-item.active {background:
+        rgba(
+            223,
+            233,
+            223,
+            0.20
+        ) !important;color: #ffffff !important;border-left: 4px solid #059669 !important;box-shadow:
+        inset 0 0 0 1px
+        rgba(5, 150, 105, 0.08);}
+
+
+[data-theme="emerald"]
+.sidebar
+.nav-item.active > span:not(.nav-icon),
+
+[data-theme="emerald"]
+.sidebar
+.nav-item.active
+.nav-label {color: #065f46 !important;}
+
+
+/* =========================================================
+   LOGOUT AREA
+   ========================================================= */
+
+[data-theme="emerald"] .sidebar-bottom {
+
+    border-top:
+        1px solid #a7f3d0 !important;
+
+}
+
+
+[data-theme="emerald"] #logoutButton {
+
+    color:
+        #166534 !important;
+
+}
+
+
+[data-theme="emerald"] #logoutButton:hover {
+
+    background:
+        #d1fae5 !important;
+
+    color:
+        #065f46 !important;
+
+}
+
+
+/* =========================================================
+   PAGE HEADERS
+   ========================================================= */
+
+[data-theme="emerald"] .page-title,
+[data-theme="emerald"] .welcome-title {
+
+    color:
+        #064e3b !important;
+
+}
+
+
+[data-theme="emerald"] .page-subtitle,
+[data-theme="emerald"] .welcome-subtitle {
+
+    color:
+        #527467 !important;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+[data-theme="emerald"] .section-card,
+[data-theme="emerald"] .stat-card,
+[data-theme="emerald"] .profiling-card {
+
+    background:
+        #f5fffa !important;
+
+    border-color:
+        #a7f3d0 !important;
+
+    box-shadow:
+        0 4px 18px
+        rgba(5, 150, 105, 0.06) !important;
+
+}
+
+
+/* =========================================================
+   CARD TEXT
+   ========================================================= */
+
+[data-theme="emerald"] .section-title,
+[data-theme="emerald"] .stat-card-label {
+
+    color:
+        #166534 !important;
+
+}
+
+
+[data-theme="emerald"] .stat-card-value {color: #123126 !important;}
+
+
+/* =========================================================
+   TIME BREAKDOWN
+   ========================================================= */
+
+[data-theme="emerald"] .time-breakdown-item {
+
+    border-color:
+        #bbf7d0 !important;
+
+}
+
+
+[data-theme="emerald"] .time-breakdown-label {color: #35584a !important;}
+
+
+[data-theme="emerald"] .time-breakdown-duration {color: #5b7468 !important;}
+
+
+[data-theme="emerald"] .time-breakdown-percent {background:
+        #d1fae5 !important;color: #35584a !important;}
+
+
+/* =========================================================
+   PRODUCTIVITY SUMMARY
+   ========================================================= */
+
+[data-theme="emerald"]
+.productivity-summary-card {
+
+    background:
+        #f0fdf7 !important;
+
+    border-color:
+        #86efac !important;
+
+}
+
+
+[data-theme="emerald"]
+.productivity-summary-item {background: #ffffff !important;border:
+        1px solid #bbf7d0 !important;color: #123126 !important;}
+
+
+[data-theme="emerald"]
+.productivity-summary-label {color: #47665a !important;}
+
+
+[data-theme="emerald"]
+.productivity-summary-value {color: #123126 !important;}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+[data-theme="emerald"] input,
+[data-theme="emerald"] select,
+[data-theme="emerald"] textarea {
+
+    background:
+        #f7fffb !important;
+
+    border:
+        1px solid #a7f3d0 !important;
+
+    color:
+        #123126 !important;
+
+}
+
+
+[data-theme="emerald"] input::placeholder,
+[data-theme="emerald"] textarea::placeholder {
+
+    color:
+        #739286 !important;
+
+}
+
+
+[data-theme="emerald"] input:focus,
+[data-theme="emerald"] select:focus,
+[data-theme="emerald"] textarea:focus {border-color: #059669 !important;box-shadow:
+        0 0 0 3px
+        rgba(5, 150, 105, 0.20) !important;}
+
+
+/* =========================================================
+   PRIMARY BUTTONS
+   ========================================================= */
+
+[data-theme="emerald"]
+.btn-primary,
+
+[data-theme="emerald"]
+.primary-button,
+
+[data-theme="emerald"]
+.save-button,
+
+[data-theme="emerald"]
+.add-button {background: #059669 !important;border-color: #059669 !important;color: #ffffff !important;}
+
+
+[data-theme="emerald"]
+.btn-primary:hover,
+
+[data-theme="emerald"]
+.primary-button:hover,
+
+[data-theme="emerald"]
+.save-button:hover,
+
+[data-theme="emerald"]
+.add-button:hover {background: #047857 !important;border-color: #047857 !important;}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+[data-theme="emerald"] .section-link {color: #16834b !important;}
+
+
+[data-theme="emerald"] .section-link:hover {color: #0f6b3d !important;}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+[data-theme="emerald"] .data-table {
+
+    background:
+        #f5fffa !important;
+
+}
+
+
+[data-theme="emerald"] .data-table thead {
+
+    background:
+        #d1fae5 !important;
+
+}
+
+
+[data-theme="emerald"] .data-table th {color: #47665a !important;}
+
+
+[data-theme="emerald"] .data-table td {color: #123126 !important;border-color:
+        #d1fae5 !important;}
+
+
+[data-theme="emerald"] .data-table tbody tr:hover {
+
+    background:
+        #ecfdf5 !important;
+
+}
+
+
+/* =========================================================
+   SEARCH / FILTER CONTAINERS
+   ========================================================= */
+
+[data-theme="emerald"] .filter-card,
+[data-theme="emerald"] .search-card,
+[data-theme="emerald"] .report-filters {
+
+    background:
+        #f0fdf7 !important;
+
+    border-color:
+        #a7f3d0 !important;
+
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+[data-theme="emerald"] .badge,
+[data-theme="emerald"] .count-badge {background: #d1fae5 !important;color: #065f46 !important;border-color:
+        #86efac !important;}
+
+
+/* =========================================================
+   PROGRESS BARS
+   ========================================================= */
+
+[data-theme="emerald"] .prod-fill,
+[data-theme="emerald"] .time-breakdown-fill {background: #059669 !important;}
+
+
+/* =========================================================
+   THEME SWITCHER
+   ========================================================= */
+
+[data-theme="emerald"]
+.color-mode-button.active {background: #059669 !important;color: #ffffff !important;border-color: #047857 !important;}
+
+/* =========================================================
+   ACTIVE TEXT
+   ========================================================= */
+
+[data-theme="emerald"]
+.sidebar .nav-item.active .nav-label,
+[data-theme="emerald"]
+.sidebar .nav-item.active span {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   EMERALD MODE
+   ========================================================= */
+
+
+[data-theme="emerald"] .productivity-summary-item
+.productivity-summary-label {
+
+    color: #47665a !important;
+
+}
+
+
+[data-theme="emerald"] .productivity-summary-item
+.productivity-summary-value {
+
+    color: #123126 !important;
+
+}
+
+
+[data-theme="emerald"] .productivity-summary-item strong {color: #123126 !important;}
+
+/* =========================================================
+   FIX: EMERALD / LIGHT DASHBOARD TEXT
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   MAIN PAGE TEXT
+   --------------------------------------------------------- */
+
+[data-theme="emerald"] .welcome-title,
+[data-theme="emerald"] .section-title {
+
+    color: #123126 !important;
+
+}
+
+
+[data-theme="emerald"] .welcome-subtitle {
+
+    color: #5b7468 !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   STAT CARDS
+   --------------------------------------------------------- */
+
+[data-theme="emerald"] .stat-card-label {
+
+    color: #35584a !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   TIME BREAKDOWN
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   PRODUCTIVITY SUMMARY
+   THESE CARDS ARE LIGHT
+   --------------------------------------------------------- */
+
+[data-theme="emerald"] .productivity-summary-card
+.section-title {
+
+    color: #123126 !important;
+
+}
+
+
+[data-theme="emerald"] .productivity-summary-subtitle {
+
+    color: #5b7468 !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   INSIGHT
+   --------------------------------------------------------- */
+
+[data-theme="emerald"] .productivity-insight {
+
+    color: #47665a !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLE
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   DASHBOARD LINKS
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   EMERALD
+   Light background = dark green text
+   --------------------------------------------------------- */
+
+
+[data-theme="emerald"] .sidebar .nav-item.active > span:not(.nav-icon) {
+
+    color: #14532d !important;
+
+}
+
+
+[data-theme="emerald"] .sidebar .nav-item.active .nav-label {
+
+    color: #14532d !important;
+
+}
+
+/* =========================================================
+   STRONG EMERALD LIGHT THEME
+   ========================================================= */
+
+
+/* =========================================================
+   MAIN GREEN BUTTONS
+   ========================================================= */
+
+
+/* =========================================================
+   ACTIVE SIDEBAR
+   ========================================================= */
+
+
+/* =========================================================
+   SIDEBAR HOVER
+   ========================================================= */
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+[data-theme="emerald"] a,
+[data-theme="emerald"] .section-link {
+
+    color: #047857 !important;
+
+}
+
+
+[data-theme="emerald"] a:hover,
+[data-theme="emerald"] .section-link:hover {
+
+    color: #065f46 !important;
+
+}
+
+
+/* =========================================================
+   THEME BUTTON
+   ========================================================= */
+
+
+/* =========================================================
+   PROGRESS / TIME BARS
+   ========================================================= */
+
+
+/* =========================================================
+   ACCENT ICONS
+   ========================================================= */
+
+[data-theme="emerald"] .stat-card-icon {
+
+    color: #059669 !important;
+
+}
+
+
+/* =========================================================
+   FOCUS STATES
+   ========================================================= */
+
+
+/* =========================================================
+   EMERALD BORDERS
+   ========================================================= */
+
+[data-theme="emerald"] .section-card,
+[data-theme="emerald"] .stat-card {
+
+    border-color: #a7f3d0 !important;
+
+}
+
+
+/* =========================================================
+   EMERALD BADGES
+   ========================================================= */
+
+
+/* =========================================================
+   EMERALD ACTIVE
+   ========================================================= */
+
+
+/* =========================================================
+   EMERALD SIDEBAR TEXT + ACTIVE STATE FIX
+   ========================================================= */
+[data-theme="emerald"] .sidebar .nav-item,
+[data-theme="emerald"] .sidebar .nav-item span:not(.nav-icon) {
+    color: #166534 !important;
+}
+
+[data-theme="emerald"] .sidebar .nav-item:hover,
+[data-theme="emerald"] .sidebar .nav-item:hover span:not(.nav-icon) {
+    color: #047857 !important;
+}
+
+[data-theme="emerald"] .sidebar .nav-item.active,
+[data-theme="emerald"] .sidebar .nav-item.active > span:not(.nav-icon),
+[data-theme="emerald"] .sidebar .nav-item.active .nav-label {
+    color: #14532d !important;
+}
+
+[data-theme="emerald"] .sidebar .nav-item.active {
+    background: #d1fae5 !important;
+    border-left-color: #059669 !important;
+}
+
+/* =========================================================
+   ACCOUNT HOVER CARD FIX
+   ========================================================= */
+[data-theme="emerald"] .user-section:hover,
+[data-theme="emerald"] .user-profile:hover {
+    background: #d1fae5 !important;
+}
+
+[data-theme="emerald"] .user-hover-card,
+[data-theme="emerald"] .global-account-card {
+    background: #f5fffa !important;
+    border-color: #a7f3d0 !important;
+}
+
+[data-theme="emerald"] {
+    --emerald-sidebar-bg: url("../../assets/branding/emerald/enhancedsidebar.png");
+    --emerald-header-bg: url("../../assets/branding/emerald/enhancedsidebar.png");
+    --emerald-sidebar-active: url("../../assets/branding/emerald/sidebar-active-indicator.png");
+}
+
+/* =========================================================
+   EMERALD SIDEBAR ASSET
+   ========================================================= */
+
+[data-theme="emerald"] .sidebar {
+    position: fixed;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--emerald-sidebar-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(139, 92, 246, 0.18) !important;
+}
+
+[data-theme="emerald"] .sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 180px;
+    background: var(--emerald-sidebar-bottom) bottom center / cover no-repeat;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="emerald"] .sidebar > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   EMERALD TOPBAR ASSET
+   ========================================================= */
+
+[data-theme="emerald"] .topbar {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--emerald-header-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18) !important;
+}
+
+/* =========================================================
+   🌈 EMERALD FULL-PAGE BACKGROUND
+   ========================================================= */
+
+html[data-theme="emerald"],
+html[data-theme="emerald"] body {
+
+    min-height: 100%;
+
+    background:
+        #fff9fe
+        url("../../assets/branding/emerald/emeraldbg.png")
+        center center / cover
+        fixed
+        no-repeat !important;
+
+}
+
+
+/* Main application background must stay transparent */
+
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .main-content,
+html[data-theme="emerald"] .dashboard-content,
+html[data-theme="emerald"] .page-content {
+
+    background:
+        transparent !important;
+
+}
+
+
+/* Keep the background visible through empty space */
+
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .main-content {
+
+    min-height:
+        100vh;
+
+}
+
+/* =========================================================
+   🌈 EMERALD - REMOVE APP WRAPPER BACKGROUND
+   ========================================================= */
+
+html[data-theme="emerald"] .dashboard-layout {
+
+    background:
+        transparent !important;
+
+}
+
+
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .main-content {
+
+    background:
+        transparent !important;
+
+}
+
+/* =========================================================
+   🌈 EMERALD - ACTUAL PAGE BACKGROUND
+   ========================================================= */
+
+html[data-theme="emerald"],
+html[data-theme="emerald"] body {
+
+    background-image:
+        url("../../assets/branding/emerald/emeraldbg.png") !important;
+
+    background-size:
+        cover !important;
+
+    background-position:
+        center center !important;
+
+    background-repeat:
+        no-repeat !important;
+
+    background-attachment:
+        fixed !important;
+
+}
+
+/* =========================================================
+   💚 EMERALD VIDEO BACKGROUND
+   ========================================================= */
+
+html[data-theme="emerald"] #emerald-video-bg {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    object-fit: cover;
+    object-position: center center;
+
+    z-index: -10;
+
+    pointer-events: none;
+}
+
+/* Emerald page must be transparent */
+html[data-theme="emerald"],
+html[data-theme="emerald"] body {
+    background: transparent !important;
+}
+
+/* Allow video to show through */
+html[data-theme="emerald"] .dashboard-layout,
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .main-content,
+html[data-theme="emerald"] .dashboard-content,
+html[data-theme="emerald"] .page-content {
+    background: transparent !important;
+}
+
+
+
+/* =========================================================
+   EMERALD GLASS UI — VIDEO BACKGROUND
+   Exact selectors for Profiling + Work Activity + Timer
+   ========================================================= */
+
+/* The video is the real background. Remove the old static image. */
+html[data-theme="emerald"],
+html[data-theme="emerald"] body {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+html[data-theme="emerald"] body {
+    position: relative;
+    isolation: isolate;
+}
+
+/* Put the video behind the whole application. */
+html[data-theme="emerald"] #emerald-video-bg {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* All page wrappers stay transparent. */
+html[data-theme="emerald"] .dashboard-layout,
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .dashboard-content,
+html[data-theme="emerald"] .main-content,
+html[data-theme="emerald"] .page-content,
+html[data-theme="emerald"] .work-timer-content,
+html[data-theme="emerald"] .timer-page,
+html[data-theme="emerald"] .profiling-content {
+    background: transparent !important;
+}
+
+/* =========================================================
+   SIDEBAR / TOPBAR
+   ========================================================= */
+
+html[data-theme="emerald"] .sidebar,
+html[data-theme="emerald"] .topbar {
+    background: rgba(235, 255, 247, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border-color: rgba(255, 255, 255, 0.30) !important;
+}
+
+/* =========================================================
+   WORK ACTIVITY — THIS WAS THE MISSING PART
+   ========================================================= */
+
+/* Main white timer panel */
+html[data-theme="emerald"] .work-card {
+    background: rgba(245, 255, 250, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.34) !important;
+    box-shadow: 0 12px 40px rgba(0, 55, 35, 0.18) !important;
+    color: #073b2b !important;
+}
+
+/* Task buttons */
+html[data-theme="emerald"] .task-button {
+    background: rgba(255, 255, 255, 0.20) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Timer area */
+html[data-theme="emerald"] .timer-section {
+    background: transparent !important;
+}
+
+html[data-theme="emerald"] .work-timer-display {
+    color: #073b2b !important;
+    text-shadow: 0 2px 5px rgba(255,255,255,0.55) !important;
+}
+
+/* Category tabs remain green, but become translucent. */
+html[data-theme="emerald"] .category-tab {
+    background: rgba(5, 150, 105, 0.45) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="emerald"] .category-tab.active {
+    background: rgba(5, 150, 105, 0.72) !important;
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   PROFILING PAGE
+   ========================================================= */
+
+html[data-theme="emerald"] .profiling-card {
+    background: rgba(245, 255, 250, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.34) !important;
+    box-shadow: 0 12px 40px rgba(0, 55, 35, 0.18) !important;
+}
+
+/* Pending profiling item */
+html[data-theme="emerald"] .pending-profiling-item {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-color: rgba(255, 255, 255, 0.32) !important;
+}
+
+/* Profiling type cards */
+html[data-theme="emerald"] .type-card {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="emerald"] .type-option input:checked + .type-card {
+    background: rgba(209, 250, 229, 0.28) !important;
+}
+
+/* Member count box */
+html[data-theme="emerald"] .members-field {
+    background: rgba(209, 250, 229, 0.20) !important;
+    border-color: rgba(255, 255, 255, 0.30) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+/* =========================================================
+   PROFILING TIMER — timer.html
+   ========================================================= */
+
+html[data-theme="emerald"] .timer-job-card,
+html[data-theme="emerald"] .timer-card,
+html[data-theme="emerald"] .timer-info-card {
+    background: rgba(245, 255, 250, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.34) !important;
+    box-shadow: 0 12px 40px rgba(0, 55, 35, 0.18) !important;
+}
+
+/* Large profiling timer */
+html[data-theme="emerald"] .timer-display {
+    color: #073b2b !important;
+    text-shadow: 0 2px 5px rgba(255,255,255,0.60) !important;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+html[data-theme="emerald"] input,
+html[data-theme="emerald"] select,
+html[data-theme="emerald"] textarea {
+    background: rgba(255, 255, 255, 0.27) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-color: rgba(255, 255, 255, 0.42) !important;
+    color: #073b2b !important;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+html[data-theme="emerald"] .work-start-button,
+html[data-theme="emerald"] .work-pause-button,
+html[data-theme="emerald"] .work-resume-button,
+html[data-theme="emerald"] .work-stop-button {
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    box-shadow: 0 5px 18px rgba(0, 50, 30, 0.15) !important;
+}
+
+/* =========================================================
+   TABLES / FILTERS / GENERAL CARDS
+   ========================================================= */
+
+html[data-theme="emerald"] .data-table,
+html[data-theme="emerald"] .filter-card,
+html[data-theme="emerald"] .search-card,
+html[data-theme="emerald"] .report-filters,
+html[data-theme="emerald"] .section-card,
+html[data-theme="emerald"] .stat-card {
+    background: rgba(245, 255, 250, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border-color: rgba(255,255,255,0.34) !important;
+}
+
+/* Table rows remain readable but transparent. */
+html[data-theme="emerald"] .data-table tbody tr {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+html[data-theme="emerald"] .data-table tbody tr:hover {
+    background: rgba(209,250,229,0.22) !important;
+}
+
+html[data-theme="emerald"] .data-table thead {
+    background: rgba(5,150,105,0.52) !important;
+}
+
+html[data-theme="emerald"] .data-table th,
+html[data-theme="emerald"] .data-table td {
+    border-color: rgba(255,255,255,0.20) !important;
+}
+
+/* =========================================================
+   TEXT READABILITY
+   ========================================================= */
+
+html[data-theme="emerald"] .work-header h1,
+html[data-theme="emerald"] .work-header p,
+html[data-theme="emerald"] .work-card-header h2,
+html[data-theme="emerald"] .work-card-header p,
+html[data-theme="emerald"] .selected-label,
+html[data-theme="emerald"] .selected-task-name,
+html[data-theme="emerald"] .page-title,
+html[data-theme="emerald"] .page-subtitle,
+html[data-theme="emerald"] .form-label,
+html[data-theme="emerald"] .type-title,
+html[data-theme="emerald"] .type-name,
+html[data-theme="emerald"] .pending-profiling-name {
+    text-shadow: 0 1px 4px rgba(255,255,255,0.55);
+}
+
+/* =========================================================
+   MODALS — glass too
+   ========================================================= */
+
+html[data-theme="emerald"] .work-modal-content,
+html[data-theme="emerald"] .custom-modal-content {
+    background: rgba(245, 255, 250, 0.88) !important;
+    backdrop-filter: blur(22px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(135%) !important;
+    border: 1px solid rgba(255,255,255,0.45) !important;
+}
+
+
+/* =========================================================
+   EMERALD FINAL GLASS SYSTEM
+   All page-specific Emerald glass styling belongs here.
+   ========================================================= */
+
+/* ---------- VIDEO BACKGROUND ---------- */
+html[data-theme="emerald"],
+html[data-theme="emerald"] body {
+    background: transparent !important;
+    background-image: none !important;
+    min-height: 100%;
+}
+
+html[data-theme="emerald"] body {
+    position: relative;
+    isolation: isolate;
+}
+
+html[data-theme="emerald"] #emerald-video-bg {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* ---------- PAGE WRAPPERS ---------- */
+html[data-theme="emerald"] .dashboard-layout,
+html[data-theme="emerald"] .dashboard-main,
+html[data-theme="emerald"] .main-content,
+html[data-theme="emerald"] .dashboard-content,
+html[data-theme="emerald"] .page-content {
+    background: transparent !important;
+}
+
+/* ---------- SIDEBAR + TOPBAR ---------- */
+/* Remove the old Emerald image backgrounds so the video is visible. */
+html[data-theme="emerald"] .sidebar,
+html[data-theme="emerald"] .topbar {
+    background: rgba(235, 255, 247, 0.16) !important;
+    background-image: none !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border-color: rgba(255,255,255,0.30) !important;
+}
+
+/* Keep sidebar decorative pseudo-elements from becoming opaque. */
+html[data-theme="emerald"] .sidebar::after {
+    opacity: 0.10 !important;
+}
+
+/* ---------- UNIVERSAL GLASS CARD ---------- */
+html[data-theme="emerald"] .card,
+html[data-theme="emerald"] .section-card,
+html[data-theme="emerald"] .stat-card,
+html[data-theme="emerald"] .profiling-card,
+html[data-theme="emerald"] .work-card,
+html[data-theme="emerald"] .timer-card,
+html[data-theme="emerald"] .timer-job-card,
+html[data-theme="emerald"] .timer-info-card,
+html[data-theme="emerald"] .report-kpi-card,
+html[data-theme="emerald"] .kpi-card,
+html[data-theme="emerald"] .report-filter-card,
+html[data-theme="emerald"] .filter-card,
+html[data-theme="emerald"] .search-card,
+html[data-theme="emerald"] .report-chart-card,
+html[data-theme="emerald"] .productivity-summary-card,
+html[data-theme="emerald"] .report-table-card,
+html[data-theme="emerald"] .teams-search-card,
+html[data-theme="emerald"] .teams-table-card {
+    background: rgba(245, 255, 250, 0.18) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    border-color: rgba(255,255,255,0.34) !important;
+    box-shadow: 0 12px 40px rgba(0,55,35,0.18) !important;
+}
+
+/* ---------- WORK ACTIVITY ---------- */
+html[data-theme="emerald"] .timer-section,
+html[data-theme="emerald"] .work-timer-content {
+    background: transparent !important;
+}
+
+html[data-theme="emerald"] .task-button {
+    background: rgba(255,255,255,0.20) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-color: rgba(255,255,255,0.35) !important;
+}
+
+html[data-theme="emerald"] .category-tab {
+    background: rgba(5,150,105,0.45) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,0.35) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="emerald"] .category-tab.active {
+    background: rgba(5,150,105,0.72) !important;
+}
+
+html[data-theme="emerald"] .work-timer-display,
+html[data-theme="emerald"] .timer-display {
+    color: #073b2b !important;
+    text-shadow: 0 2px 5px rgba(255,255,255,0.60) !important;
+}
+
+/* ---------- PROFILING ---------- */
+html[data-theme="emerald"] .pending-profiling-item,
+html[data-theme="emerald"] .type-card,
+html[data-theme="emerald"] .members-field {
+    background: rgba(255,255,255,0.16) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-color: rgba(255,255,255,0.32) !important;
+}
+
+html[data-theme="emerald"] .type-option input:checked + .type-card {
+    background: rgba(209,250,229,0.28) !important;
+}
+
+/* ---------- INPUTS ---------- */
+html[data-theme="emerald"] input,
+html[data-theme="emerald"] select,
+html[data-theme="emerald"] textarea,
+html[data-theme="emerald"] .form-group input,
+html[data-theme="emerald"] .form-group select,
+html[data-theme="emerald"] .report-filter-grid input,
+html[data-theme="emerald"] .report-filter-grid select {
+    background: rgba(255,255,255,0.25) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-color: rgba(255,255,255,0.42) !important;
+    color: #073b2b !important;
+}
+
+html[data-theme="emerald"] input::placeholder,
+html[data-theme="emerald"] textarea::placeholder {
+    color: #315f50 !important;
+}
+
+/* ---------- TEAMS ---------- */
+html[data-theme="emerald"] .table-card-header {
+    background: rgba(255,255,255,0.08) !important;
+    border-bottom-color: rgba(255,255,255,0.24) !important;
+}
+
+html[data-theme="emerald"] .teams-table-card th {
+    background: rgba(5,150,105,0.48) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,0.24) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="emerald"] .teams-table-card td {
+    background: rgba(255,255,255,0.07) !important;
+    color: #073b2b !important;
+    border-color: rgba(255,255,255,0.20) !important;
+}
+
+html[data-theme="emerald"] .teams-table-card tbody tr:hover td {
+    background: rgba(209,250,229,0.22) !important;
+}
+
+html[data-theme="emerald"] .team-count {
+    background: rgba(209,250,229,0.30) !important;
+    color: #075c42 !important;
+    border-color: rgba(255,255,255,0.36) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="emerald"] .teams-table-card .edit-button,
+html[data-theme="emerald"] .teams-table-card .delete-button,
+html[data-theme="emerald"] #importExcelButton {
+    background: rgba(255,255,255,0.20) !important;
+    color: #073b2b !important;
+    border-color: rgba(255,255,255,0.38) !important;
+    backdrop-filter: blur(9px) !important;
+    -webkit-backdrop-filter: blur(9px) !important;
+}
+
+html[data-theme="emerald"] #addTeamButton,
+html[data-theme="emerald"] .teams-header-actions .btn-primary {
+    background: rgba(5,150,105,0.72) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,0.28) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* ---------- REPORTS ---------- */
+html[data-theme="emerald"] .chart-placeholder {
+    background: rgba(255,255,255,0.09) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="emerald"] .productivity-summary-item {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.28) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="emerald"] .report-table-card thead {
+    background: rgba(5,150,105,0.50) !important;
+}
+
+html[data-theme="emerald"] .report-table-card th {
+    color: #fff !important;
+    border-color: rgba(255,255,255,0.25) !important;
+}
+
+html[data-theme="emerald"] .report-table-card td {
+    background: rgba(255,255,255,0.07) !important;
+    color: #073b2b !important;
+    border-color: rgba(255,255,255,0.20) !important;
+}
+
+html[data-theme="emerald"] .report-table-card tbody tr:hover td {
+    background: rgba(209,250,229,0.18) !important;
+}
+
+html[data-theme="emerald"] .report-pagination {
+    background: rgba(255,255,255,0.10) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="emerald"] .pagination-button {
+    background: rgba(255,255,255,0.18) !important;
+    color: #073b2b !important;
+    border-color: rgba(255,255,255,0.34) !important;
+}
+
+/* ---------- GENERAL TABLES ---------- */
+html[data-theme="emerald"] .data-table {
+    background: rgba(245,255,250,0.18) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+}
+
+html[data-theme="emerald"] .data-table thead {
+    background: rgba(5,150,105,0.52) !important;
+}
+
+html[data-theme="emerald"] .data-table tbody tr,
+html[data-theme="emerald"] .data-table tbody td {
+    background: rgba(255,255,255,0.07) !important;
+    color: #073b2b !important;
+}
+
+html[data-theme="emerald"] .data-table tbody tr:hover td {
+    background: rgba(209,250,229,0.20) !important;
+}
+
+/* ---------- TEXT READABILITY ---------- */
+html[data-theme="emerald"] .page-title,
+html[data-theme="emerald"] .page-subtitle,
+html[data-theme="emerald"] .section-title,
+html[data-theme="emerald"] .stat-card-label,
+html[data-theme="emerald"] .teams-page-header h1,
+html[data-theme="emerald"] .teams-page-header p,
+html[data-theme="emerald"] .table-card-header h3,
+html[data-theme="emerald"] .table-card-header p,
+html[data-theme="emerald"] .filter-title,
+html[data-theme="emerald"] .filter-subtitle,
+html[data-theme="emerald"] .filter-label,
+html[data-theme="emerald"] .form-label {
+    text-shadow: 0 1px 4px rgba(255,255,255,0.55) !important;
+}
+
+/* ---------- MODALS ---------- */
+html[data-theme="emerald"] .modal-overlay,
+html[data-theme="emerald"] .teams-success-overlay,
+html[data-theme="emerald"] #deleteConfirmModal {
+    background: rgba(0,35,24,0.30) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+html[data-theme="emerald"] .modal,
+html[data-theme="emerald"] .teams-success-modal,
+html[data-theme="emerald"] .custom-confirm-modal,
+html[data-theme="emerald"] .work-modal-content,
+html[data-theme="emerald"] .custom-modal-content {
+    background: rgba(245,255,250,0.86) !important;
+    backdrop-filter: blur(22px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(135%) !important;
+    border-color: rgba(255,255,255,0.48) !important;
+}
+
+/* ---------- BUTTON GLASS FINISH ---------- */
+html[data-theme="emerald"] button {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}

@@ -1,0 +1,652 @@
+/* =========================================================
+   TICKY TICKY
+   Timer Page
+   ========================================================= */
+
+.timer-page {
+    max-width: 1000px;
+}
+
+
+/* =========================================================
+   JOB CARD
+   ========================================================= */
+
+.timer-job-card {
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    padding: 22px 26px;
+
+    margin-bottom: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    box-shadow: var(--shadow-sm);
+}
+
+
+.timer-label {
+    color: var(--text-secondary);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.7px;
+
+    margin-bottom: 5px;
+}
+
+
+.timer-team-name {
+    font-size: 21px;
+
+    font-weight: 700;
+}
+
+
+.timer-team-id {
+    margin-top: 3px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+
+.timer-type-badge {
+    padding: 8px 13px;
+
+    border-radius: 999px;
+
+    background: var(--light-green);
+
+    color: var(--dark-green);
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   TIMER CARD
+   ========================================================= */
+
+.timer-card {
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-lg);
+
+    padding: 55px 30px;
+
+    text-align: center;
+
+    box-shadow: var(--shadow-md);
+
+    margin-bottom: 20px;
+}
+
+
+.timer-status {
+    display: inline-flex;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: #F1F5F9;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+
+    margin-bottom: 18px;
+}
+
+
+.timer-status.running {
+    background: var(--light-green);
+
+    color: var(--dark-green);
+}
+
+
+.timer-status.paused {
+    background: #FEF3C7;
+
+    color: #92400E;
+}
+
+
+.timer-status.completed {
+    background: var(--light-green);
+
+    color: var(--dark-green);
+}
+
+
+.timer-display {
+    font-size: clamp(52px, 8vw, 88px);
+
+    line-height: 1;
+
+    font-weight: 700;
+
+    letter-spacing: -3px;
+
+    color: var(--text-primary);
+
+    font-variant-numeric: tabular-nums;
+
+    margin-bottom: 15px;
+}
+
+
+.timer-subtext {
+    color: var(--text-secondary);
+
+    font-size: 14px;
+
+    margin-bottom: 30px;
+}
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+.timer-controls {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+
+.timer-button {
+    min-width: 110px;
+}
+
+
+.btn-warning {
+    background: #D97706;
+
+    color: var(--white);
+}
+
+
+.btn-warning:hover {
+    background: #B45309;
+}
+
+
+.btn-danger {
+    background: var(--danger);
+
+    color: var(--white);
+}
+
+
+.btn-danger:hover {
+    background: #B91C1C;
+}
+
+
+/* =========================================================
+   TIMER ERROR
+   ========================================================= */
+
+.timer-error {
+    display: none;
+
+    max-width: 500px;
+
+    margin: 25px auto 0;
+
+    padding: 12px 15px;
+
+    border-radius: var(--radius-sm);
+
+    background: #FEF2F2;
+
+    border: 1px solid #FECACA;
+
+    color: var(--danger);
+
+    font-size: 13px;
+}
+
+
+.timer-error.visible {
+    display: block;
+}
+
+
+/* =========================================================
+   INFORMATION CARDS
+   ========================================================= */
+
+.timer-info-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+.timer-info-card {
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    padding: 20px;
+
+    box-shadow: var(--shadow-sm);
+}
+
+
+.timer-info-label {
+    display: block;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+
+    margin-bottom: 7px;
+}
+
+
+.timer-info-value {
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .timer-job-card {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+
+    .timer-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .timer-card {
+        padding: 45px 20px;
+    }
+
+}
+
+/* =========================================================
+   CUSTOM CONFIRMATION MODAL
+   ========================================================= */
+
+.custom-modal {
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 9999;
+}
+
+
+.custom-modal.show {
+    display: flex;
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.custom-modal-backdrop {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(15, 23, 42, 0.55);
+
+    backdrop-filter:
+        blur(3px);
+}
+
+
+/* =========================================================
+   MODAL CONTENT
+   ========================================================= */
+
+.custom-modal-content {
+    position: relative;
+
+    width: min(
+        90%,
+        430px
+    );
+
+    padding:
+        32px;
+
+    border-radius:
+        20px;
+
+    background:
+        #ffffff;
+
+    box-shadow:
+        0 25px 60px
+        rgba(0, 0, 0, 0.25);
+
+    text-align:
+        center;
+
+    animation:
+        modalAppear
+        0.25s
+        ease;
+
+    z-index:
+        1;
+}
+
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.modal-icon {
+    width:
+        64px;
+
+    height:
+        64px;
+
+    margin:
+        0 auto 18px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        50%;
+
+    background:
+        var(
+            --very-light-green,
+            #e8f5ee
+        );
+
+    color:
+        var(
+            --primary-green,
+            #198754
+        );
+
+    font-size:
+        30px;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.custom-modal-content h2 {
+    margin:
+        0 0 12px;
+
+    color:
+        var(
+            --text-primary,
+            #1f2937
+        );
+
+    font-size:
+        24px;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.custom-modal-content p {
+    margin:
+        0;
+
+    color:
+        var(
+            --text-secondary,
+            #64748b
+        );
+
+    line-height:
+        1.6;
+}
+
+
+.modal-warning {
+    margin-top:
+        8px !important;
+
+    font-size:
+        13px;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.modal-actions {
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    gap:
+        12px;
+
+    margin-top:
+        28px;
+}
+
+
+.modal-button {
+    min-width:
+        140px;
+
+    padding:
+        13px 20px;
+
+    border:
+        none;
+
+    border-radius:
+        10px;
+
+    font-size:
+        15px;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s ease;
+}
+
+
+/* Cancel */
+
+.modal-cancel {
+    background:
+        #f1f5f9;
+
+    color:
+        #334155;
+}
+
+
+.modal-cancel:hover {
+    background:
+        #e2e8f0;
+}
+
+
+/* Confirm */
+
+.modal-confirm {
+    background:
+        var(
+            --primary-green,
+            #198754
+        );
+
+    color:
+        white;
+}
+
+
+.modal-confirm:hover {
+    transform:
+        translateY(-1px);
+
+    filter:
+        brightness(1.05);
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes modalAppear {
+
+    from {
+
+        opacity:
+            0;
+
+        transform:
+            translateY(12px)
+            scale(0.97);
+
+    }
+
+
+    to {
+
+        opacity:
+            1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+    max-width: 500px
+) {
+
+    .custom-modal-content {
+        padding:
+            25px 20px;
+    }
+
+
+    .modal-actions {
+        flex-direction:
+            column-reverse;
+    }
+
+
+    .modal-button {
+        width:
+            100%;
+    }
+
+}
+
+/* =========================================================
+   STOP MODAL
+   ========================================================= */
+
+.modal-icon-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+
+.modal-danger {
+    background: #dc2626;
+    color: white;
+}
+
+
+.modal-danger:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+}

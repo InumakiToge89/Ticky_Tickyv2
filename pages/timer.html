@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Timer</title>
+
+        <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/timer.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    id="tickyNavMascot"
+                    class="ticky-brand-image"
+                    src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                    alt="Ticky Ticky"
+                >
+            </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Dashboard
+            </a>
+
+
+            <a
+                href="profiling.html"
+                class="nav-item active"
+            >
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Profiling
+            </a>
+
+
+            <a
+                href="work-timer.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Work Activity
+            </a>
+
+
+            <a
+                href="teams.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    👥
+                </span>
+
+                Teams
+            </a>
+
+
+                <a
+                    href="history.html"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    History
+                </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                id="logoutButton"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ↪
+                </span>
+
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="dashboard-main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                Profiling Timer
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    id="userAvatar"
+                    class="user-avatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        id="userName"
+                        class="user-name"
+                    >
+                        Loading...
+                    </div>
+
+                    <div
+                        id="userRole"
+                        class="user-role"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- CONTENT -->
+
+        <section class="dashboard-content timer-page">
+
+
+            <!-- JOB INFORMATION -->
+
+            <div class="timer-job-card">
+
+                <div>
+
+                    <div class="timer-label">
+                        CURRENT PROFILING
+                    </div>
+
+                    <h1
+                        id="teamName"
+                        class="timer-team-name"
+                    >
+                        Loading...
+                    </h1>
+
+                    <p
+                        id="teamId"
+                        class="timer-team-id"
+                    >
+                        Team ID: --
+                    </p>
+
+                </div>
+
+
+                <div
+                    id="profilingTypeBadge"
+                    class="timer-type-badge"
+                >
+                    --
+                </div>
+
+            </div>
+
+
+
+            <!-- TIMER -->
+
+            <section class="timer-card">
+
+
+                <div
+                    id="timerStatus"
+                    class="timer-status"
+                >
+                    NOT STARTED
+                </div>
+
+
+                <div
+                    id="timerDisplay"
+                    class="timer-display"
+                >
+                    00:00:00
+                </div>
+
+
+                <div
+                    id="timerSubtext"
+                    class="timer-subtext"
+                >
+                    Ready to begin profiling.
+                </div>
+
+
+                <!-- CONTROLS -->
+
+                <div class="timer-controls">
+
+                    <button
+                        id="startButton"
+                        class="btn btn-primary timer-button"
+                    >
+                        Start
+                    </button>
+
+
+                    <button
+                        id="pauseButton"
+                        class="btn timer-button btn-warning"
+                        disabled
+                    >
+                        Pause
+                    </button>
+
+
+                    <button
+                        id="resumeButton"
+                        class="btn btn-primary timer-button"
+                        disabled
+                    >
+                        Resume
+                    </button>
+
+
+                    <button
+                        id="stopButton"
+                        class="btn timer-button btn-danger"
+                        disabled
+                    >
+                        Stop
+                    </button>
+
+
+                    <button
+                        id="finishedButton"
+                        class="btn btn-primary timer-button finished-button"
+                        style="display: none;"
+                    >
+                        Finished
+                    </button>
+                       <button
+                        id="saveForLaterButton"
+                        class="btn timer-button btn-secondary"
+                    >
+                        Finish Later
+                    </button>
+
+</div>
+
+
+                <!-- ERROR -->
+
+                <div
+                    id="timerError"
+                    class="timer-error"
+                ></div>
+
+            </section>
+
+
+
+            <!-- SESSION INFORMATION -->
+
+            <section class="timer-info-grid">
+
+
+                <div class="timer-info-card">
+
+                    <span class="timer-info-label">
+                        Session Type
+                    </span>
+
+                    <strong
+                        id="sessionType"
+                        class="timer-info-value"
+                    >
+                        --
+                    </strong>
+
+                </div>
+
+
+                <div class="timer-info-card">
+
+                    <span class="timer-info-label">
+                        Members
+                    </span>
+
+                    <strong
+                        id="memberCount"
+                        class="timer-info-value"
+                    >
+                        --
+                    </strong>
+
+                </div>
+
+
+                <div class="timer-info-card">
+
+                    <span class="timer-info-label">
+                        Started
+                    </span>
+
+                    <strong
+                        id="startedAt"
+                        class="timer-info-value"
+                    >
+                        --
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script
+    type="module"
+    src="../js/timer.js"
+></script>
+
+<!-- =========================================================
+     FINISH CONFIRMATION MODAL
+     ========================================================= -->
+
+<div
+    id="finishModal"
+    class="custom-modal"
+>
+
+    <div
+        class="custom-modal-backdrop"
+    ></div>
+
+
+    <div
+        class="custom-modal-content"
+    >
+
+        <!-- Icon -->
+
+        <div
+            class="modal-icon"
+        >
+            ✓
+        </div>
+
+
+        <!-- Title -->
+
+        <h2>
+            Finish Profiling Job?
+        </h2>
+
+
+        <!-- Message -->
+
+        <p>
+            Are you sure you want to finish this profiling job?
+        </p>
+
+
+        <p
+            class="modal-warning"
+        >
+            This will save the completed profiling session.
+        </p>
+
+
+        <!-- Actions -->
+
+        <div
+            class="modal-actions"
+        >
+
+            <button
+                id="cancelFinishButton"
+                class="modal-button modal-cancel"
+                type="button"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                id="confirmFinishButton"
+                class="modal-button modal-confirm"
+                type="button"
+            >
+                ✓ Yes, Finish
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     STOP CONFIRMATION MODAL
+     ========================================================= -->
+
+<div id="stopModal" class="custom-modal">
+
+    <div class="custom-modal-backdrop"></div>
+
+    <div class="custom-modal-content">
+
+        <div class="modal-icon modal-icon-danger">
+            !
+        </div>
+
+        <h2>
+            Stop Profiling Job?
+        </h2>
+
+        <p>
+            Are you sure you want to stop this profiling job?
+        </p>
+
+        <p class="modal-warning">
+            The current profiling session will be stopped.
+        </p>
+
+        <div class="modal-actions">
+
+            <button
+                id="cancelStopButton"
+                class="modal-button modal-cancel"
+                type="button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="confirmStopButton"
+                class="modal-button modal-danger"
+                type="button"
+            >
+                Yes, Stop
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+
+</body>
+
+</html>

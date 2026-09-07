@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Reports</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/reports.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+            <img
+                id="tickyNavMascot"
+                class="ticky-brand-image"
+                src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                alt="Ticky Ticky"
+            >
+        </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="profiling.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Profiling
+
+            </a>
+
+            <a
+                href="work-timer.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Work Activity
+
+            </a>
+
+            <a 
+            
+                href="teams.html" id="teamsNavItem" class="nav-item"
+            >
+                <span class="nav-icon">👥</span>
+                <span>Teams</span>
+            </a>
+
+            <a
+                href="history.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▤
+                </span>
+
+                History
+
+            </a>
+
+
+            <a
+                href="reports.html"
+                class="nav-item active"
+            >
+
+                <span class="nav-icon">
+                    ▥
+                </span>
+
+                Reports
+
+            </a>
+
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                id="logoutButton"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ↪
+                </span>
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="dashboard-main">
+
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                Productivity Reports
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    id="userAvatar"
+                    class="user-avatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        id="userName"
+                        class="user-name"
+                    >
+                        Loading...
+                    </div>
+
+
+                    <div
+                        id="userRole"
+                        class="user-role"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <section class="dashboard-content reports-content">
+
+
+            <div class="page-header">
+
+                <h1 class="page-title">
+                    Productivity Reports
+                </h1>
+
+
+                <p class="page-subtitle">
+                    Monitor and analyze analyst productivity.
+                </p>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 KPI CARDS
+                 ================================================= -->
+
+            <div class="report-kpi-grid">
+
+
+                <div class="report-kpi-card">
+
+                    <div class="report-kpi-label">
+                        Total Analysts
+                    </div>
+
+
+                    <div
+                        id="totalAnalysts"
+                        class="report-kpi-value"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+
+                <div class="report-kpi-card">
+
+                    <div class="report-kpi-label">
+                        Completed Jobs
+                    </div>
+
+
+                    <div
+                        id="completedJobs"
+                        class="report-kpi-value"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+
+                <div class="report-kpi-card">
+
+                    <div class="report-kpi-label">
+                        Total Productivity
+                    </div>
+
+
+                    <div
+                        id="totalProductivity"
+                        class="report-kpi-value"
+                    >
+                        00:00:00
+                    </div>
+
+                </div>
+
+
+
+                <div class="report-kpi-card">
+
+                    <div class="report-kpi-label">
+                        Average Productivity
+                    </div>
+
+
+                    <div
+                        id="averageProductivity"
+                        class="report-kpi-value"
+                    >
+                        00:00:00
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FILTERS
+                 ================================================= -->
+
+            <section class="report-filter-card">
+
+
+                <div class="filter-header">
+
+                    <div>
+
+                        <h2 class="filter-title">
+                            Report Filters
+                        </h2>
+
+                        <p class="filter-subtitle">
+                            Filter the productivity data shown below.
+                        </p>
+
+                    </div>
+
+
+                    <div class="filter-actions">
+
+                        <button
+                            type="button"
+                            id="applyFiltersButton"
+                            class="btn btn-primary"
+                        >
+                            Apply Filters
+                        </button>
+
+
+                        <button
+                            type="button"
+                            id="resetFiltersButton"
+                            class="btn btn-secondary"
+                        >
+                            Reset
+                        </button>
+
+
+                        <button
+                            type="button"
+                            id="exportCsvButton"
+                            class="btn btn-primary"
+                        >
+                            Export Excel
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- ACTIVITY CATEGORY -->
+                <div class="filter-field filter-field-category">
+
+                    <label
+                        class="filter-label"
+                        for="workActivityCategoryFilter"
+                    >
+                        Activity Category
+                    </label>
+
+                    <select
+                        id="workActivityCategoryFilter"
+                    >
+                        <option value="">
+                            All Categories
+                        </option>
+
+                        <option value="PROD">
+                            PROD
+                        </option>
+
+                        <option value="NON-PROD">
+                            NON-PROD
+                        </option>
+
+                        <option value="PROD LOSS">
+                            PROD LOSS
+                        </option>
+
+                        <option value="TRAINING">
+                            TRAINING
+                        </option>
+
+                    </select>
+
+                </div>
+                <br></br>
+
+                <div class="report-filter-grid">
+
+
+                    <!-- ANALYST -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="analystFilter"
+                            class="filter-label"
+                        >
+                            Analyst
+                        </label>
+
+
+                        <select
+                            id="analystFilter"
+                        >
+
+                            <option value="">
+                                All Analysts
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- TEAM -->
+
+                    <div class="filter-field">
+                        <label class="filter-label" for="teamSearch">
+                            Team Search
+                        </label>
+
+                        <input
+                            type="text"
+                            id="teamSearch"
+                            placeholder="Search Team ID or Team Name"
+                            autocomplete="off"
+                        >
+                    </div>
+
+
+
+                    <!-- FROM DATE -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="fromDate"
+                            class="filter-label"
+                        >
+                            From
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="fromDate"
+                        >
+
+                    </div>
+
+
+
+                    <!-- TO DATE -->
+
+                    <div class="filter-field">
+
+                        <label
+                            for="toDate"
+                            class="filter-label"
+                        >
+                            To
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="toDate"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+
+
+            <!-- =================================================
+                 CHART PLACEHOLDERS
+                 ================================================= -->
+
+            <div class="report-chart-grid">
+
+
+                <section class="section-card report-chart-card">
+
+                    <div class="section-card-header">
+
+                        <div>
+
+                            <h2 class="section-title">
+                                Productivity by Analyst
+                            </h2>
+
+                            <p class="section-subtitle">
+                                Total completed productivity time.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="analystChart"
+                        class="chart-placeholder"
+                    >
+
+                        Chart will appear here.
+
+                    </div>
+
+                </section>
+
+
+
+                <section class="section-card report-chart-card">
+
+                    <div class="section-card-header">
+
+                        <div>
+
+                            <h2 class="section-title">
+                                Teams vs Members
+                            </h2>
+
+                            <p class="section-subtitle">
+                                Total time spent by profiling type.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="sessionChart"
+                        class="chart-placeholder"
+                    >
+
+                        Chart will appear here.
+
+                    </div>
+
+                </section>
+
+
+                <div class="section-card report-chart-card report-trend-card">
+
+    <div class="section-card-header">
+
+        <h3 class="section-title">
+            Productivity Trend
+        </h3>
+
+        <p class="section-subtitle">
+            Daily completed productivity time based on the selected filters.
+        </p>
+
+    </div>
+
+    <div
+        id="productivityTrendChart"
+        class="chart-placeholder"
+    >
+        Loading trend...
+    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+                    <!-- =====================================================
+                    WORK ACTIVITY LOGS
+                    ===================================================== -->
+
+                    <section class="section-card">
+
+                        <div class="section-header">
+
+                            <div>
+
+                                <h2 class="section-title">
+                                    Work Activity Logs
+                                </h2>
+
+                                <p class="section-subtitle">
+                                    PROD and NON-PROD completed activities.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="table-container">
+
+                            <table class="data-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Analyst
+                                        </th>
+
+                                        <th>
+                                            Category
+                                        </th>
+
+                                        <th>
+                                            Task
+                                        </th>
+
+                                        <th>
+                                            Duration
+                                        </th>
+
+                                        <th>
+                                            Started
+                                        </th>
+
+                                        <th>
+                                            Completed
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody
+                                    id="workActivityReportsTableBody"
+                                >
+
+                                    <tr>
+
+                                        <td
+                                            colspan="6"
+                                            class="status-empty"
+                                        >
+                                            Loading work activity logs...
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        <!-- =====================================================
+                            WORK ACTIVITY PAGINATION
+                        ===================================================== -->
+
+                    <div
+                        id="workActivityPagination"
+                        class="report-pagination"
+                    >
+
+                        <div
+                            id="workActivityPaginationInfo"
+                            class="pagination-info"
+                        >
+                            Showing 0 of 0 activities
+                        </div>
+
+
+                        <div class="pagination-controls">
+
+                            <button
+                                type="button"
+                                id="workActivityPreviousPageButton"
+                                class="pagination-button"
+                            >
+                                ← Previous
+                            </button>
+
+
+                            <span
+                                id="workActivityPageIndicator"
+                                class="page-indicator"
+                            >
+                                Page 1 of 1
+                            </span>
+
+
+                            <button
+                                type="button"
+                                id="workActivityNextPageButton"
+                                class="pagination-button"
+                            >
+                                Next →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    </section>
+
+                    <br></br>
+
+                    <!-- =================================================
+                    DATA TABLE
+                    ================================================= -->
+
+                    <section class="section-card report-table-card">
+
+                        <div class="section-header">
+
+                            <div>
+
+                                <h2 class="section-title">
+                                    Detailed Productivity Data
+                                </h2>
+
+                                <p class="section-subtitle">
+                                    Completed profiling sessions.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="table-container">
+
+                            <table class="data-table">
+
+                                <thead>
+                                        <tr>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="analyst"
+                                            >
+                                                Analyst
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="team"
+                                            >
+                                                Team
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="teamId"
+                                            >
+                                                Team ID
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="members"
+                                            >
+                                                Members
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="teamTime"
+                                            >
+                                                Teams Time
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="membersTime"
+                                            >
+                                                Members Time
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="totalTime"
+                                            >
+                                                Total Time
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                            <th
+                                                class="sortable-header"
+                                                data-sort="completed"
+                                            >
+                                                Completed
+                                                <span class="sort-indicator"></span>
+                                            </th>
+
+                                        </tr>
+                                    </thead>
+
+
+                                <tbody
+                                    id="reportsTableBody"
+                                >
+
+                                    <tr>
+
+                                        <td
+                                            colspan="8"
+                                            class="status-empty"
+                                        >
+                                            Loading reports...
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        <!-- =====================================================
+                        TABLE PAGINATION
+                        ===================================================== -->
+
+                        <div
+                            id="reportPagination"
+                            class="report-pagination"
+                        >
+
+                            <div
+                                id="paginationInfo"
+                                class="pagination-info"
+                            >
+                                Showing 0 of 0 records
+                            </div>
+
+
+                            <div class="pagination-controls">
+
+                                <button
+                                    type="button"
+                                    id="previousPageButton"
+                                    class="pagination-button"
+                                >
+                                    ← Previous
+                                </button>
+
+
+                                <span
+                                    id="pageIndicator"
+                                    class="page-indicator"
+                                >
+                                    Page 1 of 1
+                                </span>
+
+
+                                <button
+                                    type="button"
+                                    id="nextPageButton"
+                                    class="pagination-button"
+                                >
+                                    Next →
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                    </section>
+
+                    
+
+
+            <!-- ERROR -->
+
+            <div
+                id="reportsError"
+                class="history-error"
+            ></div>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+
+    <script
+    type="module"
+    src="../js/account-menu.js"
+>   </script>
+
+    <!-- Excel export with styling support -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+
+    <!-- Reports page -->
+    <script
+        type="module"
+        src="../js/reports.js"
+    ></script>
+
+    <script src="../js/mobile-navigation.js"></script>
+
+
+</body>
+
+</html>

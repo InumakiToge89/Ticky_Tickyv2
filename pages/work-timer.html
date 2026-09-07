@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Work Activity</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/work-timer.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    id="tickyNavMascot"
+                    class="ticky-brand-image"
+                    src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                    alt="Ticky Ticky"
+                >
+            </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="profiling.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Profiling
+
+            </a>
+
+
+            <a
+                href="work-timer.html"
+                class="nav-item active"
+            >
+
+                <span class="nav-icon">
+                    ⏱
+                </span>
+
+                Work Activity
+
+            </a>
+
+
+            <a
+                href="teams.html"
+                id="teamsNavItem"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    👥
+                </span>
+
+                <span>
+                    Teams
+                </span>
+
+            </a>
+
+
+            <a
+                href="history.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▤
+                </span>
+
+                History
+
+            </a>
+
+
+            <a
+                href="reports.html"
+                id="reportsNavItem"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▥
+                </span>
+
+                Reports
+
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                id="logoutButton"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ↪
+                </span>
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="dashboard-main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                Work Activity
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    id="userAvatar"
+                    class="user-avatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        id="userName"
+                        class="user-name"
+                    >
+                        Loading...
+                    </div>
+
+
+                    <div
+                        id="userRole"
+                        class="user-role"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =====================================================
+             CONTENT
+             ===================================================== -->
+
+        <section class="work-timer-content">
+
+
+            <div class="work-header">
+
+                <div>
+
+                    <h1>
+                        Work Activity
+                    </h1>
+
+                    <p>
+                        Track your production and non-production activities.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CATEGORY TABS -->
+
+            <div class="category-tabs">
+
+                <button
+                    class="category-tab active"
+                    data-category="PROD"
+                    type="button"
+                >
+                    PROD
+                </button>
+
+
+                <button
+                    class="category-tab"
+                    data-category="NON-PROD"
+                    type="button"
+                >
+                    NON-PROD
+                </button>
+
+
+                <button
+                    class="category-tab"
+                    data-category="PROD LOSS"
+                    type="button"
+                >
+                    PROD LOSS
+                </button>
+
+
+                <button
+                    class="category-tab"
+                    data-category="TRAINING"
+                    type="button"
+                >
+                    TRAINING
+                </button>
+
+            </div>
+
+
+
+            <!-- TASK CARD -->
+
+            <div class="work-card">
+
+
+                <div class="work-card-header">
+
+                    <div>
+
+                        <h2 id="categoryTitle">
+                            PROD Tasks
+                        </h2>
+
+                        <p>
+                            Select an activity to start tracking your time.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- TASK LIST -->
+
+                <div
+                    id="taskList"
+                    class="task-list"
+                >
+
+                    <!-- JavaScript will insert tasks here -->
+
+                </div>
+
+
+
+                <!-- SELECTED TASK -->
+
+                <div class="selected-task-section">
+
+                    <span class="selected-label">
+                        Selected Activity
+                    </span>
+
+
+                    <div
+                        id="selectedTaskName"
+                        class="selected-task-name"
+                    >
+                        No task selected
+                    </div>
+
+                </div>
+
+
+
+                <!-- TIMER -->
+
+                <div class="timer-section">
+
+                    <div
+                        id="workTimerDisplay"
+                        class="work-timer-display"
+                    >
+                        00:00:00
+                    </div>
+
+                </div>
+
+
+
+                <!-- CONTROLS -->
+
+                <div class="timer-controls">
+
+                    <button
+                        id="startTaskButton"
+                        class="work-start-button"
+                        type="button"
+                    >
+                        ▶ Start
+                    </button>
+
+
+                    <button
+                        id="pauseTaskButton"
+                        class="work-pause-button"
+                        type="button"
+                        disabled
+                    >
+                        ⏸ Pause
+                    </button>
+
+
+                    <button
+                        id="resumeTaskButton"
+                        class="work-resume-button"
+                        type="button"
+                        disabled
+                    >
+                        ▶ Resume
+                    </button>
+
+
+                    <button
+                        id="stopTaskButton"
+                        class="work-stop-button"
+                        type="button"
+                        disabled
+                    >
+                        ■ Stop
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<!-- =====================================================
+     CONFIRMATION MODAL
+     ===================================================== -->
+
+<div
+    id="workConfirmModal"
+    class="work-modal"
+>
+
+    <div class="work-modal-backdrop"></div>
+
+
+    <div class="work-modal-content">
+
+        <h3 id="workModalTitle">
+            Confirm Action
+        </h3>
+
+
+        <p id="workModalMessage">
+            Are you sure?
+        </p>
+
+
+        <div class="work-modal-actions">
+
+            <button
+                id="workModalCancel"
+                class="work-modal-cancel"
+                type="button"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                id="workModalConfirm"
+                class="work-modal-confirm"
+                type="button"
+            >
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     SUCCESS / ERROR MESSAGE
+     ===================================================== -->
+
+<div
+    id="workToast"
+    class="work-toast"
+>
+    <span id="workToastMessage"></span>
+</div>
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script
+    type="module"
+    src="../js/account-menu.js"
+></script>
+
+<script
+    type="module"
+    src="../js/work-timer.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Profiling</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/profiling.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+</head>
+
+<body>
+
+<div class="dashboard-layout">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    id="tickyNavMascot"
+                    class="ticky-brand-image"
+                    src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png"
+                    alt="Ticky Ticky"
+                >
+            </div>
+
+            <div class="sidebar-title">
+                Ticky Ticky
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <a
+                href="dashboard.html"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Dashboard
+            </a>
+
+
+            <a
+                href="profiling.html"
+                class="nav-item active"
+            >
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Profiling
+            </a>
+
+            <a
+                href="work-timer.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Work Activity
+
+            </a>
+
+            <a 
+            
+                href="teams.html" id="teamsNavItem" class="nav-item"
+            >
+                <span class="nav-icon">👥</span>
+                <span>Teams</span>
+            </a>
+
+
+            <a
+                    href="history.html"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    History
+             </a>
+
+
+            <a
+                    href="reports.html"
+                    id="reportsNavItem"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">
+                        ▥
+                    </span>
+
+                    Reports
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="#"
+                id="logoutButton"
+                class="nav-item"
+            >
+                <span class="nav-icon">
+                    ↪
+                </span>
+
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="dashboard-main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-title">
+                Profiling
+            </div>
+
+
+            <div class="user-section">
+
+                <div
+                    id="userAvatar"
+                    class="user-avatar"
+                >
+                    --
+                </div>
+
+
+                <div class="user-info">
+
+                    <div
+                        id="userName"
+                        class="user-name"
+                    >
+                        Loading...
+                    </div>
+
+                    <div
+                        id="userRole"
+                        class="user-role"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- CONTENT -->
+
+        <section class="dashboard-content profiling-content">
+
+
+            <!-- PAGE HEADER -->
+
+            <div class="page-header">
+
+                <h1 class="page-title">
+                    Start New Profiling
+                </h1>
+
+                <p class="page-subtitle">
+                    Enter the team information before
+                    starting the productivity timer.
+                </p>
+
+            </div>
+
+
+            <!-- PENDING PROFILING JOBS -->
+
+            <section
+                id="pendingProfilingCard"
+                class="profiling-card pending-profiling-card"
+                style="display:none;"
+            >
+
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Pending Profiling</h2>
+                        <p class="section-subtitle">
+                            Resume a team you previously saved for later.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="pendingProfilingList" class="pending-profiling-list"></div>
+
+            </section>
+
+
+
+            <!-- FORM CARD -->
+
+            <section class="profiling-card">
+
+                <form
+                    id="profilingForm"
+                    class="profiling-form"
+                >
+
+
+                    <!-- TEAM INFORMATION -->
+
+                    <div class="form-row">
+
+                        <!-- SELECT SAVED TEAM -->
+
+                        <div class="form-group">
+
+                            <label for="teamSelect">
+                                Select Team
+                            </label>
+
+                            <select
+                                id="teamSelect"
+                                required
+                            >
+                                <option value="">
+                                    -- Select a Team --
+                                </option>
+                            </select>
+
+                        </div>
+
+                        <!-- TEAM NAME -->
+
+                        <div class="form-section">
+
+                            <label
+                                for="teamName"
+                                class="form-label"
+                            >
+                                Team Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="teamName"
+                                required
+                                readonly
+                            >
+
+                            <span class="form-help">
+                                Enter the exact team name you are profiling.
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- TEAM ID -->
+
+                        <div class="form-section">
+
+                            <label
+                                for="teamId"
+                                class="form-label"
+                            >
+                                Team ID
+                            </label>
+
+                            <input
+                            type="text"
+                                id="teamId"
+                                required
+                                readonly
+                            >
+
+                            <span class="form-help">
+                                Enter the team's unique identifier.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- TYPE -->
+
+                    <div class="type-section">
+
+                        <div class="type-title">
+                            What are you profiling?
+                        </div>
+
+
+                        <div class="type-options">
+
+
+                            <!-- TEAM -->
+
+                            <label class="type-option">
+
+                                <input
+                                    type="radio"
+                                    name="profilingType"
+                                    value="TEAM"
+                                >
+
+                                <div class="type-card">
+
+                                    <div class="type-icon">
+                                        T
+                                    </div>
+
+                                    <div class="type-name">
+                                        Teams
+                                    </div>
+
+                                    <div class="type-description">
+                                        Profile the team's information.
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+
+
+                            <!-- MEMBERS -->
+
+                            <label class="type-option">
+
+                                <input
+                                    type="radio"
+                                    name="profilingType"
+                                    value="MEMBERS"
+                                >
+
+                                <div class="type-card">
+
+                                    <div class="type-icon">
+                                        M
+                                    </div>
+
+                                    <div class="type-name">
+                                        Members
+                                    </div>
+
+                                    <div class="type-description">
+                                        Profile individual team members.
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- MEMBER COUNT -->
+
+                    <div class="members-field visible">
+
+                        <label
+                            for="memberCount"
+                            class="form-label"
+                        >
+                            Total Number of Members
+                        </label>
+
+                        <input
+                            type="number"
+                        id="memberCount"
+                        required
+                        >
+
+                        <span class="form-help">
+                            Enter the total number of members in this team.
+                        </span>
+
+                    </div>      
+
+
+
+                    <!-- ERROR -->
+
+                    <div
+                        id="formError"
+                        class="form-error"
+                    ></div>
+
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="window.location.href='dashboard.html'"
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            id="continueButton"
+                            class="btn btn-primary"
+                        >
+                            Continue
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+            </section>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script
+    type="module"
+    src="../js/account-menu.js"
+></script>
+
+<script
+    type="module"
+    src="../js/profiling.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+</body>
+
+</html>

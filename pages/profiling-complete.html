@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Profiling Completed | Ticky Ticky</title>
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+        <link
+    rel="stylesheet"
+    href="../css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/themes/rainbow.css"
+    >
+
+
+    <style>
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f5f8f7;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+
+        .completion-container {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 30px;
+
+            box-sizing: border-box;
+
+        }
+
+
+        .completion-card {
+
+            width: 100%;
+
+            max-width: 850px;
+
+            background: #ffffff;
+
+            border-radius: 18px;
+
+            padding: 50px;
+
+            box-sizing: border-box;
+
+            text-align: center;
+
+            box-shadow:
+                0 8px 30px
+                rgba(0, 0, 0, 0.08);
+
+            border:
+                1px solid #e2e8e5;
+
+        }
+
+
+        .success-icon {
+
+            width: 80px;
+
+            height: 80px;
+
+            margin:
+                0 auto 20px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #dcfce7;
+
+            color: #16a34a;
+
+            font-size: 42px;
+
+            font-weight: bold;
+
+        }
+
+
+        .completion-card h1 {
+
+            margin:
+                0 0 10px;
+
+            font-size: 32px;
+
+            color: #172033;
+
+        }
+
+
+        .completion-subtitle {
+
+            margin:
+                0 0 35px;
+
+            color: #64748b;
+
+            font-size: 16px;
+
+        }
+
+
+        .team-info {
+
+            padding:
+                20px;
+
+            margin-bottom:
+                30px;
+
+            background:
+                #f0fdf4;
+
+            border:
+                1px solid #bbf7d0;
+
+            border-radius:
+                12px;
+
+        }
+
+
+        .team-name {
+
+            font-size: 24px;
+
+            font-weight: 700;
+
+            color: #172033;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .team-id {
+
+            color: #64748b;
+
+            font-size: 15px;
+
+        }
+
+
+        .time-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 20px;
+
+            margin-bottom:
+                25px;
+
+        }
+
+
+        .time-card {
+
+            padding: 25px;
+
+            border:
+                1px solid #e2e8e5;
+
+            border-radius:
+                12px;
+
+            background:
+                #ffffff;
+
+        }
+
+
+        .time-label {
+
+            color: #64748b;
+
+            font-size: 14px;
+
+            margin-bottom: 10px;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                0.5px;
+
+        }
+
+
+        .time-value {
+
+            color: #172033;
+
+            font-size: 32px;
+
+            font-weight: 700;
+
+        }
+
+
+        .total-card {
+
+            padding:
+                30px;
+
+            margin-bottom:
+                30px;
+
+            border-radius:
+                14px;
+
+            background:
+                #dcfce7;
+
+            border:
+                1px solid #bbf7d0;
+
+        }
+
+
+        .total-label {
+
+            color: #15803d;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                1px;
+
+            margin-bottom:
+                8px;
+
+        }
+
+
+        .total-value {
+
+            color: #166534;
+
+            font-size: 48px;
+
+            font-weight: 800;
+
+        }
+
+
+        .dashboard-button {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding:
+                14px 28px;
+
+            border: none;
+
+            border-radius:
+                10px;
+
+            background:
+                #16a34a;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            transition:
+                background 0.2s ease;
+
+        }
+
+
+        .dashboard-button:hover {
+
+            background:
+                #15803d;
+
+        }
+
+
+        .loading {
+
+            color:
+                #64748b;
+
+            font-size:
+                16px;
+
+        }
+
+
+        .error-message {
+
+            padding:
+                15px;
+
+            margin-bottom:
+                20px;
+
+            background:
+                #fef2f2;
+
+            color:
+                #b91c1c;
+
+            border:
+                1px solid #fecaca;
+
+            border-radius:
+                10px;
+
+        }
+
+
+        @media (
+            max-width: 650px
+        ) {
+
+            .completion-card {
+
+                padding:
+                    30px 20px;
+
+            }
+
+
+            .time-grid {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .total-value {
+
+                font-size:
+                    38px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="completion-container">
+
+        <div class="completion-card">
+
+
+            <div
+                id="loading"
+                class="loading"
+            >
+                Loading completion summary...
+            </div>
+
+
+            <div
+                id="completionContent"
+                style="display: none;"
+            >
+
+                <div class="success-icon">
+                    ✓
+                </div>
+
+
+                <h1>
+                    Profiling Completed
+                </h1>
+
+
+                <p class="completion-subtitle">
+                    The profiling process has been successfully completed.
+                </p>
+
+
+                <div class="team-info">
+
+                    <div
+                        id="teamName"
+                        class="team-name"
+                    >
+                        --
+                    </div>
+
+
+                    <div
+                        id="teamId"
+                        class="team-id"
+                    >
+                        Team ID: --
+                    </div>
+
+                </div>
+
+
+                <div class="time-grid">
+
+
+                    <div class="time-card">
+
+                        <div class="time-label">
+                            Teams Profiling
+                        </div>
+
+                        <div
+                            id="teamTime"
+                            class="time-value"
+                        >
+                            00:00:00
+                        </div>
+
+                    </div>
+
+
+                    <div class="time-card">
+
+                        <div class="time-label">
+                            Members Profiling
+                        </div>
+
+                        <div
+                            id="membersTime"
+                            class="time-value"
+                        >
+                            00:00:00
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="total-card">
+
+                    <div class="total-label">
+                        Total Productivity Time
+                    </div>
+
+                    <div
+                        id="totalTime"
+                        class="total-value"
+                    >
+                        00:00:00
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="dashboard.html"
+                    class="dashboard-button"
+                >
+                    Back to Dashboard
+                </a>
+
+
+            </div>
+
+
+            <div
+                id="errorContainer"
+                style="display: none;"
+            >
+
+                <div
+                    id="errorMessage"
+                    class="error-message"
+                >
+                </div>
+
+
+                <a
+                    href="dashboard.html"
+                    class="dashboard-button"
+                >
+                    Back to Dashboard
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <script
+        type="module"
+        src="../js/profiling-complete.js"
+    ></script>
+
+    <script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,458 @@
+/* =========================================================
+   TICKY TICKY
+   PINK THEME
+   ========================================================= */
+
+[data-theme="pink"] {
+    --brand-mascot: url("../../assets/branding/pink/logo-mascot.png");
+    --brand-favicon: url("../../assets/branding/pink/avatar-mascot.png");
+    --brand-dashboard: url("../../assets/branding/pink/ticky-ticky-pink-mascot.png");
+    --brand-profiling: url("../../assets/branding/pink/profiling.png");
+    --brand-work-activity: url("../../assets/branding/pink/work.png");
+    --brand-teams: url("../../assets/branding/pink/teams.png");
+    --brand-history: url("../../assets/branding/pink/history.png");
+    --brand-reports: url("../../assets/branding/pink/reports.png");
+    --brand-logout: url("../../assets/branding/pink/logout.png");
+--primary-green: #be185d;--dark-green: #831843;--medium-green: #db2777;--light-green: #fce7f3;--very-light-green: #fdf2f8;--background: #fff5f9;--white: #ffffff;--text-primary: #3f1728;--text-secondary: #7a4b5c;--border: #f3c4d8;--gold: #b45373;--danger: #dc2626;--warning: #d97706;--success: #be185d;--card-background: #ffffff;--input-background: #ffffff;--soft-background: #fff5f9;--nav-background:
+        linear-gradient(
+            90deg,
+            #831843,
+            #be185d,
+            #db2777
+        );--sidebar-bg:
+        #fff7fb;--sidebar-hover-bg:
+        #fce7f3;--sidebar-active-bg:
+        #fbcfe8;--sidebar-text:
+        #831843;--sidebar-active-text:
+        #9d174d;--accent:
+        #db2777;--accent-dark:
+        #be185d;--accent-deep:
+        #9d174d;--accent-soft:
+        #fce7f3;--accent-border:
+        #f9a8d4;}
+
+
+/* =========================================================
+   PINK ACTIVE
+   ========================================================= */
+
+[data-theme="pink"]
+.sidebar .nav-item.active {color:
+        #9d174d !important;background:
+        #fce7f3 !important;border-left:
+        3px solid #db2777 !important;}
+
+[data-theme="pink"]
+.sidebar .nav-item.active .nav-label,
+[data-theme="pink"]
+.sidebar .nav-item.active span {
+    color: #831843 !important;
+}
+
+/* =========================================================
+   PINK THEME
+   ========================================================= */
+
+[data-theme="pink"] .welcome-title,
+[data-theme="pink"] .section-title,
+[data-theme="pink"] .stat-card-label,
+[data-theme="pink"] .stat-card-value,
+[data-theme="pink"] .time-breakdown-label,
+[data-theme="pink"] .time-breakdown-duration,
+[data-theme="pink"] .productivity-summary-label,
+[data-theme="pink"] .productivity-summary-value {
+
+    color: #4a172b !important;
+
+}
+
+/* ---------------------------------------------------------
+   PINK
+   Light pink background = dark pink text
+   --------------------------------------------------------- */
+
+
+[data-theme="pink"] .sidebar .nav-item.active > span:not(.nav-icon) {
+
+    color: #831843 !important;
+
+}
+
+[data-theme="pink"] .sidebar .nav-item.active .nav-label {
+
+    color: #831843 !important;
+
+}
+
+/* =========================================================
+   PINK LIGHT
+   ========================================================= */
+
+
+[data-theme="pink"] .btn-primary,
+[data-theme="pink"] .primary-button,
+[data-theme="pink"] .save-button,
+[data-theme="pink"] .add-button {
+
+    background:
+        #db2777 !important;
+
+    border-color:
+        #db2777 !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+[data-theme="pink"] .btn-primary:hover,
+[data-theme="pink"] .primary-button:hover,
+[data-theme="pink"] .save-button:hover,
+[data-theme="pink"] .add-button:hover {
+
+    background:
+        #be185d !important;
+
+    border-color:
+        #be185d !important;
+
+}
+
+/* Links */
+
+[data-theme="pink"] a,
+[data-theme="pink"] .section-link {
+
+    color:
+        #be185d !important;
+
+}
+
+
+[data-theme="pink"] a:hover,
+[data-theme="pink"] .section-link:hover {
+
+    color:
+        #9d174d !important;
+
+}
+
+
+/* Active sidebar */
+
+
+[data-theme="pink"] .sidebar .nav-item.active > span:not(.nav-icon),
+[data-theme="pink"] .sidebar .nav-item.active .nav-label {
+
+    color:
+        #9d174d !important;
+
+}
+
+
+/* Sidebar hover */
+
+[data-theme="pink"] .sidebar .nav-item:hover {
+
+    color:
+        #be185d !important;
+
+}
+
+
+/* Theme control */
+
+[data-theme="pink"] .color-mode-button.active {
+
+    background:
+        #db2777 !important;
+
+    color:
+        #ffffff !important;
+
+    border-color:
+        #be185d !important;
+
+}
+
+
+/* Progress bars */
+
+[data-theme="pink"] .prod-fill,
+[data-theme="pink"] .time-breakdown-fill {
+
+    background:
+        #db2777 !important;
+
+}
+
+
+/* Accent borders */
+
+[data-theme="pink"] input:focus,
+[data-theme="pink"] select:focus,
+[data-theme="pink"] textarea:focus {
+
+    border-color:
+        #db2777 !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(219, 39, 119, 0.15) !important;
+
+}
+
+
+/* Accent icons */
+
+[data-theme="pink"] .stat-card-icon {
+
+    color:
+        #db2777 !important;
+
+}
+
+
+/* =========================================================
+   PINK ASSET INTEGRATION
+   Expected branding structure:
+   ../../assets/branding/pink/*.png
+   ========================================================= */
+
+[data-theme="pink"] {
+    --pink-asset-path: "../../assets/branding/pink";
+    --pink-pattern: url("../../assets/branding/pink/pattern-bg.png");
+    --pink-card: url("../../assets/branding/pink/ito\ na\ talga.jpg");
+    --pink-sidebar: url("../../assets/branding/pink/sidetry2.jpg");
+    --pink-button: url("../../assets/branding/pink/button-gradient.png"); 
+    --pink-header-bg: url("../../assets/branding/pink/sidetry2.jpg");
+}
+
+/* Main pink theme background */
+[data-theme="pink"] body,
+[data-theme="pink"] .app,
+[data-theme="pink"] .main-content,
+[data-theme="pink"] .content,
+[data-theme="pink"] .page-content {
+    background-color: #fff5f9 !important;
+}
+
+[data-theme="pink"] .main-content,
+[data-theme="pink"] .content,
+[data-theme="pink"] .page-content {
+    background-image:
+        linear-gradient(rgba(255,245,249,.78), rgba(255,245,249,.78)),
+        var(--pink-pattern);
+    background-repeat: repeat, repeat;
+    background-size: auto, 420px auto;
+}
+
+/* Sidebar decoration */
+[data-theme="pink"] .sidebar {
+    background-color: #fff7fb !important;
+    background-image: var(--pink-sidebar) !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 100% 100% auto !important;
+    background-size: cover !important;
+}
+
+/* Keep sidebar labels readable */
+[data-theme="pink"] .sidebar,
+[data-theme="pink"] .sidebar .nav-item,
+[data-theme="pink"] .sidebar .nav-label {
+    color: #831843 !important;
+}
+
+[data-theme="pink"] .sidebar .nav-item:hover {
+    background-color: #fce7f3 !important;
+    color: #be185d !important;
+}
+
+[data-theme="pink"] .sidebar .nav-item.active {
+    background-color: #fbcfe8 !important;
+    border-left-color: #db2777 !important;
+}
+
+[data-theme="pink"] .sidebar .nav-item.active,
+[data-theme="pink"] .sidebar .nav-item.active .nav-label,
+[data-theme="pink"] .sidebar .nav-item.active span:not(.nav-icon) {
+    color: #831843 !important;
+}
+
+/* Card decoration - intentionally subtle so text stays readable */
+[data-theme="pink"] .card,
+[data-theme="pink"] .stat-card,
+[data-theme="pink"] .section-card,
+[data-theme="pink"] .summary-card,
+[data-theme="pink"] .content-card {
+    background-color: #ffffff !important;
+    background-image: var(--pink-card) !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 100% 100% !important;
+}
+
+/* Pink buttons can use the generated button asset */
+[data-theme="pink"] .btn-primary,
+[data-theme="pink"] .primary-button,
+[data-theme="pink"] .save-button,
+[data-theme="pink"] .add-button {
+    background-color: #db2777 !important;
+    background-image:
+        linear-gradient(rgba(219,39,119,.20), rgba(219,39,119,.20)),
+        var(--pink-button) !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    color: #ffffff !important;
+}
+
+/* Optional mascot/logo image class */
+[data-theme="pink"] .pink-logo-mascot {
+    content: url("../../assets/branding/pink/logo-mascot.png");
+}
+
+[data-theme="pink"] .pink-avatar-mascot {
+    content: url("../../assets/branding/pink/avatar-mascot.png");
+}
+
+/* Pink navigation icons.
+   Supports both <img class="nav-icon"> and text/span nav icons. */
+[data-theme="pink"] .nav-item.pink-dashboard .nav-icon,
+[data-theme="pink"] .nav-item[data-page="dashboard"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="dashboard"] .nav-icon { content: url("../../assets/branding/pink/ticky-ticky-pink-mascot.png"); }
+
+[data-theme="pink"] .nav-item.pink-profiling .nav-icon,
+[data-theme="pink"] .nav-item[data-page="profiling"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="profil"] .nav-icon { content: url("../../assets/branding/pink/profiling.png"); }
+
+[data-theme="pink"] .nav-item.pink-work-activity .nav-icon,
+[data-theme="pink"] .nav-item[data-page="work-activity"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="work-activity"] .nav-icon { content: url("../../assets/branding/pink/work.png"); }
+
+[data-theme="pink"] .nav-item.pink-teams .nav-icon,
+[data-theme="pink"] .nav-item[data-page="teams"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="teams"] .nav-icon { content: url("../../assets/branding/pink/teams.png"); }
+
+[data-theme="pink"] .nav-item.pink-history .nav-icon,
+[data-theme="pink"] .nav-item[data-page="history"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="history"] .nav-icon { content: url("../../assets/branding/pink/history.png"); }
+
+[data-theme="pink"] .nav-item.pink-reports .nav-icon,
+[data-theme="pink"] .nav-item[data-page="reports"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="reports"] .nav-icon { content: url("../../assets/branding/pink/reports.png"); }
+
+[data-theme="pink"] .nav-item.pink-logout .nav-icon,
+[data-theme="pink"] .nav-item[data-page="logout"] .nav-icon,
+[data-theme="pink"] .nav-item[href*="logout"] .nav-icon { content: url("../../assets/branding/pink/logout.png"); }
+
+/* Size image-based nav icons without stretching them */
+[data-theme="pink"] .sidebar .nav-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    flex: 0 0 42px;
+}
+
+/* Decorative hero/banner asset */
+[data-theme="pink"] .pink-dashboard-banner {
+    background-image: url("../../assets/branding/pink/dashboard.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+[data-theme="pink"] .topbar {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--pink-header-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18) !important;
+}
+
+
+/* =========================================================
+   PINK FULL-PAGE BACKGROUND
+   ========================================================= */
+
+
+
+html[data-theme="pink"],
+html[data-theme="[pink]"] body {
+
+    min-height: 100%;
+
+    background:
+        #fff9fe
+        url("../../assets/branding/pink/pinkbgfinal.jpg")
+        center center / cover
+        fixed
+        no-repeat !important;
+
+}
+
+html[data-theme="pink"] .dashboard-main,
+html[data-theme="pink"] .main-content,
+html[data-theme="pink"] .dashboard-content,
+html[data-theme="pink"] .page-content {
+
+    background:
+        transparent !important;
+
+}
+
+
+/* Keep the background visible through empty space */
+
+html[data-theme="pink"] .dashboard-main,
+html[data-theme="pink"] .main-content {
+
+    min-height:
+        100vh;
+
+}
+
+/* =========================================================
+   🌈 PINK - REMOVE APP WRAPPER BACKGROUND
+   ========================================================= */
+
+html[data-theme="pink"] .dashboard-layout {
+
+    background:
+        transparent !important;
+
+}
+
+
+html[data-theme="pink"] .dashboard-main,
+html[data-theme="pink"] .main-content {
+
+    background:
+        transparent !important;
+
+}
+
+/* =========================================================
+   🌈 PINK - ACTUAL PAGE BACKGROUND
+   ========================================================= */
+
+html[data-theme="pink"],
+html[data-theme="pink"] body {
+
+    background-image:
+        url("../../assets/branding/pink/pinkbgfinal.jpg") !important;
+
+    background-size:
+        cover !important;
+
+    background-position:
+        center center !important;
+
+    background-repeat:
+        no-repeat !important;
+
+    background-attachment:
+        fixed !important;
+
+}

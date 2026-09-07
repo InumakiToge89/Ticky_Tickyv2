@@ -1,0 +1,360 @@
+/* =========================================================
+   TICKY TICKY
+   Profiling Setup
+   ========================================================= */
+
+.profiling-content {
+    max-width: 900px;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.page-subtitle {
+    margin-top: 6px;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   FORM CARD
+   ========================================================= */
+
+.profiling-card {
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+
+    padding: 30px;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.profiling-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+
+.form-row {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+.form-label {
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+}
+
+
+.form-help {
+    font-size: 12px;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   PROFILING TYPE
+   ========================================================= */
+
+.type-section {
+    margin-top: 8px;
+}
+
+
+.type-title {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    margin-bottom: 12px;
+}
+
+
+.type-options {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+.type-option {
+    position: relative;
+
+    cursor: pointer;
+}
+
+
+.type-option input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.type-card {
+    border: 2px solid var(--border);
+
+    border-radius: var(--radius-md);
+
+    padding: 24px;
+
+    text-align: center;
+
+    background: var(--white);
+
+    transition: 0.2s ease;
+}
+
+
+.type-card:hover {
+    border-color: #86EFAC;
+
+    background: var(--very-light-green);
+}
+
+
+.type-option input:checked + .type-card {
+    border-color: var(--primary-green);
+
+    background: var(--very-light-green);
+
+    box-shadow:
+        0 0 0 3px rgba(22, 163, 74, 0.08);
+}
+
+
+.type-icon {
+    width: 48px;
+    height: 48px;
+
+    margin: 0 auto 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: var(--light-green);
+
+    color: var(--primary-green);
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+
+.type-name {
+    font-size: 15px;
+
+    font-weight: 700;
+
+    margin-bottom: 4px;
+}
+
+
+.type-description {
+    font-size: 12px;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   MEMBERS FIELD
+   ========================================================= */
+
+.members-field {
+    display: none;
+
+    padding: 18px;
+
+    border-radius: var(--radius-sm);
+
+    background: var(--very-light-green);
+
+    border: 1px solid var(--light-green);
+}
+
+
+.members-field.visible {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding-top: 8px;
+}
+
+
+.btn-secondary {
+    background: var(--white);
+
+    color: var(--text-primary);
+
+    border: 1px solid var(--border);
+}
+
+
+.btn-secondary:hover {
+    background: var(--background);
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.form-error {
+    display: none;
+
+    padding: 12px 14px;
+
+    background: #FEF2F2;
+
+    border: 1px solid #FECACA;
+
+    border-radius: var(--radius-sm);
+
+    color: var(--danger);
+
+    font-size: 13px;
+}
+
+
+.form-error.visible {
+    display: block;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .type-options {
+        grid-template-columns: 1fr;
+    }
+
+    .profiling-card {
+        padding: 22px;
+    }
+
+}
+
+/* =========================================================
+   PENDING PROFILING JOBS
+   ========================================================= */
+
+.pending-profiling-card {
+    margin-bottom: 24px;
+}
+
+.pending-profiling-list {
+    display: grid;
+    gap: 12px;
+}
+
+.pending-profiling-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card-background, var(--white));
+}
+
+.pending-profiling-info {
+    min-width: 0;
+}
+
+.pending-profiling-name {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.pending-profiling-meta {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+@media (max-width: 640px) {
+    .pending-profiling-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pending-profiling-item .btn {
+        width: 100%;
+    }
+}

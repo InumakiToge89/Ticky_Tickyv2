@@ -1,0 +1,1322 @@
+/* =========================================================
+   TEAMS PAGE
+========================================================= */
+
+.page-content {
+    padding: 32px;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.teams-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+
+    margin-bottom: 24px;
+}
+
+
+.teams-page-header h1 {
+    margin: 0;
+
+    font-size: 32px;
+    font-weight: 700;
+
+    color: var(--text-primary);
+}
+
+
+.teams-page-header p {
+    margin: 8px 0 0;
+
+    color: var(--text-secondary);
+}
+
+
+.teams-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    flex-wrap: wrap;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn {
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    border-radius: 10px;
+
+    border: 1px solid transparent;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+
+.btn-primary {
+    background: #168544;
+    color: white;
+}
+
+
+.btn-primary:hover {
+    background: #126d38;
+}
+
+
+.btn-secondary {
+    background: var(--card-background, var(--white));
+
+    color: var(--text-primary);
+
+    border-color: var(--border);
+}
+
+
+.btn-secondary:hover {
+    background: var(--soft-background, var(--very-light-green));
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.card {
+    background: var(--card-background, var(--white));
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 4px 12px
+        rgba(27, 46, 66, 0.06);
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.teams-search-card {
+    padding: 20px 24px;
+
+    margin-bottom: 24px;
+}
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #34475b;
+}
+
+
+.form-group input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    min-height: 46px;
+
+    padding: 0 14px;
+
+    border:
+        1px solid #d7e0e7;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+
+    color: var(--text-primary);
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.form-group input:focus {
+    border-color: #168544;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(22, 133, 68, 0.12);
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.teams-table-card {
+    overflow: hidden;
+}
+
+
+.table-card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 22px 24px;
+
+    border-bottom:
+        1px solid #e2e8ed;
+}
+
+
+.table-card-header h3 {
+    margin: 0;
+
+    font-size: 20px;
+
+    color: var(--text-primary);
+}
+
+
+.table-card-header p {
+    margin: 6px 0 0;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+
+.team-count {
+    padding: 8px 12px;
+
+    border-radius: 999px;
+
+    background:
+        #e7f4eb;
+
+    color:
+        #168544;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+.table-responsive {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+table {
+    width: 100%;
+
+    border-collapse:
+        collapse;
+
+    min-width:
+        650px;
+}
+
+
+th,
+td {
+    padding:
+        16px 24px;
+
+    text-align:
+        left;
+
+    border-bottom:
+        1px solid #edf1f4;
+}
+
+
+th {
+    background:
+        #f8fafb;
+
+    color:
+        #66778b;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.6px;
+
+    text-transform:
+        uppercase;
+}
+
+
+td {
+    color:
+        #2c3e50;
+
+    font-size:
+        14px;
+}
+
+
+tbody tr:last-child td {
+    border-bottom:
+        none;
+}
+
+
+tbody tr {
+    transition:
+        background 0.2s ease;
+}
+
+
+tbody tr:hover {
+    background:
+        #fafdfb;
+}
+
+
+.actions-column {
+    text-align:
+        right;
+}
+
+
+.team-actions {
+    display:
+        flex;
+
+    justify-content:
+        flex-end;
+
+    gap:
+        8px;
+}
+
+
+.action-button {
+    border:
+        1px solid #dce4ea;
+
+    background:
+        white;
+
+    color:
+        #34475b;
+
+    border-radius:
+        8px;
+
+    padding:
+        8px 12px;
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s ease;
+}
+
+
+.action-button:hover {
+    background:
+        #f5f8fa;
+}
+
+
+.delete-button {
+    color:
+        #b93832;
+}
+
+
+.delete-button:hover {
+    background:
+        #fff3f2;
+
+    border-color:
+        #f0c7c4;
+}
+
+
+/* =========================================================
+   EMPTY TABLE
+========================================================= */
+
+.empty-table {
+    padding:
+        48px 20px;
+
+    text-align:
+        center;
+
+    color:
+        #66778b;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal-overlay {
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    display:
+        none;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        20px;
+
+    background:
+        rgba(20, 31, 43, 0.45);
+
+    z-index:
+        1000;
+}
+
+
+.modal-overlay.active {
+    display:
+        flex;
+}
+
+
+.modal {
+    width:
+        100%;
+
+    max-width:
+        500px;
+
+    max-height:
+        calc(100vh - 40px);
+
+    overflow-y:
+        auto;
+
+    background:
+        white;
+
+    border-radius:
+        16px;
+
+    box-shadow:
+        0 20px 60px
+        rgba(0, 0, 0, 0.2);
+
+    animation:
+        modalEnter
+        0.2s ease;
+}
+
+
+@keyframes modalEnter {
+
+    from {
+
+        opacity:
+            0;
+
+        transform:
+            translateY(10px);
+
+    }
+
+
+    to {
+
+        opacity:
+            1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+.modal-header {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        16px;
+
+    padding:
+        20px 24px;
+
+    border-bottom:
+        1px solid #e2e8ed;
+}
+
+
+.modal-header h3 {
+    margin:
+        0;
+
+    font-size:
+        20px;
+
+    color:
+        #24364b;
+}
+
+
+.modal-close {
+    width:
+        36px;
+
+    height:
+        36px;
+
+    border:
+        none;
+
+    background:
+        transparent;
+
+    color:
+        #66778b;
+
+    font-size:
+        28px;
+
+    cursor:
+        pointer;
+
+    border-radius:
+        8px;
+}
+
+
+.modal-close:hover {
+    background:
+        #f2f5f7;
+}
+
+
+#teamForm {
+    padding:
+        24px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        18px;
+}
+
+
+/* =========================================================
+   MODAL ACTIONS
+========================================================= */
+
+.modal-actions {
+    display:
+        flex;
+
+    justify-content:
+        flex-end;
+
+    gap:
+        12px;
+
+    margin-top:
+        8px;
+
+    padding:
+        20px 24px;
+
+    border-top:
+        1px solid #e2e8ed;
+}
+
+
+#teamForm .modal-actions {
+    margin:
+        8px -24px -24px;
+}
+
+
+/* =========================================================
+   IMPORT
+========================================================= */
+
+.import-content {
+    padding:
+        24px;
+}
+
+
+.import-content p {
+    margin-top:
+        0;
+
+    color:
+        #526577;
+
+    line-height:
+        1.6;
+}
+
+
+.excel-format {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        8px;
+
+    margin:
+        18px 0;
+
+    padding:
+        12px;
+
+    border-radius:
+        10px;
+
+    background:
+        #f4faf6;
+
+    border:
+        1px solid #d9eadf;
+
+    overflow-x:
+        auto;
+}
+
+
+.excel-format strong {
+    color:
+        #168544;
+
+    font-size:
+        12px;
+
+    text-align:
+        center;
+
+    white-space:
+        nowrap;
+}
+
+
+#excelFileInput {
+    width:
+        100%;
+
+    box-sizing:
+        border-box;
+
+    padding:
+        12px;
+
+    border:
+        1px dashed #b9c8d1;
+
+    border-radius:
+        10px;
+
+    background:
+        #fafcfd;
+
+    cursor:
+        pointer;
+}
+
+
+.import-note {
+    margin-top:
+        14px !important;
+
+    font-size:
+        13px;
+
+    color:
+        #7a8b99 !important;
+}
+
+
+.import-error {
+    display:
+        none;
+
+    margin-top:
+        14px;
+
+    padding:
+        12px;
+
+    border-radius:
+        8px;
+
+    background:
+        #fff3f2;
+
+    color:
+        #b93832;
+
+    font-size:
+        14px;
+}
+
+
+.import-error.active {
+    display:
+        block;
+}
+
+
+/* =========================================================
+   PAGE ERROR
+========================================================= */
+
+.page-error {
+    display:
+        none;
+
+    position:
+        fixed;
+
+    right:
+        24px;
+
+    bottom:
+        24px;
+
+    max-width:
+        400px;
+
+    padding:
+        14px 18px;
+
+    border-radius:
+        10px;
+
+    background:
+        #fff3f2;
+
+    border:
+        1px solid #f0c7c4;
+
+    color:
+        #b93832;
+
+    z-index:
+        2000;
+}
+
+
+.page-error.active {
+    display:
+        block;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (
+    max-width:
+    900px
+) {
+
+    .teams-page-header {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+    }
+
+
+    .teams-header-actions {
+
+        width:
+            100%;
+
+    }
+
+
+    .teams-header-actions .btn {
+
+        flex:
+            1;
+
+    }
+
+}
+
+
+@media (
+    max-width:
+    600px
+) {
+
+    .page-content {
+
+        padding:
+            20px 16px;
+
+    }
+
+
+    .teams-page-header h1 {
+
+        font-size:
+            26px;
+
+    }
+
+
+    .teams-header-actions {
+
+        flex-direction:
+            column;
+
+    }
+
+
+    .teams-header-actions .btn {
+
+        width:
+            100%;
+
+    }
+
+
+    .table-card-header {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+    }
+
+
+    th,
+    td {
+
+        padding:
+            14px 16px;
+
+    }
+
+
+    .modal-overlay {
+
+        padding:
+            12px;
+
+    }
+
+
+    .modal {
+
+        border-radius:
+            14px;
+
+    }
+
+
+    .modal-header,
+    .import-content {
+
+        padding:
+            18px;
+
+    }
+
+
+    #teamForm {
+
+        padding:
+            18px;
+
+    }
+
+
+    #teamForm .modal-actions {
+
+        margin:
+            8px -18px -18px;
+
+    }
+
+
+    .modal-actions {
+
+        padding:
+            16px 18px;
+
+        flex-direction:
+            column-reverse;
+
+    }
+
+
+    .modal-actions .btn {
+
+        width:
+            100%;
+
+    }
+
+
+    .excel-format {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .excel-format strong {
+
+        text-align:
+            left;
+
+    }
+
+}
+
+/* =========================================
+   TEAMS SUCCESS MODAL
+========================================= */
+
+.teams-success-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(15, 23, 42, 0.55);
+
+    z-index: 9999;
+
+    padding: 20px;
+}
+
+.teams-success-overlay.active {
+    display: flex;
+}
+
+.teams-success-modal {
+    width: 100%;
+    max-width: 420px;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 32px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 60px
+        rgba(0, 0, 0, 0.25);
+}
+
+.teams-success-icon {
+    width: 64px;
+    height: 64px;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #e7f6ee;
+
+    color: #16834b;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.teams-success-modal h3 {
+    margin: 0 0 10px;
+
+    font-size: 22px;
+
+    color: #26384d;
+}
+
+.teams-success-modal p {
+    margin: 0 0 24px;
+
+    color: #64748b;
+
+    line-height: 1.6;
+}
+
+.teams-success-button {
+    min-width: 130px;
+}
+
+/* =========================================
+   BULK DELETE
+========================================= */
+
+.select-column {
+    width: 48px;
+    text-align: center;
+}
+
+.select-column input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.bulk-delete-container {
+    display: none;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.bulk-delete-container.show {
+    display: flex;
+}
+
+#bulkDeleteButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+/* =========================================
+   CUSTOM DELETE CONFIRMATION
+========================================= */
+
+#deleteConfirmModal {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(15, 23, 42, 0.55);
+
+    z-index: 9999;
+
+    padding: 20px;
+}
+
+#deleteConfirmModal.show {
+    display: flex;
+}
+
+.custom-confirm-modal {
+    width: 100%;
+    max-width: 420px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+
+    padding: 32px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.25);
+}
+
+.confirm-modal-icon {
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fee2e2;
+
+    font-size: 24px;
+}
+
+.custom-confirm-modal h2 {
+    margin: 0 0 10px;
+
+    color: #1e293b;
+
+    font-size: 22px;
+}
+
+.custom-confirm-modal p {
+    margin: 0;
+
+    color: #64748b;
+
+    line-height: 1.6;
+}
+
+.confirm-modal-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 28px;
+}
+
+.confirm-modal-actions button {
+    min-width: 120px;
+}
+
+/* =========================================================
+   TEAMS PAGE — PINK THEME BUTTONS
+   KEEP EXISTING SHAPES
+   ========================================================= */
+
+[data-theme="light"] .teams-table-card .btn-primary,
+[data-theme="light"] #addTeamButton {
+
+    background: #be185d !important;
+    color: #ffffff !important;
+
+}
+
+
+[data-theme="light"] .teams-table-card .btn-primary:hover,
+[data-theme="light"] #addTeamButton:hover {
+
+    background: #9d174d !important;
+
+}
+
+
+/* =========================================================
+   IMPORT EXCEL BUTTON
+   ========================================================= */
+
+[data-theme="light"] #importExcelButton,
+[data-theme="light"] .import-excel-button {
+
+    background: #fce7f3 !important;
+    color: #831843 !important;
+    border-color: #f3c4d8 !important;
+
+}
+
+
+[data-theme="light"] #importExcelButton:hover,
+[data-theme="light"] .import-excel-button:hover {
+
+    background: #fbcfe8 !important;
+    color: #9d174d !important;
+    border-color: #db2777 !important;
+
+}
+
+
+/* =========================================================
+   EDIT BUTTON
+   ========================================================= */
+
+[data-theme="light"] .teams-table-card .edit-button,
+[data-theme="light"] .teams-table-card button.edit-button {
+
+    background: #ffffff !important;
+    color: #9d174d !important;
+    border-color: #f3c4d8 !important;
+
+}
+
+
+[data-theme="light"] .teams-table-card .edit-button:hover,
+[data-theme="light"] .teams-table-card button.edit-button:hover {
+
+    background: #fce7f3 !important;
+    color: #831843 !important;
+    border-color: #db2777 !important;
+
+}
+
+
+/* =========================================================
+   DELETE BUTTON
+   ========================================================= */
+
+[data-theme="light"] .teams-table-card .delete-button,
+[data-theme="light"] .teams-table-card button.delete-button {
+
+    background: #fce7f3 !important;
+    color: #be185d !important;
+    border-color: #f3c4d8 !important;
+
+}
+
+
+[data-theme="light"] .teams-table-card .delete-button:hover,
+[data-theme="light"] .teams-table-card button.delete-button:hover {
+
+    background: #fbcfe8 !important;
+    color: #9d174d !important;
+    border-color: #db2777 !important;
+
+}
+
+
+/* =========================================================
+   TEAM COUNT
+   ========================================================= */
+
+[data-theme="light"] .teams-table-card .team-count {
+
+    background: #fce7f3 !important;
+    color: #be185d !important;
+
+}
+
+/* =========================================================
+   THEME-SAFE TEAM MANAGEMENT
+   ========================================================= */
+
+[data-theme] .teams-page-header h1,
+[data-theme] .table-card-header h3 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme] .teams-page-header p,
+[data-theme] .table-card-header p,
+[data-theme] .form-group label {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme] .teams-search-card,
+[data-theme] .teams-table-card,
+[data-theme] .teams-table-card .card {
+    background: var(--card-background, var(--white)) !important;
+    border-color: var(--border) !important;
+}
+
+[data-theme] .teams-table-card th {
+    background: var(--soft-background, var(--very-light-green)) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+[data-theme] .teams-table-card td {
+    background: var(--card-background, var(--white)) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+[data-theme] .teams-table-card tbody tr:hover td {
+    background: var(--sidebar-hover-bg, var(--very-light-green)) !important;
+}
+
+[data-theme] .team-count {
+    background: var(--light-green) !important;
+    color: var(--primary-green) !important;
+    border: 1px solid var(--border) !important;
+}
+
+[data-theme] .form-group input,
+[data-theme] .form-group select {
+    background: var(--input-background, var(--white)) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+[data-theme] .form-group input::placeholder {
+    color: var(--text-secondary) !important;
+}

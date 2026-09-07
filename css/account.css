@@ -1,0 +1,715 @@
+.account-page {
+    min-height: 100vh;
+    background: #f6faf8;
+    padding: 40px;
+}
+
+.account-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.account-header h1 {
+    margin: 0;
+    color: #173b29;
+    font-size: 28px;
+}
+
+.account-header p {
+    margin: 6px 0 0;
+    color: #6d8276;
+}
+
+.back-button {
+    text-decoration: none;
+    color: #237a4b;
+    font-weight: 600;
+}
+
+.account-card {
+    background: #ffffff;
+    border: 1px solid #dfeae3;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(31, 77, 53, 0.06);
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.large-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #dff4e7;
+    color: #1f5d3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.profile-section h2 {
+    margin: 0;
+    color: #173b29;
+    font-size: 20px;
+}
+
+.profile-section p {
+    margin: 4px 0 0;
+    color: #6d8276;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.account-divider {
+    height: 1px;
+    background: #e7eee9;
+    margin: 28px 0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    color: #294638;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.form-group input {
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #d5e2da;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #4d966d;
+    box-shadow: 0 0 0 3px rgba(77, 150, 109, 0.12);
+}
+
+.readonly-input {
+    background: #f0f5f2;
+    color: #718379;
+    cursor: not-allowed;
+}
+
+.field-note {
+    margin-top: 6px;
+    color: #8a9990;
+    font-size: 11px;
+}
+
+.password-section {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid #e7eee9;
+}
+
+.password-section h3 {
+    margin: 0;
+    color: #173b29;
+    font-size: 17px;
+}
+
+.password-section p {
+    margin: 6px 0 20px;
+    color: #7b8e82;
+    font-size: 13px;
+}
+
+.account-message {
+    min-height: 20px;
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.account-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.cancel-button,
+.save-button {
+    min-width: 120px;
+    height: 42px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cancel-button {
+    background: #f1f4f2;
+    color: #476254;
+}
+
+.save-button {
+    border: none;
+    background: #237a4b;
+    color: white;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background: #1c633d;
+}
+
+@media (max-width: 700px) {
+
+    .account-page {
+        padding: 20px;
+    }
+
+    .account-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+.account-avatar-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.large-avatar-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #dff4e7;
+}
+
+.change-photo-button {
+    font-size: 11px;
+    font-weight: 700;
+    color: #237a4b;
+    cursor: pointer;
+}
+
+.change-photo-button:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   ACCOUNT MANAGEMENT - PINK THEME
+   KEEP EXISTING SHAPES / LAYOUT
+   ========================================================= */
+
+[data-theme="light"] .account-page {
+
+    background:
+        #fff5f9 !important;
+
+}
+
+
+[data-theme="light"] .account-header h1 {
+
+    color:
+        #831843 !important;
+
+}
+
+
+[data-theme="light"] .account-header p {
+
+    color:
+        #7a4b5c !important;
+
+}
+
+
+[data-theme="light"] .back-button {
+
+    color:
+        #be185d !important;
+
+}
+
+
+[data-theme="light"] .account-card {
+
+    background:
+        #ffffff !important;
+
+    border-color:
+        #f3c4d8 !important;
+
+    box-shadow:
+        0 8px 24px
+        rgba(
+            190,
+            24,
+            93,
+            0.08
+        ) !important;
+
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+[data-theme="light"] .large-avatar {
+
+    background:
+        #fce7f3 !important;
+
+    color:
+        #be185d !important;
+
+}
+
+
+[data-theme="light"] .profile-section h2 {
+
+    color:
+        #831843 !important;
+
+}
+
+
+[data-theme="light"] .profile-section p {
+
+    color:
+        #9d174d !important;
+
+}
+
+
+[data-theme="light"] .account-divider {
+
+    background:
+        #f3c4d8 !important;
+
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+[data-theme="light"] .form-group label {
+
+    color:
+        #831843 !important;
+
+}
+
+
+[data-theme="light"] .form-group input {
+
+    border-color:
+        #f3c4d8 !important;
+
+    color:
+        #3f1728 !important;
+
+    background:
+        #ffffff !important;
+
+}
+
+
+[data-theme="light"] .form-group input:focus {
+
+    border-color:
+        #db2777 !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            219,
+            39,
+            119,
+            0.12
+        ) !important;
+
+}
+
+
+/* =========================================================
+   READ ONLY ROLE
+   ========================================================= */
+
+[data-theme="light"] .readonly-input {
+
+    background:
+        #fdf2f8 !important;
+
+    color:
+        #7a4b5c !important;
+
+}
+
+
+[data-theme="light"] .field-note {
+
+    color:
+        #9d6b7d !important;
+
+}
+
+
+/* =========================================================
+   PASSWORD SECTION
+   ========================================================= */
+
+[data-theme="light"] .password-section {
+
+    border-color:
+        #f3c4d8 !important;
+
+}
+
+
+[data-theme="light"] .password-section h3 {
+
+    color:
+        #831843 !important;
+
+}
+
+
+[data-theme="light"] .password-section p {
+
+    color:
+        #7a4b5c !important;
+
+}
+
+
+/* =========================================================
+   CANCEL
+   ========================================================= */
+
+[data-theme="light"] .cancel-button {
+
+    background:
+        #fce7f3 !important;
+
+    color:
+        #831843 !important;
+
+}
+
+
+[data-theme="light"] .cancel-button:hover {
+
+    background:
+        #fbcfe8 !important;
+
+    color:
+        #9d174d !important;
+
+}
+
+
+/* =========================================================
+   SAVE CHANGES
+   ========================================================= */
+
+[data-theme="light"] .save-button {
+
+    background:
+        #be185d !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+
+[data-theme="light"] .save-button:hover {
+
+    background:
+        #9d174d !important;
+
+}
+
+
+/* =========================================================
+   ACCOUNT MESSAGE
+   ========================================================= */
+
+[data-theme="light"] .account-message {
+
+    color:
+        #be185d !important;
+
+}
+
+/* =========================================================
+   ACCOUNT MANAGEMENT
+   FOLLOW COLOR MODES
+   KEEP ALL SHAPES / LAYOUT
+   ========================================================= */
+
+
+/* =========================================================
+   EMERALD
+   ========================================================= */
+
+[data-theme="emerald"] .account-page {
+
+    background: #f3f6f3 !important;
+
+}
+
+[data-theme="emerald"] .account-header h1,
+[data-theme="emerald"] .profile-section h2,
+[data-theme="emerald"] .password-section h3 {
+
+    color: #0f3d2e !important;
+
+}
+
+[data-theme="emerald"] .account-header p,
+[data-theme="emerald"] .profile-section p,
+[data-theme="emerald"] .password-section p {
+
+    color: #4b5563 !important;
+
+}
+
+[data-theme="emerald"] .account-card {
+
+    background: #ffffff !important;
+
+    border-color: #d7e1d7 !important;
+
+}
+
+[data-theme="emerald"] .large-avatar {
+
+    background: #dfe9df !important;
+
+    color: #1b5e20 !important;
+
+}
+
+[data-theme="emerald"] .form-group label {
+
+    color: #0f3d2e !important;
+
+}
+
+[data-theme="emerald"] .form-group input {
+
+    background: #ffffff !important;
+
+    color: #1f2937 !important;
+
+    border-color: #d7e1d7 !important;
+
+}
+
+[data-theme="emerald"] .readonly-input {
+
+    background: #eef4ef !important;
+
+    color: #4b5563 !important;
+
+}
+
+[data-theme="emerald"] .account-divider,
+[data-theme="emerald"] .password-section {
+
+    border-color: #d7e1d7 !important;
+
+}
+
+[data-theme="emerald"] .cancel-button {
+
+    background: #dfe9df !important;
+
+    color: #0f3d2e !important;
+
+}
+
+[data-theme="emerald"] .save-button {
+
+    background: #1b5e20 !important;
+
+    color: #ffffff !important;
+
+}
+
+[data-theme="emerald"] .save-button:hover {
+
+    background: #2e7d32 !important;
+
+}
+
+
+/* =========================================================
+   DARK EMERALD
+   ========================================================= */
+
+[data-theme="dark"] .account-page {
+
+    background: #0b1711 !important;
+
+}
+
+[data-theme="dark"] .account-header h1,
+[data-theme="dark"] .profile-section h2,
+[data-theme="dark"] .password-section h3 {
+
+    color: #ecfdf5 !important;
+
+}
+
+[data-theme="dark"] .account-header p,
+[data-theme="dark"] .profile-section p,
+[data-theme="dark"] .password-section p {
+
+    color: #a7c7b5 !important;
+
+}
+
+[data-theme="dark"] .account-divider,
+[data-theme="dark"] .password-section {
+
+    border-color: #d7e1d7 !important;
+
+}
+
+[data-theme="dark"] .back-button {
+
+    color: #4ade80 !important;
+
+}
+
+[data-theme="dark"] .account-card {
+
+    background: #14261d !important;
+
+    border-color: #28533d !important;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.25) !important;
+
+}
+
+[data-theme="dark"] .large-avatar {
+
+    background: #163b2b !important;
+
+    color: #4ade80 !important;
+
+}
+
+[data-theme="dark"] .form-group label {
+
+    color: #d1fae5 !important;
+
+}
+
+[data-theme="dark"] .form-group input {
+
+    background: #102018 !important;
+
+    color: #ecfdf5 !important;
+
+    border-color: #28533d !important;
+
+}
+
+[data-theme="dark"] .form-group input:focus {
+
+    border-color: #4ade80 !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(74, 222, 128, 0.12) !important;
+
+}
+
+[data-theme="dark"] .readonly-input {
+
+    background: #163b2b !important;
+
+    color: #a7c7b5 !important;
+
+}
+
+[data-theme="dark"] .field-note {
+
+    color: #7ea891 !important;
+
+}
+
+[data-theme="dark"] .account-divider,
+[data-theme="dark"] .password-section {
+
+    border-color: #28533d !important;
+
+}
+
+[data-theme="dark"] .cancel-button {
+
+    background: #163b2b !important;
+
+    color: #d1fae5 !important;
+
+}
+
+[data-theme="dark"] .save-button {
+
+    background: #22c55e !important;
+
+    color: #052e16 !important;
+
+}
+
+[data-theme="dark"] .save-button:hover {
+
+    background: #4ade80 !important;
+
+}
+
+

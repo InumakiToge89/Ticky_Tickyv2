@@ -1,0 +1,1442 @@
+/* =====================================================
+   WORK TIMER PAGE
+   ===================================================== */
+
+.work-timer-content {
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.work-header {
+    margin-bottom: 28px;
+}
+
+.work-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.work-header p {
+    margin: 0;
+    opacity: 0.7;
+}
+
+
+/* =====================================================
+   CATEGORY TABS
+   ===================================================== */
+
+.category-tabs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+
+/* =====================================================
+   ANIMATED CATEGORY BUTTONS
+   ===================================================== */
+
+.category-tab {
+    all: unset;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    min-width: 150px;
+
+    padding: 0.7em 1.8em;
+
+    border: rgb(6, 145, 43) solid 0.15em;
+
+    border-radius: 0.35em;
+
+    color: rgb(6, 145, 43);
+
+    background: transparent;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        border-color 300ms ease,
+        color 300ms ease,
+        background 300ms ease;
+
+    user-select: none;
+
+    isolation: isolate;
+}
+
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.category-tab:hover {
+    color: #212121;
+}
+
+
+/* =====================================================
+   ACTIVE PRESS
+   ===================================================== */
+
+.category-tab:active {
+    border-color: teal;
+}
+
+
+/* =====================================================
+   LEFT + RIGHT ANIMATION CIRCLES
+   ===================================================== */
+
+.category-tab::after,
+.category-tab::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 9em;
+
+    aspect-ratio: 1;
+
+    background: rgb(6, 145, 43);
+
+    opacity: 50%;
+
+    border-radius: 50%;
+
+    z-index: -1;
+
+    transition:
+        transform 500ms ease,
+        background 300ms ease;
+}
+
+
+/* =====================================================
+   LEFT CIRCLE
+   ===================================================== */
+
+.category-tab::before {
+
+    left: 0;
+
+    transform:
+        translateX(-8em);
+
+}
+
+
+/* =====================================================
+   RIGHT CIRCLE
+   ===================================================== */
+
+.category-tab::after {
+
+    right: 0;
+
+    transform:
+        translateX(8em);
+
+}
+
+
+/* =====================================================
+   HOVER LEFT
+   ===================================================== */
+
+.category-tab:hover::before {
+
+    transform:
+        translateX(-1em);
+
+}
+
+
+/* =====================================================
+   HOVER RIGHT
+   ===================================================== */
+
+.category-tab:hover::after {
+
+    transform:
+        translateX(1em);
+
+}
+
+
+/* =====================================================
+   ACTIVE CIRCLES
+   ===================================================== */
+
+.category-tab:active::before,
+.category-tab:active::after {
+
+    background: teal;
+
+}
+
+
+/* =====================================================
+   ACTIVE CATEGORY
+   ===================================================== */
+
+.category-tab.active {
+
+    background: rgb(6, 145, 43);
+
+    color: #212121;
+
+}
+
+
+.category-tab.active:hover {
+
+    color: #212121;
+
+}
+
+
+/* =====================================================
+   MAIN CARD
+   ===================================================== */
+
+.work-card {
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.work-card-header {
+    margin-bottom: 24px;
+}
+
+.work-card-header h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.work-card-header p {
+    margin: 0;
+    opacity: 0.7;
+}
+
+
+/* =====================================================
+   TASK LIST
+   ===================================================== */
+
+.task-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(200px, 1fr)
+        );
+
+    gap: 14px;
+
+    margin-bottom: 30px;
+}
+
+/* =====================================================
+   TASK BUTTONS
+   UIVERSE-STYLE GREEN BUTTON
+   ===================================================== */
+
+.task-button {
+    --button-green-dark: #14532d;
+    --button-green: #16a34a;
+    --button-green-light: #4ade80;
+    --button-border: #86efac;
+
+    --border-radius: 9999px;
+    --transition: 0.3s ease;
+    --active: 0;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 64px;
+
+    padding: 16px 28px;
+
+    border: none;
+    border-radius: var(--border-radius);
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transform:
+        scale(
+            calc(
+                1 +
+                (
+                    var(--active) *
+                    0.025
+                )
+            )
+        );
+
+    transition:
+        transform var(--transition);
+
+    isolation: isolate;
+
+    user-select: none;
+}
+
+
+/* =====================================================
+   DARK GREEN BASE
+   ===================================================== */
+
+.task-button::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #14532d,
+            #166534 45%,
+            #15803d
+        );
+
+    border-radius:
+        var(--border-radius);
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(255,255,255,0.22),
+
+        inset 0 -2px 4px
+        rgba(0,0,0,0.28),
+
+        0 5px 14px
+        rgba(20,83,45,0.28);
+
+    z-index: -2;
+
+    transition:
+        all var(--transition);
+}
+
+
+/* =====================================================
+   GREEN GLOW
+   ===================================================== */
+
+.task-button::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 20% 90%,
+            rgba(134,239,172,0.75),
+            transparent 48%
+        ),
+
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(74,222,128,0.55),
+            transparent 48%
+        ),
+
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(187,247,208,0.35),
+            transparent 52%
+        );
+
+    border-radius:
+        var(--border-radius);
+
+    opacity:
+        var(--active);
+
+    z-index: -1;
+
+    transition:
+        opacity var(--transition);
+}
+
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.task-button:hover {
+
+    --active: 1;
+
+    color: #052e16;
+
+    transform:
+        translateY(-2px)
+        scale(1.025);
+
+}
+
+
+/* =====================================================
+   ACTIVE / SELECTED
+   ===================================================== */
+
+.task-button.active {
+
+    --active: 1;
+
+    color: #052e16;
+
+    transform:
+        scale(1.025);
+
+}
+
+
+/* =====================================================
+   ACTIVE BASE
+   ===================================================== */
+
+.task-button.active::before {
+
+    background:
+        linear-gradient(
+            135deg,
+            #4ade80,
+            #22c55e,
+            #16a34a
+        );
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(255,255,255,0.35),
+
+        inset 0 -2px 4px
+        rgba(0,0,0,0.18),
+
+        0 0 0 4px
+        rgba(74,222,128,0.20),
+
+        0 8px 20px
+        rgba(22,163,74,0.30);
+
+}
+
+
+/* =====================================================
+   MOVING BORDER EFFECT
+   ===================================================== */
+
+.task-button .dots-border {
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    width:
+        calc(100% + 4px);
+
+    height:
+        calc(100% + 4px);
+
+    overflow: hidden;
+
+    border-radius:
+        var(--border-radius);
+
+    background:
+        transparent;
+
+    z-index: -3;
+
+}
+
+
+/* ROTATING LINE */
+
+.task-button .dots-border::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 140%;
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #bbf7d0,
+            #4ade80,
+            transparent
+        );
+
+    transform:
+        translate(-50%, -50%)
+        rotate(0deg);
+
+    transform-origin: center;
+
+    animation:
+        taskBorderRotate
+        2.5s linear infinite;
+
+}
+
+
+/* =====================================================
+   TEXT
+   ===================================================== */
+
+.task-button .task-button-text {
+
+    position: relative;
+
+    z-index: 5;
+
+    display: block;
+
+    color: #ffffff;
+
+    transition:
+        color var(--transition);
+
+}
+
+
+/* HOVER TEXT */
+
+.task-button:hover
+.task-button-text {
+
+    color:
+        #052e16;
+
+}
+
+
+/* ACTIVE TEXT */
+
+.task-button.active
+.task-button-text {
+
+    color:
+        #052e16;
+
+}
+
+
+/* =====================================================
+   ARROW / SPARKLE
+   ===================================================== */
+
+.task-button .task-sparkle {
+
+    position: relative;
+
+    z-index: 5;
+
+    width: 22px;
+    height: 22px;
+
+    margin-right: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+
+    transition:
+        transform 0.3s ease;
+
+}
+
+
+/* SIMPLE SPARKLE */
+
+.task-button .task-sparkle::before {
+
+    content: "✦";
+
+    font-size: 18px;
+
+    line-height: 1;
+
+}
+
+
+/* SPARKLE HOVER */
+
+.task-button:hover
+.task-sparkle {
+
+    transform:
+        rotate(15deg)
+        scale(1.2);
+
+}
+
+
+/* ACTIVE SPARKLE */
+
+.task-button.active
+.task-sparkle {
+
+    color:
+        #052e16;
+
+}
+
+
+/* =====================================================
+   BORDER ANIMATION
+   ===================================================== */
+
+@keyframes taskBorderRotate {
+
+    from {
+
+        transform:
+            translate(-50%, -50%)
+            rotate(0deg);
+
+    }
+
+    to {
+
+        transform:
+            translate(-50%, -50%)
+            rotate(360deg);
+
+    }
+
+}
+
+
+/* =====================================================
+   CLICK
+   ===================================================== */
+
+.task-button:active {
+
+    transform:
+        scale(0.98);
+
+}
+
+
+/* =====================================================
+   DISABLED
+   ===================================================== */
+
+.task-button:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.5;
+
+}
+
+
+/* =====================================================
+   SELECTED TASK
+   ===================================================== */
+
+.selected-task-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.selected-label {
+    display: block;
+    font-size: 13px;
+    opacity: 0.65;
+    margin-bottom: 8px;
+}
+
+.selected-task-name {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   TIMER
+   ===================================================== */
+
+.timer-section {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.work-timer-display {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* =====================================================
+   CONTROLS
+   ===================================================== */
+
+.timer-controls {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.work-start-button,
+.work-stop-button {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.work-start-button:hover:not(:disabled),
+.work-stop-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.work-start-button:disabled,
+.work-stop-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+
+/* =====================================================
+   MODAL
+   ===================================================== */
+
+.work-modal {
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+.work-modal.show {
+    display: flex;
+}
+
+.work-modal-backdrop {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(
+            15,
+            23,
+            42,
+            0.65
+        );
+}
+
+.work-modal-content {
+    position: relative;
+
+    z-index: 1;
+
+    width:
+        min(
+            420px,
+            calc(
+                100% - 32px
+            )
+        );
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+
+    border:
+        1px solid
+        #dbe3ec;
+
+    border-radius: 16px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 20px 50px
+        rgba(
+            0,
+            0,
+            0,
+            0.25
+        );
+
+    animation:
+        workModalAppear
+        0.2s
+        ease-out;
+}
+
+.work-modal-content h3 {
+    margin: 0 0 10px;
+
+    color: #1f2937;
+
+    font-size: 20px;
+
+    font-weight: 700;
+}
+
+.work-modal-content p {
+    margin: 0 0 24px;
+
+    color: #64748b;
+
+    line-height: 1.5;
+}
+
+.work-modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+.work-modal-cancel,
+.work-modal-confirm {
+    border: none;
+
+    border-radius: 9px;
+
+    padding: 11px 20px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.work-modal-cancel {
+    background: #f1f5f9;
+
+    color: #334155;
+
+    border:
+        1px solid
+        #dbe3ec;
+}
+
+.work-modal-cancel:hover {
+    background: #e2e8f0;
+}
+
+.work-modal-confirm {
+    background: #15803d;
+
+    color: #ffffff;
+}
+
+.work-modal-confirm:hover {
+    background: #166534;
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* =====================================================
+   MODAL ANIMATION
+   ===================================================== */
+
+@keyframes workModalAppear {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(10px)
+            scale(0.98);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* =====================================================
+   TOAST
+   ===================================================== */
+
+.work-toast {
+    position: fixed;
+
+    right: 24px;
+
+    bottom: 24px;
+
+    z-index: 10000;
+
+    padding: 14px 20px;
+
+    border-radius: 10px;
+
+    transform:
+        translateY(20px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: 0.25s ease;
+}
+
+.work-toast.show {
+
+    transform:
+        translateY(0);
+
+    opacity: 1;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    .work-timer-content {
+
+        padding: 20px;
+
+    }
+
+    .work-card {
+
+        padding: 20px;
+
+    }
+
+    .work-timer-display {
+
+        font-size: 42px;
+
+    }
+
+    .timer-controls {
+
+        flex-direction: column;
+
+    }
+
+    .work-start-button,
+    .work-stop-button {
+
+        width: 100%;
+
+    }
+
+}
+
+
+/* =====================================================
+   TIMER CONTROL BUTTONS
+   ===================================================== */
+
+.timer-controls {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+}
+
+
+.work-start-button,
+.work-pause-button,
+.work-resume-button,
+.work-stop-button {
+
+    border: none;
+
+    border-radius: 10px;
+
+    padding: 12px 22px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+/* =====================================================
+   START
+   ===================================================== */
+
+.work-start-button {
+
+    background:
+        #16a34a;
+
+    color:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   PAUSE
+   ===================================================== */
+
+.work-pause-button {
+
+    background:
+        #f59e0b;
+
+    color:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   RESUME
+   ===================================================== */
+
+.work-resume-button {
+
+    background:
+        #2563eb;
+
+    color:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   STOP
+   ===================================================== */
+
+.work-stop-button {
+
+    background:
+        #dc2626;
+
+    color:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.work-start-button:hover:not(:disabled),
+.work-pause-button:hover:not(:disabled),
+.work-resume-button:hover:not(:disabled),
+.work-stop-button:hover:not(:disabled) {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 6px 16px
+        rgba(
+            0,
+            0,
+            0,
+            0.15
+        );
+
+}
+
+
+/* =====================================================
+   DISABLED
+   ===================================================== */
+
+.work-start-button:disabled,
+.work-pause-button:disabled,
+.work-resume-button:disabled,
+.work-stop-button:disabled {
+
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+
+}
+
+/* =========================================================
+   WORK ACTIVITY
+   MAKE BUTTON COLORS FOLLOW GLOBAL THEME
+   SHAPES / SIZES STAY THE SAME
+   ========================================================= */
+
+
+/* =========================================================
+   CATEGORY BUTTONS
+   ========================================================= */
+
+.category-tab {
+
+    border-color:
+        var(--primary-green) !important;
+
+    background:
+        var(--dark-green) !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+
+/* CATEGORY HOVER */
+
+.category-tab:hover {
+
+    background:
+        var(--medium-green) !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+
+/* ACTIVE CATEGORY */
+
+.category-tab.active {
+
+    background:
+        var(--primary-green) !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+
+/* =========================================================
+   TASK BUTTONS
+   ========================================================= */
+
+.task-button {
+
+    color:
+        #ffffff !important;
+
+}
+
+
+.task-button::before {
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--dark-green),
+            var(--primary-green),
+            var(--medium-green)
+        ) !important;
+
+}
+
+
+.task-button::after {
+
+    background:
+        radial-gradient(
+            circle at 20% 90%,
+            color-mix(
+                in srgb,
+                var(--primary-green) 75%,
+                white
+            ),
+            transparent 48%
+        ),
+
+        radial-gradient(
+            circle at 100% 100%,
+            color-mix(
+                in srgb,
+                var(--medium-green) 60%,
+                white
+            ),
+            transparent 48%
+        ),
+
+        radial-gradient(
+            circle at 50% 0%,
+            color-mix(
+                in srgb,
+                var(--light-green) 70%,
+                white
+            ),
+            transparent 52%
+        ) !important;
+
+}
+
+
+/* TASK HOVER */
+
+.task-button:hover {
+
+    color:
+        var(--dark-green) !important;
+
+}
+
+
+/* TASK HOVER BASE */
+
+.task-button:hover::before {
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--dark-green),
+            var(--primary-green),
+            var(--medium-green)
+        ) !important;
+
+}
+
+
+/* TASK ACTIVE */
+
+.task-button.active {
+
+    color:
+        var(--dark-green) !important;
+
+}
+
+
+.task-button.active::before {
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--light-green),
+            var(--primary-green),
+            var(--medium-green)
+        ) !important;
+
+}
+
+
+/* =========================================================
+   TASK SPARKLE
+   ========================================================= */
+
+.task-button .task-sparkle {
+
+    color:
+        #ffffff !important;
+
+}
+
+
+.task-button.active .task-sparkle,
+.task-button:hover .task-sparkle {
+
+    color:
+        var(--dark-green) !important;
+
+}
+
+
+/* =========================================================
+   CATEGORY ANIMATION CIRCLES
+   ========================================================= */
+
+.category-tab::before,
+.category-tab::after {
+
+    background:
+        var(--primary-green) !important;
+
+}
+
+
+.category-tab:active::before,
+.category-tab:active::after {
+
+    background:
+        var(--dark-green) !important;
+
+}
+
+
+/* =========================================================
+   THEME-SPECIFIC DARK MODE
+   ========================================================= */
+
+[data-theme="dark"] .category-tab {
+
+    background:
+        var(--dark-green) !important;
+
+    border-color:
+        var(--medium-green) !important;
+
+}
+
+
+[data-theme="dark"] .category-tab:hover {
+
+    background:
+        var(--primary-green) !important;
+
+    color:
+        #06230f !important;
+
+}
+
+
+[data-theme="dark"] .category-tab.active {
+
+    background:
+        var(--primary-green) !important;
+
+    color:
+        #06230f !important;
+
+}
+
+
+/* =========================================================
+   THEME-SPECIFIC PINK MODE
+   ========================================================= */
+
+[data-theme="light"] .category-tab {
+
+    background:
+        var(--dark-green) !important;
+
+    border-color:
+        var(--primary-green) !important;
+
+}
+
+
+[data-theme="light"] .category-tab:hover {
+
+    background:
+        var(--primary-green) !important;
+
+    color:
+        #ffffff !important;
+
+}
+
+
+[data-theme="light"] .category-tab.active {
+
+    background:
+        var(--primary-green) !important;
+
+    color:
+        #ffffff !important;
+
+}

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ticky Ticky | Login</title>
+
+
+    <!-- Global Styles -->
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+
+    <!-- Login Styles -->
+    <link
+        rel="stylesheet"
+        href="css/login.css"
+    >
+
+    <link
+    id="siteFavicon"
+    rel="icon"
+    type="image/png"
+    >
+
+        <link
+    rel="stylesheet"
+    href="css/themes/emerald.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/themes/dark.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/themes/pink.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/themes/rainbow.css"
+    >
+
+
+</head>
+
+
+<body>
+
+<main class="login-page">
+
+    <div class="login-shell">
+
+
+        <!-- =================================================
+             LEFT SIDE - LOGIN
+             ================================================= -->
+
+        <section class="login-side">
+
+            <div class="login-content">
+
+
+                <!-- BRAND -->
+                <div class="login-brand">
+
+                    <div class="logo-icon mascot-logo">
+                        <img
+                            id="tickyMascot"
+                            src="assets/branding/ticky-ticky-icon-emerald.png"
+                            alt="Ticky Ticky mascot"
+                        >
+                    </div>
+
+                    <div>
+
+                        <h1>
+                            Ticky Ticky
+                        </h1>
+
+                        <span>
+                            Time Productivity Monitoring
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- LOGIN INTRO -->
+                <div class="login-intro">
+
+                    <span class="eyebrow">
+                        PRODUCTIVITY PLATFORM
+                    </span>
+
+                    <h2>
+                        Welcome back.
+                    </h2>
+
+                    <p>
+                        Sign in to continue monitoring
+                        productivity, profiling activity,
+                        and team performance.
+                    </p>
+
+                </div>
+
+
+                <!-- LOGIN FORM -->
+                <form
+                    id="loginForm"
+                    class="login-form"
+                >
+
+
+                    <!-- EMAIL -->
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="email"
+                        >
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+                    <div class="form-group">
+
+                        <div class="password-label-row">
+
+                            <label
+                                class="form-label"
+                                for="password"
+                            >
+                                Password
+                            </label>
+
+                        </div>
+
+
+                        <div class="password-input-wrapper">
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Show password"
+                            >
+                                <span class="password-eye">
+                                    ◉
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MESSAGE -->
+                    <div
+                        id="loginMessage"
+                        class="login-message"
+                    ></div>
+
+
+                    <!-- LOGIN BUTTON -->
+                    <button
+                        type="submit"
+                        id="loginButton"
+                        class="btn btn-primary login-button"
+                    >
+                        <span>
+                            Login
+                        </span>
+
+                        <span class="login-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                </form>
+
+
+                <!-- FOOTER -->
+                <div class="login-footer">
+
+                    <span>
+                        Secure access to Ticky Ticky
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             RIGHT SIDE - BRAND VISUAL
+             ================================================= -->
+
+        <section class="login-visual">
+
+
+            <!-- BACKGROUND DECORATION -->
+
+            <div class="visual-glow visual-glow-one"></div>
+
+            <div class="visual-glow visual-glow-two"></div>
+
+            <div class="visual-grid"></div>
+
+
+            <!-- TOP BRAND -->
+
+            <div class="visual-top">
+
+                <div class="visual-badge">
+                    <span class="badge-dot"></span>
+
+                    TICKY TICKY
+                </div>
+
+                <span class="visual-version">
+                    Productivity System
+                </span>
+
+            </div>
+
+
+            <!-- MAIN CONTENT -->
+
+            <div class="visual-main">
+
+
+                <span class="visual-eyebrow">
+                    WORK SMARTER
+                </span>
+
+
+                <h2>
+                    Turn time into
+                    <span>
+                        insight.
+                    </span>
+                </h2>
+
+
+                <p>
+                    Track work activity, analyze productivity,
+                    and keep every team moving forward.
+                </p>
+
+
+
+                <!-- PRODUCTIVITY VISUAL -->
+
+                <div class="productivity-visual">
+
+
+                    <!-- LARGE CIRCLE -->
+
+                    <div class="visual-orbit"></div>
+
+
+                    <!-- MAIN PRODUCTIVITY CARD -->
+
+                    <div class="productivity-card main-productivity-card">
+
+                        <div class="productivity-card-header">
+
+                            <div>
+
+                                <span class="card-label">
+                                    TODAY'S PRODUCTIVITY
+                                </span>
+
+                                <strong>
+                                    84%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="card-icon">
+                                ↗
+                            </div>
+
+                        </div>
+
+
+                        <div class="productivity-bar">
+
+                            <span
+                                style="width: 84%;"
+                            ></span>
+
+                        </div>
+
+
+                        <div class="productivity-card-footer">
+
+                            <span>
+                                Productivity score
+                            </span>
+
+                            <span>
+                                +12.4%
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- SMALL CARD -->
+
+                    <div class="productivity-card mini-card">
+
+                        <div class="mini-icon">
+                            ◷
+                        </div>
+
+                        <div>
+
+                            <span>
+                                ACTIVE TIME
+                            </span>
+
+                            <strong>
+                                06:42
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- FLOATING CARD -->
+
+                    <div class="productivity-card floating-card">
+
+                        <div class="floating-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <span>
+                                WORK ACTIVITY
+                            </span>
+
+                            <strong>
+                                ON TRACK
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- BOTTOM -->
+
+            <div class="visual-bottom">
+
+                <div class="visual-stat">
+
+                    <strong>
+                        Real-time
+                    </strong>
+
+                    <span>
+                        Productivity tracking
+                    </span>
+
+                </div>
+
+
+                <div class="visual-stat">
+
+                    <strong>
+                        Smarter
+                    </strong>
+
+                    <span>
+                        Performance insights
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     PASSWORD TOGGLE
+     ===================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const passwordInput =
+            document.getElementById(
+                "password"
+            );
+
+        const passwordToggle =
+            document.getElementById(
+                "passwordToggle"
+            );
+
+
+        if (
+            passwordInput &&
+            passwordToggle
+        ) {
+
+            passwordToggle.addEventListener(
+                "click",
+                () => {
+
+                    const isPassword =
+                        passwordInput.type ===
+                        "password";
+
+
+                    passwordInput.type =
+                        isPassword
+                            ? "text"
+                            : "password";
+
+
+                    passwordToggle
+                        .setAttribute(
+                            "aria-label",
+                            isPassword
+                                ? "Hide password"
+                                : "Show password"
+                        );
+
+                }
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+
+
+<!-- =====================================================
+     EXISTING AUTHENTICATION
+     DO NOT REMOVE
+     ===================================================== -->
+
+<script
+    type="module"
+    src="js/auth.js"
+></script>
+
+<script
+    type="module"
+    src="js/theme.js"
+></script>
+
+<script src="../js/mobile-navigation.js"></script>
+
+
+</body>
+
+</html>
