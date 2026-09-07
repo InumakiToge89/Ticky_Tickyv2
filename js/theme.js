@@ -206,63 +206,6 @@ function updateTickyBrand(theme) {
 
 }
 
-/* =========================================================
-   EMERALD VIDEO BACKGROUND
-   ========================================================= */
-
-function updateEmeraldVideoBackground(theme) {
-
-    const existingVideo =
-        document.getElementById("emerald-video-bg");
-
-    /* Remove video when leaving Emerald */
-    if (theme !== "emerald") {
-
-        if (existingVideo) {
-            existingVideo.remove();
-        }
-
-        return;
-    }
-
-    /* Don't create duplicate video */
-    if (existingVideo) {
-        return;
-    }
-
-    const video =
-        document.createElement("video");
-
-    video.id =
-        "emerald-video-bg";
-
-    video.autoplay =
-        true;
-
-    video.muted =
-        true;
-
-    video.loop =
-        true;
-
-    video.playsInline =
-        true;
-
-    video.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-    video.innerHTML = `
-        <source
-            src="${getAssetPrefix()}assets/branding/emerald/frogbg.mp4"
-            type="video/mp4"
-        >
-    `;
-
-    document.body.prepend(video);
-
-}
 
 
 /* =========================================================
@@ -297,11 +240,6 @@ function applyTheme(theme) {
 
 
     updateTickyBrand(
-        theme
-    );
-
-
-    updateEmeraldVideoBackground(
         theme
     );
 
