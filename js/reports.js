@@ -6706,9 +6706,2510 @@ logoutButton.addEventListener(
     }
 );
 
-
 // =========================================================
-// START
+// TICKY TICKY REPORTS — ENHANCED ANALYTICS
+// =========================================================
+// IMPORTANT:
+// - Keeps the existing Supabase loading logic.
+// - Keeps the existing Excel export untouched.
+// - PROD = Production
+// - NON-PROD = Non-Production
+// - PROD LOSS = Production Loss
+// - TRAINING = Training
 // =========================================================
 
-initializeReports();
+(function enhanceReportsPage() {
+
+    // ---------------------------------------------------------
+    // CATEGORY DEFINITIONS
+    // ---------------------------------------------------------
+
+    const REPORT_CATEGORIES = [
+        {
+            key: "PROD",
+            label: "Production",
+            className: "prod-chart-segment"
+        },
+        {
+            key: "NON-PROD",
+            label: "Non-Production",
+            className: "nonprod-chart-segment"
+        },
+        {
+            key: "PROD LOSS",
+            label: "Production Loss",
+            className: "prod-loss-chart-segment"
+        },
+        {
+            key: "TRAINING",
+            label: "Training",
+            className: "training-chart-segment"
+        }
+    ];
+
+
+    // ---------------------------------------------------------
+    // CATEGORY NORMALIZER
+    // ---------------------------------------------------------
+
+    function enhancedNormalizeCategory(value) {
+
+        const category =
+            String(value || "")
+                .trim()
+                .toUpperCase();
+
+        if (
+            category === "PROD" ||
+            category === "PRODUCTION"
+        ) {
+            return "PROD";
+        }
+
+        if (
+            category === "NON-PROD" ||
+            category === "NON PRODUCTION" ||
+            category === "NON-PRODUCTION" ||
+            category === "NON-PROD ACTIVITIES"
+        ) {
+            return "NON-PROD";
+        }
+
+        if (
+            category === "PROD LOSS" ||
+            category === "PRODUCTION LOSS" ||
+            category === "PROD_LOSS"
+        ) {
+            return "PROD LOSS";
+        }
+
+        if (
+            category === "TRAINING"
+        ) {
+            return "TRAINING";
+        }
+
+        return category;
+    }
+
+
+    // ---------------------------------------------------------
+    // CALCULATE WORK CATEGORY TOTALS
+    // ---------------------------------------------------------
+
+    function calculateEnhancedCategoryTotals(records) {
+
+        const totals = {
+            "PROD": 0,
+            "NON-PROD": 0,
+            "PROD LOSS": 0,
+            "TRAINING": 0
+        };
+
+        const counts = {
+            "PROD": 0,
+            "NON-PROD": 0,
+            "PROD LOSS": 0,
+            "TRAINING": 0
+        };
+
+
+        (records || []).forEach(record => {
+
+            const category =
+                enhancedNormalizeCategory(
+                    record.category
+                );
+
+            const seconds =
+                Math.max(
+                    0,
+                    Number(
+                        record.duration_seconds
+                    ) || 0
+                );
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    totals,
+                    category
+                )
+            ) {
+
+                totals[category] += seconds;
+                counts[category]++;
+
+            }
+
+        });
+
+
+        return {
+            totals,
+            counts
+        };
+
+    }
+
+
+    // ---------------------------------------------------------
+    // UPDATE OPTIONAL KPI ELEMENT
+    // ---------------------------------------------------------
+
+    function setOptionalValue(
+        ids,
+        value
+    ) {
+
+        const idList =
+            Array.isArray(ids)
+                ? ids
+                : [ids];
+
+
+        for (
+            const id of idList
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+
+            if (element) {
+
+                element.textContent =
+                    value;
+
+                return;
+
+            }
+
+        }
+
+    }
+
+
+    // ---------------------------------------------------------
+    // UPDATE ENHANCED KPI CARDS
+    // ---------------------------------------------------------
+
+    function updateEnhancedKPIs(
+        profilingRecords,
+        workRecords
+    ) {
+
+        const categoryData =
+            calculateEnhancedCategoryTotals(
+                workRecords
+            );
+
+
+        const totals =
+            categoryData.totals;
+
+        const counts =
+            categoryData.counts;
+
+
+        // -----------------------------------------------------
+        // PROFILING
+        // -----------------------------------------------------
+
+        const profilingSeconds =
+            (profilingRecords || [])
+                .reduce(
+                    (
+                        total,
+                        record
+                    ) =>
+                        total +
+                        Number(
+                            record.totalSeconds || 0
+                        ),
+                    0
+                );
+
+
+        // -----------------------------------------------------
+        // WORK ACTIVITY
+        // -----------------------------------------------------
+
+        const workSeconds =
+            Object.values(
+                totals
+            ).reduce(
+                (
+                    total,
+                    seconds
+                ) =>
+                    total + seconds,
+                0
+            );
+
+
+        const totalRecordedSeconds =
+            profilingSeconds +
+            workSeconds;
+
+
+        // -----------------------------------------------------
+        // PRODUCTIVITY RATE
+        //
+        // Production compared with all recorded work
+        // activities.
+        // -----------------------------------------------------
+
+        const productivityBase =
+            workSeconds;
+
+
+        const productivityRate =
+            productivityBase > 0
+                ? (
+                    totals["PROD"] /
+                    productivityBase
+                ) * 100
+                : 0;
+
+
+        // -----------------------------------------------------
+        // NON-PRODUCTION RATE
+        // -----------------------------------------------------
+
+        const nonProductionRate =
+            productivityBase > 0
+                ? (
+                    totals["NON-PROD"] /
+                    productivityBase
+                ) * 100
+                : 0;
+
+
+        // -----------------------------------------------------
+        // PRODUCTION LOSS RATE
+        // -----------------------------------------------------
+
+        const productionLossRate =
+            productivityBase > 0
+                ? (
+                    totals["PROD LOSS"] /
+                    productivityBase
+                ) * 100
+                : 0;
+
+
+        // -----------------------------------------------------
+        // TRAINING RATE
+        // -----------------------------------------------------
+
+        const trainingRate =
+            productivityBase > 0
+                ? (
+                    totals["TRAINING"] /
+                    productivityBase
+                ) * 100
+                : 0;
+
+
+        // -----------------------------------------------------
+        // ANALYST COUNT
+        // -----------------------------------------------------
+
+        const analysts =
+            new Set(
+                [
+                    ...(profilingRecords || []),
+                    ...(workRecords || [])
+                ]
+                    .map(
+                        record =>
+                            record.analyst_id
+                    )
+                    .filter(Boolean)
+            );
+
+
+        // -----------------------------------------------------
+        // AVERAGE PRODUCTION / ANALYST
+        // -----------------------------------------------------
+
+        const averageProductionPerAnalyst =
+            analysts.size > 0
+                ? Math.round(
+                    totals["PROD"] /
+                    analysts.size
+                )
+                : 0;
+
+
+        // -----------------------------------------------------
+        // OPTIONAL KPI IDS
+        // -----------------------------------------------------
+
+        setOptionalValue(
+            [
+                "reportProdTime",
+                "productionTime",
+                "prodTime",
+                "totalProdTime"
+            ],
+            formatDuration(
+                totals["PROD"]
+            )
+        );
+
+
+        setOptionalValue(
+            [
+                "reportNonProdTime",
+                "nonProductionTime",
+                "nonProdTime",
+                "totalNonProdTime"
+            ],
+            formatDuration(
+                totals["NON-PROD"]
+            )
+        );
+
+
+        setOptionalValue(
+            [
+                "reportProdLossTime",
+                "productionLossTime",
+                "prodLossTime",
+                "totalProdLossTime"
+            ],
+            formatDuration(
+                totals["PROD LOSS"]
+            )
+        );
+
+
+        setOptionalValue(
+            [
+                "reportTrainingTime",
+                "trainingTime",
+                "totalTrainingTime"
+            ],
+            formatDuration(
+                totals["TRAINING"]
+            )
+        );
+
+
+        setOptionalValue(
+            [
+                "reportTotalRecordedTime",
+                "totalRecordedTime",
+                "totalReportTime"
+            ],
+            formatDuration(
+                totalRecordedSeconds
+            )
+        );
+
+
+        setOptionalValue(
+            [
+                "reportProductivityRate",
+                "productivityRate"
+            ],
+            `${productivityRate.toFixed(1)}%`
+        );
+
+
+        setOptionalValue(
+            [
+                "reportNonProdRate",
+                "nonProductionRate"
+            ],
+            `${nonProductionRate.toFixed(1)}%`
+        );
+
+
+        setOptionalValue(
+            [
+                "reportProdLossRate",
+                "productionLossRate"
+            ],
+            `${productionLossRate.toFixed(1)}%`
+        );
+
+
+        setOptionalValue(
+            [
+                "reportTrainingRate",
+                "trainingRate"
+            ],
+            `${trainingRate.toFixed(1)}%`
+        );
+
+
+        setOptionalValue(
+            [
+                "reportWorkActivityCount",
+                "workActivityCount"
+            ],
+            workRecords.length
+        );
+
+
+        setOptionalValue(
+            [
+                "reportAverageProd",
+                "averageProductionPerAnalyst"
+            ],
+            formatDuration(
+                averageProductionPerAnalyst
+            )
+        );
+
+
+        // -----------------------------------------------------
+        // CATEGORY COUNTS
+        // -----------------------------------------------------
+
+        setOptionalValue(
+            [
+                "prodActivityCount",
+                "productionActivityCount"
+            ],
+            counts["PROD"]
+        );
+
+
+        setOptionalValue(
+            [
+                "nonProdActivityCount",
+                "nonProductionActivityCount"
+            ],
+            counts["NON-PROD"]
+        );
+
+
+        setOptionalValue(
+            [
+                "prodLossActivityCount",
+                "productionLossActivityCount"
+            ],
+            counts["PROD LOSS"]
+        );
+
+
+        setOptionalValue(
+            [
+                "trainingActivityCount"
+            ],
+            counts["TRAINING"]
+        );
+
+    }
+
+
+    // ---------------------------------------------------------
+    // CATEGORY BAR GRAPH
+    // ---------------------------------------------------------
+    //
+    // FOUR SEPARATE BARS:
+    //
+    // Production
+    // Non-Production
+    // Production Loss
+    // Training
+    //
+    // No combined total-time bar.
+    // ---------------------------------------------------------
+
+    function renderEnhancedCategoryChart(
+        records
+    ) {
+
+        const chart =
+            document.getElementById(
+                "categoryTimeChart"
+            ) ||
+            document.getElementById(
+                "workCategoryChart"
+            ) ||
+            document.getElementById(
+                "analystChart"
+            );
+
+
+        if (!chart) {
+            return;
+        }
+
+
+        const categoryData =
+            calculateEnhancedCategoryTotals(
+                records
+            );
+
+
+        const totals =
+            categoryData.totals;
+
+
+        const totalWorkSeconds =
+            Object.values(
+                totals
+            ).reduce(
+                (
+                    total,
+                    value
+                ) =>
+                    total + value,
+                0
+            );
+
+
+        if (
+            totalWorkSeconds <= 0
+        ) {
+
+            chart.innerHTML = `
+                <div
+                    class="chart-empty"
+                    style="
+                        min-height:220px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        color:var(--text-secondary);
+                        text-align:center;
+                    "
+                >
+                    No work activity data available
+                    for the selected filters.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        const maximum =
+            Math.max(
+                ...Object.values(
+                    totals
+                ),
+                1
+            );
+
+
+        // -----------------------------------------------------
+        // HEADER
+        // -----------------------------------------------------
+
+        let html = `
+            <div
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:8px 4px;
+                "
+            >
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        gap:12px;
+                        margin-bottom:18px;
+                        padding-bottom:12px;
+                        border-bottom:1px solid var(--border);
+                    "
+                >
+
+                    <div>
+
+                        <div
+                            style="
+                                font-size:13px;
+                                font-weight:800;
+                                color:var(--text-primary);
+                            "
+                        >
+                            Work Time Distribution
+                        </div>
+
+                        <div
+                            style="
+                                margin-top:4px;
+                                font-size:11px;
+                                color:var(--text-secondary);
+                            "
+                        >
+                            Separate category totals
+                            for the selected filters
+                        </div>
+
+                    </div>
+
+                    <strong
+                        style="
+                            font-size:13px;
+                            color:var(--text-primary);
+                            white-space:nowrap;
+                        "
+                    >
+                        ${formatDuration(totalWorkSeconds)}
+                    </strong>
+
+                </div>
+        `;
+
+
+        // -----------------------------------------------------
+        // FOUR CATEGORY BARS
+        // -----------------------------------------------------
+
+        REPORT_CATEGORIES.forEach(
+            category => {
+
+                const seconds =
+                    totals[
+                        category.key
+                    ] || 0;
+
+
+                const percent =
+                    totalWorkSeconds > 0
+                        ? (
+                            seconds /
+                            totalWorkSeconds
+                        ) * 100
+                        : 0;
+
+
+                const width =
+                    seconds > 0
+                        ? Math.max(
+                            2,
+                            (
+                                seconds /
+                                maximum
+                            ) * 100
+                        )
+                        : 0;
+
+
+                html += `
+                    <div
+                        style="
+                            margin-bottom:22px;
+                        "
+                    >
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:space-between;
+                                align-items:flex-end;
+                                gap:12px;
+                                margin-bottom:8px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    min-width:0;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        font-size:13px;
+                                        font-weight:800;
+                                        color:var(--text-primary);
+                                    "
+                                >
+                                    ${category.label}
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-top:3px;
+                                        font-size:10px;
+                                        color:var(--text-secondary);
+                                    "
+                                >
+                                    ${percent.toFixed(1)}%
+                                    of work activity time
+                                </div>
+
+                            </div>
+
+
+                            <strong
+                                style="
+                                    font-size:13px;
+                                    color:var(--text-primary);
+                                    white-space:nowrap;
+                                "
+                            >
+                                ${formatDuration(seconds)}
+                            </strong>
+
+                        </div>
+
+
+                        <div
+                            style="
+                                width:100%;
+                                height:18px;
+                                background:var(--light-green);
+                                border-radius:999px;
+                                overflow:hidden;
+                            "
+                        >
+
+                            <div
+                                class="${category.className}"
+                                style="
+                                    width:${width}%;
+                                    height:100%;
+                                    min-width:${seconds > 0 ? "3px" : "0"};
+                                    border-radius:999px;
+                                    transition:width .35s ease;
+                                "
+                                title="${category.label}: ${formatDuration(seconds)}"
+                            ></div>
+
+                        </div>
+
+                    </div>
+                `;
+
+            }
+        );
+
+
+        // -----------------------------------------------------
+        // FOOTER SUMMARY
+        // -----------------------------------------------------
+
+        html += `
+
+                <div
+                    style="
+                        margin-top:8px;
+                        padding-top:14px;
+                        border-top:1px solid var(--border);
+                        display:grid;
+                        grid-template-columns:
+                            repeat(
+                                auto-fit,
+                                minmax(120px, 1fr)
+                            );
+                        gap:10px;
+                    "
+                >
+
+                    ${REPORT_CATEGORIES.map(
+                        category => {
+
+                            const seconds =
+                                totals[
+                                    category.key
+                                ] || 0;
+
+                            return `
+                                <div
+                                    style="
+                                        padding:10px;
+                                        border:1px solid var(--border);
+                                        border-radius:10px;
+                                        background:var(--card-background);
+                                    "
+                                >
+
+                                    <div
+                                        style="
+                                            font-size:10px;
+                                            color:var(--text-secondary);
+                                            margin-bottom:4px;
+                                        "
+                                    >
+                                        ${category.label}
+                                    </div>
+
+                                    <strong
+                                        style="
+                                            font-size:12px;
+                                            color:var(--text-primary);
+                                        "
+                                    >
+                                        ${formatDuration(seconds)}
+                                    </strong>
+
+                                </div>
+                            `;
+
+                        }
+                    ).join("")}
+
+                </div>
+
+            </div>
+        `;
+
+
+        chart.innerHTML =
+            html;
+
+    }
+
+
+    // ---------------------------------------------------------
+    // DATA-BASED OBSERVATIONS
+    // ---------------------------------------------------------
+
+    function renderEnhancedObservations(
+        profilingRecords,
+        workRecords
+    ) {
+
+        const target =
+            document.getElementById(
+                "reportObservations"
+            ) ||
+            document.getElementById(
+                "dataObservations"
+            ) ||
+            document.getElementById(
+                "reportInsights"
+            );
+
+
+        if (!target) {
+            return;
+        }
+
+
+        const categoryData =
+            calculateEnhancedCategoryTotals(
+                workRecords
+            );
+
+
+        const totals =
+            categoryData.totals;
+
+
+        const totalWork =
+            Object.values(
+                totals
+            ).reduce(
+                (
+                    total,
+                    value
+                ) =>
+                    total + value,
+                0
+            );
+
+
+        if (
+            totalWork <= 0 &&
+            profilingRecords.length === 0
+        ) {
+
+            target.innerHTML = `
+                <div>
+                    No recorded activity is available
+                    for the selected filters.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        const highestCategory =
+            REPORT_CATEGORIES
+                .map(
+                    category => ({
+                        ...category,
+                        seconds:
+                            totals[
+                                category.key
+                            ] || 0
+                    })
+                )
+                .sort(
+                    (
+                        a,
+                        b
+                    ) =>
+                        b.seconds -
+                        a.seconds
+                )[0];
+
+
+        const productivityRate =
+            totalWork > 0
+                ? (
+                    totals["PROD"] /
+                    totalWork
+                ) * 100
+                : 0;
+
+
+        const productionLossRate =
+            totalWork > 0
+                ? (
+                    totals["PROD LOSS"] /
+                    totalWork
+                ) * 100
+                : 0;
+
+
+        target.innerHTML = `
+
+            <div
+                style="
+                    display:grid;
+                    gap:10px;
+                "
+            >
+
+                <div>
+                    <strong>
+                        Highest recorded category:
+                    </strong>
+                    ${highestCategory.label}
+                    —
+                    ${formatDuration(
+                        highestCategory.seconds
+                    )}
+                </div>
+
+
+                <div>
+                    <strong>
+                        Production share:
+                    </strong>
+                    ${productivityRate.toFixed(1)}%
+                    of recorded work activity time.
+                </div>
+
+
+                <div>
+                    <strong>
+                        Production Loss:
+                    </strong>
+                    ${productionLossRate.toFixed(1)}%
+                    of recorded work activity time.
+                </div>
+
+
+                <div>
+                    <strong>
+                        Profiling jobs:
+                    </strong>
+                    ${profilingRecords.length}
+                    completed record${
+                        profilingRecords.length === 1
+                            ? ""
+                            : "s"
+                    }.
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ---------------------------------------------------------
+    // ENHANCED RENDER FUNCTION
+    // ---------------------------------------------------------
+
+    const originalRenderReports =
+        renderReports;
+
+
+    renderReports =
+        function(
+            records
+        ) {
+
+            const safeRecords =
+                Array.isArray(
+                    records
+                )
+                    ? records
+                    : [];
+
+
+            const workRecords =
+                getFilteredWorkActivityRecords();
+
+
+            // -------------------------------------------------
+            // KEEP ORIGINAL REPORT RENDERING
+            // -------------------------------------------------
+
+            originalRenderReports(
+                safeRecords
+            );
+
+
+            // -------------------------------------------------
+            // ENHANCED KPI CALCULATIONS
+            // -------------------------------------------------
+
+            updateEnhancedKPIs(
+                safeRecords,
+                workRecords
+            );
+
+
+            // -------------------------------------------------
+            // CATEGORY GRAPH
+            // -------------------------------------------------
+
+            renderEnhancedCategoryChart(
+                workRecords
+            );
+
+
+            // -------------------------------------------------
+            // OBSERVATIONS
+            // -------------------------------------------------
+
+            renderEnhancedObservations(
+                safeRecords,
+                workRecords
+            );
+
+        };
+
+
+    // ---------------------------------------------------------
+    // MAKE SURE WORK ACTIVITY TABLE USES 12-HOUR TIME
+    // ---------------------------------------------------------
+
+    const originalFormatDateTime =
+        formatDateTime;
+
+
+    // We intentionally do NOT replace the existing formatter
+    // globally because Excel export also uses it.
+    //
+    // Instead, the existing formatter is left untouched so
+    // Excel remains exactly as it is.
+
+
+    // ---------------------------------------------------------
+    // CATEGORY FILTER LABELS
+    // ---------------------------------------------------------
+
+    if (
+        workActivityCategoryFilter
+    ) {
+
+        const options =
+            workActivityCategoryFilter
+                .querySelectorAll(
+                    "option"
+                );
+
+
+        options.forEach(
+            option => {
+
+                const value =
+                    enhancedNormalizeCategory(
+                        option.value
+                    );
+
+
+                if (
+                    value === "PROD"
+                ) {
+
+                    option.textContent =
+                        "Production (PROD)";
+
+                }
+
+                else if (
+                    value === "NON-PROD"
+                ) {
+
+                    option.textContent =
+                        "Non-Production (NON-PROD)";
+
+                }
+
+                else if (
+                    value === "PROD LOSS"
+                ) {
+
+                    option.textContent =
+                        "Production Loss (PROD LOSS)";
+
+                }
+
+                else if (
+                    value === "TRAINING"
+                ) {
+
+                    option.textContent =
+                        "Training";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    // ---------------------------------------------------------
+    // START REPORTS
+    // ---------------------------------------------------------
+
+    // =========================================================
+// TICKY TICKY REPORTS - VISUAL ENHANCEMENT PATCH
+// =========================================================
+// Adds:
+// - Working category breakdown chart
+// - Separate colors for all work categories
+// - Category legend
+// - Data-based observations
+// - Enhanced KPI values
+// - Keeps existing Excel export untouched
+// =========================================================
+
+(function () {
+
+    // ---------------------------------------------------------
+    // ELEMENTS
+    // ---------------------------------------------------------
+
+    const enhancedCategoryChart =
+        document.getElementById(
+            "categoryBreakdownChart"
+        );
+
+    const enhancedInsightList =
+        document.getElementById(
+            "reportInsightList"
+        );
+
+    const enhancedTotalRecorded =
+        document.getElementById(
+            "reportTotalRecordedTime"
+        );
+
+    const enhancedProdTime =
+        document.getElementById(
+            "reportProdTime"
+        );
+
+    const enhancedNonProdTime =
+        document.getElementById(
+            "reportNonProdTime"
+        );
+
+    const enhancedProdLossTime =
+        document.getElementById(
+            "reportProdLossTime"
+        );
+
+    const enhancedTrainingTime =
+        document.getElementById(
+            "reportTrainingTime"
+        );
+
+    const enhancedProductivityRate =
+        document.getElementById(
+            "reportProductivityRate"
+        );
+
+    const enhancedNonProdRate =
+        document.getElementById(
+            "reportNonProdRate"
+        );
+
+    const enhancedProdLossRate =
+        document.getElementById(
+            "reportProdLossRate"
+        );
+
+    const enhancedActivityCount =
+        document.getElementById(
+            "reportActivityCount"
+        );
+
+    const enhancedAvgProdPerAnalyst =
+        document.getElementById(
+            "reportAvgProdPerAnalyst"
+        );
+
+
+    // ---------------------------------------------------------
+    // CATEGORY DEFINITIONS
+    // ---------------------------------------------------------
+
+    const REPORT_CATEGORY_CONFIG = {
+        "PROD": {
+            label: "Production (PROD)",
+            color: "#159A70"
+        },
+
+        "NON-PROD": {
+            label: "Non-Production (NON-PROD)",
+            color: "#E59A28"
+        },
+
+        "PROD LOSS": {
+            label: "Production Loss (PROD LOSS)",
+            color: "#D3544D"
+        },
+
+        "TRAINING": {
+            label: "Training",
+            color: "#7567D8"
+        }
+    };
+
+
+    // ---------------------------------------------------------
+    // SAFE CATEGORY NORMALIZATION
+    // ---------------------------------------------------------
+
+    function enhancedNormalizeCategory(value) {
+
+        const category =
+            String(
+                value || ""
+            )
+                .trim()
+                .toUpperCase();
+
+        if (
+            category === "PROD" ||
+            category === "PRODUCTION"
+        ) {
+            return "PROD";
+        }
+
+        if (
+            category === "NON-PROD" ||
+            category === "NON PRODUCTION" ||
+            category === "NON-PRODUCTION" ||
+            category === "NON-PROD ACTIVITIES"
+        ) {
+            return "NON-PROD";
+        }
+
+        if (
+            category === "PROD LOSS" ||
+            category === "PRODUCTION LOSS" ||
+            category === "PROD_LOSS"
+        ) {
+            return "PROD LOSS";
+        }
+
+        if (
+            category === "TRAINING"
+        ) {
+            return "TRAINING";
+        }
+
+        return category;
+    }
+
+
+    // ---------------------------------------------------------
+    // CATEGORY TOTAL CALCULATION
+    // ---------------------------------------------------------
+
+    function getEnhancedCategoryTotals(
+        profilingRecords = [],
+        workRecords = []
+    ) {
+
+        const totals = {
+            "PROD": 0,
+            "NON-PROD": 0,
+            "PROD LOSS": 0,
+            "TRAINING": 0
+        };
+
+
+        // -----------------------------------------------------
+        // PROFILING TIME
+        // -----------------------------------------------------
+        //
+        // Profiling is treated as Production for the report's
+        // productivity view.
+        //
+        // The existing report already calculates profiling
+        // separately, so this does not change database values.
+        // -----------------------------------------------------
+
+        (profilingRecords || []).forEach(
+            record => {
+
+                const seconds =
+                    Math.max(
+                        0,
+                        Number(
+                            record.totalSeconds ||
+                            record.total_seconds ||
+                            0
+                        )
+                    );
+
+                totals["PROD"] +=
+                    seconds;
+            }
+        );
+
+
+        // -----------------------------------------------------
+        // WORK ACTIVITY TIME
+        // -----------------------------------------------------
+
+        (workRecords || []).forEach(
+            record => {
+
+                const category =
+                    enhancedNormalizeCategory(
+                        record.category
+                    );
+
+                const seconds =
+                    Math.max(
+                        0,
+                        Number(
+                            record.duration_seconds ||
+                            0
+                        )
+                    );
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        totals,
+                        category
+                    )
+                ) {
+
+                    totals[category] +=
+                        seconds;
+
+                }
+
+            }
+        );
+
+
+        return totals;
+    }
+
+
+    // ---------------------------------------------------------
+    // CATEGORY BREAKDOWN CHART
+    // ---------------------------------------------------------
+
+    function renderEnhancedCategoryChart(
+        profilingRecords = [],
+        workRecords = []
+    ) {
+
+        if (
+            !enhancedCategoryChart
+        ) {
+            return;
+        }
+
+
+        const totals =
+            getEnhancedCategoryTotals(
+                profilingRecords,
+                workRecords
+            );
+
+
+        const rows = [
+            {
+                key: "PROD"
+            },
+            {
+                key: "NON-PROD"
+            },
+            {
+                key: "PROD LOSS"
+            },
+            {
+                key: "TRAINING"
+            }
+        ].map(
+            item => {
+
+                return {
+                    key: item.key,
+                    label:
+                        REPORT_CATEGORY_CONFIG[
+                            item.key
+                        ].label,
+
+                    color:
+                        REPORT_CATEGORY_CONFIG[
+                            item.key
+                        ].color,
+
+                    seconds:
+                        totals[
+                            item.key
+                        ] || 0
+                };
+
+            }
+        );
+
+
+        const total =
+            rows.reduce(
+                (
+                    sum,
+                    row
+                ) =>
+                    sum +
+                    row.seconds,
+                0
+            );
+
+
+        if (
+            total <= 0
+        ) {
+
+            enhancedCategoryChart.innerHTML = `
+                <div
+                    style="
+                        min-height:220px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        text-align:center;
+                        color:var(--text-secondary);
+                        font-size:14px;
+                    "
+                >
+                    No work activity or profiling time
+                    is available for the selected filters.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const maximum =
+            Math.max(
+                ...rows.map(
+                    row =>
+                        row.seconds
+                ),
+                1
+            );
+
+
+        enhancedCategoryChart.innerHTML = `
+
+            <div
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px 6px;
+                "
+            >
+
+                <!-- LEGEND -->
+
+                <div
+                    style="
+                        display:flex;
+                        flex-wrap:wrap;
+                        gap:14px;
+                        margin-bottom:22px;
+                        padding-bottom:14px;
+                        border-bottom:1px solid
+                            rgba(20,150,110,.20);
+                    "
+                >
+
+                    ${rows.map(
+                        row => `
+
+                            <div
+                                style="
+                                    display:flex;
+                                    align-items:center;
+                                    gap:7px;
+                                    font-size:11px;
+                                    font-weight:700;
+                                    color:var(--text-secondary);
+                                "
+                            >
+
+                                <span
+                                    style="
+                                        width:11px;
+                                        height:11px;
+                                        border-radius:3px;
+                                        background:${row.color};
+                                        display:inline-block;
+                                        flex-shrink:0;
+                                    "
+                                ></span>
+
+                                ${escapeHtml(
+                                    row.label
+                                )}
+
+                            </div>
+
+                        `
+                    ).join("")}
+
+                </div>
+
+
+                <!-- TOTAL -->
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        margin-bottom:18px;
+                    "
+                >
+
+                    <span
+                        style="
+                            font-size:12px;
+                            color:var(--text-secondary);
+                            font-weight:600;
+                        "
+                    >
+                        Total Categorized Time
+                    </span>
+
+                    <strong
+                        style="
+                            font-size:15px;
+                            color:var(--text-primary);
+                        "
+                    >
+                        ${formatDuration(total)}
+                    </strong>
+
+                </div>
+
+
+                <!-- CATEGORY BARS -->
+
+                <div>
+
+                    ${rows.map(
+                        row => {
+
+                            const percent =
+                                total > 0
+                                    ? (
+                                        row.seconds /
+                                        total
+                                    ) * 100
+                                    : 0;
+
+
+                            const width =
+                                row.seconds > 0
+                                    ? Math.max(
+                                        (
+                                            row.seconds /
+                                            maximum
+                                        ) * 100,
+                                        2
+                                    )
+                                    : 0;
+
+
+                            return `
+
+                                <div
+                                    style="
+                                        margin-bottom:20px;
+                                    "
+                                >
+
+                                    <!-- LABEL -->
+
+                                    <div
+                                        style="
+                                            display:flex;
+                                            justify-content:space-between;
+                                            align-items:center;
+                                            gap:12px;
+                                            margin-bottom:7px;
+                                        "
+                                    >
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                align-items:center;
+                                                gap:8px;
+                                                min-width:0;
+                                            "
+                                        >
+
+                                            <span
+                                                style="
+                                                    width:10px;
+                                                    height:10px;
+                                                    border-radius:3px;
+                                                    background:${row.color};
+                                                    display:inline-block;
+                                                    flex-shrink:0;
+                                                "
+                                            ></span>
+
+                                            <span
+                                                style="
+                                                    font-size:13px;
+                                                    font-weight:700;
+                                                    color:var(--text-primary);
+                                                "
+                                            >
+                                                ${escapeHtml(
+                                                    row.label
+                                                )}
+                                            </span>
+
+                                        </div>
+
+
+                                        <strong
+                                            style="
+                                                font-size:13px;
+                                                color:var(--text-primary);
+                                                white-space:nowrap;
+                                            "
+                                        >
+                                            ${formatDuration(
+                                                row.seconds
+                                            )}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <!-- TRACK -->
+
+                                    <div
+                                        style="
+                                            width:100%;
+                                            height:18px;
+                                            background:rgba(20,150,110,.10);
+                                            border-radius:999px;
+                                            overflow:hidden;
+                                        "
+                                        title="${escapeHtml(
+                                            row.label
+                                        )}: ${formatDuration(
+                                            row.seconds
+                                        )} (${percent.toFixed(1)}%)"
+                                    >
+
+                                        <div
+                                            style="
+                                                width:${width}%;
+                                                min-width:${
+                                                    row.seconds > 0
+                                                        ? "3px"
+                                                        : "0"
+                                                };
+                                                height:100%;
+                                                background:${row.color};
+                                                border-radius:999px;
+                                                transition:width .35s ease;
+                                            "
+                                        ></div>
+
+                                    </div>
+
+
+                                    <!-- PERCENT -->
+
+                                    <div
+                                        style="
+                                            margin-top:5px;
+                                            font-size:10px;
+                                            color:var(--text-secondary);
+                                        "
+                                    >
+                                        ${percent.toFixed(1)}%
+                                        of categorized time
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }
+                    ).join("")}
+
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    // ---------------------------------------------------------
+    // DATA-BASED OBSERVATIONS
+    // ---------------------------------------------------------
+
+    function renderEnhancedInsights(
+        profilingRecords = [],
+        workRecords = []
+    ) {
+
+        if (
+            !enhancedInsightList
+        ) {
+            return;
+        }
+
+
+        const totals =
+            getEnhancedCategoryTotals(
+                profilingRecords,
+                workRecords
+            );
+
+
+        const prod =
+            totals["PROD"] || 0;
+
+        const nonProd =
+            totals["NON-PROD"] || 0;
+
+        const prodLoss =
+            totals["PROD LOSS"] || 0;
+
+        const training =
+            totals["TRAINING"] || 0;
+
+
+        const total =
+            prod +
+            nonProd +
+            prodLoss +
+            training;
+
+
+        const analysts =
+            new Set(
+                [
+                    ...(profilingRecords || [])
+                        .map(
+                            record =>
+                                record.analystName ||
+                                record.analyst_name ||
+                                record.analyst_id
+                        ),
+
+                    ...(workRecords || [])
+                        .map(
+                            record =>
+                                record.analystName ||
+                                record.analyst_name ||
+                                record.analyst_id
+                        )
+                ]
+                .filter(Boolean)
+                .map(
+                    value =>
+                        String(value)
+                )
+            );
+
+
+        const insights = [];
+
+
+        if (
+            total <= 0
+        ) {
+
+            insights.push(
+                "No recorded time is available for the selected filters."
+            );
+
+        } else {
+
+            const prodRate =
+                (
+                    prod /
+                    total
+                ) * 100;
+
+            const nonProdRate =
+                (
+                    nonProd /
+                    total
+                ) * 100;
+
+            const lossRate =
+                (
+                    prodLoss /
+                    total
+                ) * 100;
+
+            const trainingRate =
+                (
+                    training /
+                    total
+                ) * 100;
+
+
+            insights.push(
+                `Production represents ${prodRate.toFixed(1)}% of the ${formatDuration(total)} categorized time.`
+            );
+
+
+            if (
+                nonProd > 0
+            ) {
+
+                insights.push(
+                    `Non-Production accounts for ${formatDuration(nonProd)} (${nonProdRate.toFixed(1)}%).`
+                );
+
+            }
+
+
+            if (
+                prodLoss > 0
+            ) {
+
+                insights.push(
+                    `Production Loss accounts for ${formatDuration(prodLoss)} (${lossRate.toFixed(1)}%).`
+                );
+
+            }
+
+
+            if (
+                training > 0
+            ) {
+
+                insights.push(
+                    `Training accounts for ${formatDuration(training)} (${trainingRate.toFixed(1)}%).`
+                );
+
+            }
+
+
+            if (
+                analysts.size > 0
+            ) {
+
+                const avgProd =
+                    Math.round(
+                        prod /
+                        analysts.size
+                    );
+
+
+                insights.push(
+                    `Average Production time per recorded analyst is ${formatDuration(avgProd)}.`
+                );
+
+            }
+
+
+            insights.push(
+                `${(workRecords || []).length.toLocaleString()} completed work activities and ${(profilingRecords || []).length.toLocaleString()} completed profiling jobs are included in the selected report data.`
+            );
+
+        }
+
+
+        enhancedInsightList.innerHTML =
+            insights
+                .map(
+                    text => `
+                        <li>
+                            ${escapeHtml(text)}
+                        </li>
+                    `
+                )
+                .join("");
+
+    }
+
+
+    // ---------------------------------------------------------
+    // ENHANCED KPI UPDATE
+    // ---------------------------------------------------------
+
+    function updateEnhancedKPIs(
+        profilingRecords = [],
+        workRecords = []
+    ) {
+
+        const totals =
+            getEnhancedCategoryTotals(
+                profilingRecords,
+                workRecords
+            );
+
+
+        const prod =
+            totals["PROD"] || 0;
+
+        const nonProd =
+            totals["NON-PROD"] || 0;
+
+        const prodLoss =
+            totals["PROD LOSS"] || 0;
+
+        const training =
+            totals["TRAINING"] || 0;
+
+
+        const workTotal =
+            nonProd +
+            prodLoss +
+            training;
+
+
+        const total =
+            prod +
+            nonProd +
+            prodLoss +
+            training;
+
+
+        const productivityRate =
+            total > 0
+                ? (
+                    prod /
+                    total
+                ) * 100
+                : 0;
+
+
+        const nonProdRate =
+            total > 0
+                ? (
+                    nonProd /
+                    total
+                ) * 100
+                : 0;
+
+
+        const prodLossRate =
+            total > 0
+                ? (
+                    prodLoss /
+                    total
+                ) * 100
+                : 0;
+
+
+        if (
+            enhancedTotalRecorded
+        ) {
+
+            enhancedTotalRecorded.textContent =
+                formatDuration(total);
+
+        }
+
+
+        if (
+            enhancedProdTime
+        ) {
+
+            enhancedProdTime.textContent =
+                formatDuration(prod);
+
+        }
+
+
+        if (
+            enhancedNonProdTime
+        ) {
+
+            enhancedNonProdTime.textContent =
+                formatDuration(nonProd);
+
+        }
+
+
+        if (
+            enhancedProdLossTime
+        ) {
+
+            enhancedProdLossTime.textContent =
+                formatDuration(prodLoss);
+
+        }
+
+
+        if (
+            enhancedTrainingTime
+        ) {
+
+            enhancedTrainingTime.textContent =
+                formatDuration(training);
+
+        }
+
+
+        if (
+            enhancedProductivityRate
+        ) {
+
+            enhancedProductivityRate.textContent =
+                `${productivityRate.toFixed(1)}%`;
+
+        }
+
+
+        if (
+            enhancedNonProdRate
+        ) {
+
+            enhancedNonProdRate.textContent =
+                `${nonProdRate.toFixed(1)}%`;
+
+        }
+
+
+        if (
+            enhancedProdLossRate
+        ) {
+
+            enhancedProdLossRate.textContent =
+                `${prodLossRate.toFixed(1)}%`;
+
+        }
+
+
+        if (
+            enhancedActivityCount
+        ) {
+
+            enhancedActivityCount.textContent =
+                (
+                    workRecords || []
+                )
+                    .length
+                    .toLocaleString();
+
+        }
+
+
+        if (
+            enhancedAvgProdPerAnalyst
+        ) {
+
+            const analysts =
+                new Set(
+                    [
+                        ...(profilingRecords || [])
+                            .map(
+                                record =>
+                                    record.analystName ||
+                                    record.analyst_id
+                            ),
+
+                        ...(workRecords || [])
+                            .map(
+                                record =>
+                                    record.analystName ||
+                                    record.analyst_id
+                            )
+                    ]
+                    .filter(Boolean)
+                    .map(
+                        value =>
+                            String(value)
+                    )
+                );
+
+
+            const average =
+                analysts.size > 0
+                    ? Math.round(
+                        prod /
+                        analysts.size
+                    )
+                    : 0;
+
+
+            enhancedAvgProdPerAnalyst.textContent =
+                formatDuration(
+                    average
+                );
+
+        }
+
+    }
+
+
+    // ---------------------------------------------------------
+    // ENHANCE EXISTING RENDER
+    // ---------------------------------------------------------
+
+    const originalRenderReports =
+        renderReports;
+
+
+    renderReports =
+        function (
+            records
+        ) {
+
+            // Run the original Reports rendering first.
+            originalRenderReports(
+                records
+            );
+
+
+            // Get currently filtered work activities.
+            let filteredWork =
+                [];
+
+
+            try {
+
+                if (
+                    typeof getFilteredWorkActivityRecords ===
+                    "function"
+                ) {
+
+                    filteredWork =
+                        getFilteredWorkActivityRecords() ||
+                        [];
+
+                } else {
+
+                    filteredWork =
+                        workActivityReportRecords ||
+                        [];
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Unable to get filtered work activities:",
+                    error
+                );
+
+                filteredWork =
+                    workActivityReportRecords ||
+                    [];
+
+            }
+
+
+            const filteredProfiling =
+                records ||
+                [];
+
+
+            // Update enhanced components.
+            updateEnhancedKPIs(
+                filteredProfiling,
+                filteredWork
+            );
+
+
+            renderEnhancedInsights(
+                filteredProfiling,
+                filteredWork
+            );
+
+
+            renderEnhancedCategoryChart(
+                filteredProfiling,
+                filteredWork
+            );
+
+        };
+
+
+    // ---------------------------------------------------------
+    // ADD COLORS TO EXISTING ANALYST COMPOSITION
+    // ---------------------------------------------------------
+
+    const originalAnalystChart =
+        renderAnalystChart;
+
+
+    renderAnalystChart =
+        function (
+            profilingRecords,
+            workRecords = []
+        ) {
+
+            originalAnalystChart(
+                profilingRecords,
+                workRecords
+            );
+
+
+            if (
+                !analystChart
+            ) {
+                return;
+            }
+
+
+            // Apply visual colors to the existing
+            // segment classes.
+
+            const segmentColors = {
+
+                "profiling-chart-segment":
+                    "#159A70",
+
+                "prod-chart-segment":
+                    "#159A70",
+
+                "nonprod-chart-segment":
+                    "#E59A28",
+
+                "other-work-chart-segment":
+                    "#7567D8"
+
+            };
+
+
+            Object.entries(
+                segmentColors
+            ).forEach(
+                (
+                    [
+                        className,
+                        color
+                    ]
+                ) => {
+
+                    analystChart
+                        .querySelectorAll(
+                            "." +
+                            className
+                        )
+                        .forEach(
+                            element => {
+
+                                element.style.background =
+                                    color;
+
+                            }
+                        );
+
+                }
+            );
+
+
+            // Add a legend to the Analyst Time
+            // Composition chart if it doesn't already
+            // exist.
+
+            if (
+                !analystChart.querySelector(
+                    ".analyst-composition-legend"
+                )
+            ) {
+
+                const legend =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                legend.className =
+                    "analyst-composition-legend";
+
+
+                legend.style.cssText = `
+                    display:flex;
+                    flex-wrap:wrap;
+                    gap:14px;
+                    margin-top:14px;
+                    padding-top:10px;
+                    border-top:1px solid rgba(20,150,110,.20);
+                    font-size:10px;
+                    color:var(--text-secondary);
+                `;
+
+
+                const legendItems = [
+
+                    {
+                        label: "Profiling",
+                        color: "#159A70"
+                    },
+
+                    {
+                        label: "PROD",
+                        color: "#159A70"
+                    },
+
+                    {
+                        label: "NON-PROD",
+                        color: "#E59A28"
+                    },
+
+                    {
+                        label: "Other",
+                        color: "#7567D8"
+                    }
+
+                ];
+
+
+                legend.innerHTML =
+                    legendItems
+                        .map(
+                            item => `
+                                <span
+                                    style="
+                                        display:flex;
+                                        align-items:center;
+                                        gap:5px;
+                                    "
+                                >
+
+                                    <span
+                                        style="
+                                            width:9px;
+                                            height:9px;
+                                            border-radius:2px;
+                                            background:${item.color};
+                                            display:inline-block;
+                                        "
+                                    ></span>
+
+                                    ${item.label}
+
+                                </span>
+                            `
+                        )
+                        .join("");
+
+
+                analystChart.appendChild(
+                    legend
+                );
+
+            }
+
+        };
+
+
+    // ---------------------------------------------------------
+    // MAKE SURE CATEGORY FILTER HAS ALL OPTIONS
+    // ---------------------------------------------------------
+
+    const categoryFilter =
+        document.getElementById(
+            "workActivityCategoryFilter"
+        );
+
+
+    if (
+        categoryFilter
+    ) {
+
+        const options = [
+            {
+                value: "",
+                text: "All Categories"
+            },
+
+            {
+                value: "PROD",
+                text: "Production (PROD)"
+            },
+
+            {
+                value: "NON-PROD",
+                text: "Non-Production (NON-PROD)"
+            },
+
+            {
+                value: "PROD LOSS",
+                text: "Production Loss (PROD LOSS)"
+            },
+
+            {
+                value: "TRAINING",
+                text: "Training"
+            }
+        ];
+
+
+        const currentValue =
+            categoryFilter.value;
+
+
+        categoryFilter.innerHTML =
+            options
+                .map(
+                    option => `
+                        <option
+                            value="${option.value}"
+                        >
+                            ${option.text}
+                        </option>
+                    `
+                )
+                .join("");
+
+
+        categoryFilter.value =
+            options.some(
+                option =>
+                    option.value ===
+                    currentValue
+            )
+                ? currentValue
+                : "";
+
+    }
+
+
+    // ---------------------------------------------------------
+    // START REPORTS
+    // ---------------------------------------------------------
+
+    initializeReports();
+
+})();
+
+})();

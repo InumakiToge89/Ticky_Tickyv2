@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -13,9 +12,9 @@
     <title>Ticky Ticky | Dashboard</title>
 
     <link
-    id="siteFavicon"
-    rel="icon"
-    type="image/png"
+        id="siteFavicon"
+        rel="icon"
+        type="image/png"
     >
 
     <link
@@ -28,9 +27,9 @@
         href="../css/dashboard.css"
     >
 
-        <link
-    rel="stylesheet"
-    href="../css/themes/emerald.css"
+    <link
+        rel="stylesheet"
+        href="../css/themes/emerald.css"
     >
 
     <link
@@ -47,13 +46,12 @@
         rel="stylesheet"
         href="../css/themes/rainbow.css"
     >
-
 </head>
+
 
 <body>
 
 <div class="dashboard-layout">
-
 
     <!-- =====================================================
          SIDEBAR
@@ -71,6 +69,7 @@
                     alt="Ticky Ticky"
                 >
             </div>
+
             <div class="sidebar-title">
                 Ticky Ticky
             </div>
@@ -84,26 +83,17 @@
                 href="dashboard.html"
                 class="nav-item active"
             >
-
-                <span class="nav-icon">
-                    ▦
-                </span>
-
+                <span class="nav-icon">▦</span>
                 Dashboard
-
             </a>
+
 
             <a
                 href="profiling.html"
                 class="nav-item"
             >
-
-                <span class="nav-icon">
-                    ◷
-                </span>
-
+                <span class="nav-icon">◷</span>
                 Profiling
-
             </a>
 
 
@@ -111,43 +101,36 @@
                 href="work-timer.html"
                 class="nav-item"
             >
-
-                <span class="nav-icon">
-                    ◷
-                </span>
-
+                <span class="nav-icon">◷</span>
                 Work Activity
-
             </a>
 
-            <a 
-            
-                href="teams.html" id="teamsNavItem" class="nav-item"
+
+            <a
+                href="teams.html"
+                id="teamsNavItem"
+                class="nav-item"
             >
                 <span class="nav-icon">👥</span>
                 <span>Teams</span>
             </a>
 
+
             <a
                 href="history.html"
                 class="nav-item"
             >
-                <span class="nav-icon">
-                    ▤
-                </span>
-
+                <span class="nav-icon">▤</span>
                 History
             </a>
+
 
             <a
                 href="reports.html"
                 id="reportsNavItem"
                 class="nav-item"
             >
-                <span class="nav-icon">
-                    ▥
-                </span>
-
+                <span class="nav-icon">▥</span>
                 Reports
             </a>
 
@@ -161,19 +144,13 @@
                 id="logoutButton"
                 class="nav-item"
             >
-
-                <span class="nav-icon">
-                    ↪
-                </span>
-
+                <span class="nav-icon">↪</span>
                 Logout
-
             </a>
 
         </div>
 
     </aside>
-
 
 
     <!-- =====================================================
@@ -182,8 +159,7 @@
 
     <main class="dashboard-main">
 
-
-        <!-- TOPBAR -->
+        <!-- TOP BAR -->
 
         <header class="topbar">
 
@@ -212,6 +188,7 @@
                         --
                     </div>
 
+
                     <div class="user-info">
 
                         <div
@@ -232,372 +209,121 @@
 
                 </div>
 
-
-
             </div>
 
         </header>
 
 
-
-        <!-- CONTENT -->
+        <!-- =====================================================
+             DASHBOARD CONTENT
+             ===================================================== -->
 
         <section class="dashboard-content">
 
 
-            <!-- WELCOME -->
+            <!-- =================================================
+                 WELCOME
+                 ================================================= -->
 
-            <div class="welcome-section">
+            <section class="welcome-section">
 
-                <h1
-                    id="welcomeTitle"
-                    class="welcome-title"
-                >
-                    Good day! 👋
-                </h1>
+                <div>
 
-                <p class="welcome-subtitle">
-                    Here's an overview of your productivity.
-                </p>
-
-            </div>
-
-
-
-            <!-- STAT CARDS -->
-
-            <div class="stats-grid">
-
-
-                <!-- TEAMS -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            Teams Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            T
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="teamsToday"
-                        class="stat-card-value"
+                    <h1
+                        id="welcomeTitle"
+                        class="welcome-title"
                     >
-                        0
-                    </div>
+                        Good day! 👋
+                    </h1>
+
+                    <p class="welcome-subtitle">
+                        Here's a transparent overview of today's recorded work.
+                    </p>
 
                 </div>
 
 
-
-                <!-- MEMBERS -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            Members Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            M
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="membersToday"
-                        class="stat-card-value"
-                    >
-                        0
-                    </div>
-
-                </div>
-
-
-
-                <!-- TOTAL TIME -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            Total Time Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            ◷
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="totalTimeToday"
-                        class="stat-card-value"
-                    >
-                        00:00:00
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- WORK ACTIVITY STATISTICS -->
-
-            <div class="stats-grid">
-
-                <!-- PROD TIME -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            PROD Time Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            P
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="prodTimeToday"
-                        class="stat-card-value"
-                    >
-                        00:00:00
-                    </div>
-
-                </div>
-
-
-                <!-- NON-PROD TIME -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            NON-PROD Time Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            N
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="nonProdTimeToday"
-                        class="stat-card-value"
-                    >
-                        00:00:00
-                    </div>
-
-                </div>
-
-
-                <!-- ACTIVITIES -->
-
-                <div class="stat-card">
-
-                    <div class="stat-card-header">
-
-                        <span class="stat-card-label">
-                            Activities Today
-                        </span>
-
-                        <span class="stat-card-icon">
-                            A
-                        </span>
-
-                    </div>
-
-                    <div
-                        id="activitiesToday"
-                        class="stat-card-value"
-                    >
-                        0
-                    </div>
-
-                </div>
-
-            </div>
-
-
-                <!-- =====================================================
-                TODAY'S TIME BREAKDOWN
-                ===================================================== -->
-
-            <section class="section-card time-breakdown-card">
-
-                <div class="section-header">
-
-                    <h2 class="section-title">
-                        Today's Time Breakdown
-                    </h2>
-
-                </div>
-
-
-                <!-- PROFILING -->
-
-                <div class="time-breakdown-item">
-
-                    <div class="time-breakdown-info">
-
-                        <div>
-
-                            <span class="time-breakdown-label">
-                                Profiling
-                            </span>
-
-                            <span
-                                id="profilingBreakdownTime"
-                                class="time-breakdown-duration"
-                            >
-                                00:00:00
-                            </span>
-
-                        </div>
-
-                        <span
-                            id="profilingBreakdownPercent"
-                            class="time-breakdown-percent"
-                        >
-                            0%
-                        </span>
-
-                    </div>
-
-
-                    <div class="time-breakdown-bar">
-
-                        <div
-                            id="profilingBreakdownBar"
-                            class="time-breakdown-fill profiling-fill"
-                        ></div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PROD -->
-
-                <div class="time-breakdown-item">
-
-                    <div class="time-breakdown-info">
-
-                        <div>
-
-                            <span class="time-breakdown-label">
-                                PROD Activities
-                            </span>
-
-                            <span
-                                id="prodBreakdownTime"
-                                class="time-breakdown-duration"
-                            >
-                                00:00:00
-                            </span>
-
-                        </div>
-
-                        <span
-                            id="prodBreakdownPercent"
-                            class="time-breakdown-percent"
-                        >
-                            0%
-                        </span>
-
-                    </div>
-
-
-                    <div class="time-breakdown-bar">
-
-                        <div
-                            id="prodBreakdownBar"
-                            class="time-breakdown-fill prod-fill"
-                        ></div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- NON-PROD -->
-
-                <div class="time-breakdown-item">
-
-                    <div class="time-breakdown-info">
-
-                        <div>
-
-                            <span class="time-breakdown-label">
-                                NON-PROD Activities
-                            </span>
-
-                            <span
-                                id="nonProdBreakdownTime"
-                                class="time-breakdown-duration"
-                            >
-                                00:00:00
-                            </span>
-
-                        </div>
-
-                        <span
-                            id="nonProdBreakdownPercent"
-                            class="time-breakdown-percent"
-                        >
-                            0%
-                        </span>
-
-                    </div>
-
-
-                    <div class="time-breakdown-bar">
-
-                        <div
-                            id="nonProdBreakdownBar"
-                            class="time-breakdown-fill nonprod-fill"
-                        ></div>
-
-                    </div>
+                <div class="dashboard-date">
+
+                    <span class="dashboard-date-label">
+                        Reporting date
+                    </span>
+
+                    <strong id="dashboardDate">
+                        --
+                    </strong>
 
                 </div>
 
             </section>
 
-            <br></br>
-
             <!-- =====================================================
-            PRODUCTIVITY SUMMARY
-            ===================================================== -->
+                DASHBOARD DATE FILTER
+                ===================================================== -->
 
-            <section class="section-card productivity-summary-card">
+            <section class="dashboard-filter-card">
+
+                <div class="dashboard-filter-info">
+
+                    <div class="dashboard-filter-title">
+                        Dashboard Date
+                    </div>
+
+                    <div
+                        id="dashboardDateLabel"
+                        class="dashboard-filter-current"
+                    >
+                        Showing data for today
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-filter-controls">
+
+                    <label
+                        for="dashboardDateFilter"
+                        class="dashboard-filter-label"
+                    >
+                        Report Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dashboardDateFilter"
+                        class="dashboard-date-input"
+                    >
+
+                    <button
+                        type="button"
+                        id="dashboardTodayButton"
+                        class="dashboard-today-button"
+                    >
+                        Today
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 OVERVIEW
+                 ================================================= -->
+
+            <section class="dashboard-section">
 
                 <div class="section-header">
 
                     <div>
 
                         <h2 class="section-title">
-                            Today's Productivity Summary
+                            Today's Overview
                         </h2>
 
-                        <p class="productivity-summary-subtitle">
-                            A complete overview of your recorded work today.
+                        <p class="section-subtitle">
+                            High-level information from today's completed profiling and work activity records.
                         </p>
 
                     </div>
@@ -605,114 +331,699 @@
                 </div>
 
 
-                <div class="productivity-summary-grid">
+                <div class="overview-grid">
+
+
+                    <!-- TEAMS -->
+
+                    <div class="overview-card">
+
+                        <div class="overview-card-label">
+                            Teams Profiled
+                        </div>
+
+                        <div
+                            id="teamsToday"
+                            class="overview-card-value"
+                        >
+                            0
+                        </div>
+
+                        <div class="overview-card-help">
+                            Unique teams with completed profiling today.
+                        </div>
+
+                    </div>
+
+
+                    <!-- MEMBERS -->
+
+                    <div class="overview-card">
+
+                        <div class="overview-card-label">
+                            Members Profiled
+                        </div>
+
+                        <div
+                            id="membersToday"
+                            class="overview-card-value"
+                        >
+                            0
+                        </div>
+
+                        <div class="overview-card-help">
+                            Member count recorded across today's profiling jobs.
+                        </div>
+
+                    </div>
 
 
                     <!-- PROFILING -->
 
-                    <div class="productivity-summary-item">
+                    <div class="overview-card">
 
-                        <span class="productivity-summary-label">
-                            Profiling
-                        </span>
+                        <div class="overview-card-label">
+                            Profiling Time
+                        </div>
 
-                        <strong
-                            id="summaryProfilingTime"
-                            class="productivity-summary-value"
+                        <div
+                            id="profilingTimeToday"
+                            class="overview-card-value overview-time"
                         >
                             00:00:00
-                        </strong>
+                        </div>
+
+                        <div class="overview-card-help">
+                            Active profiling time recorded today.
+                        </div>
 
                     </div>
 
 
-                    <!-- PROD -->
+                    <!-- WORK ACTIVITY -->
 
-                    <div class="productivity-summary-item">
+                    <div class="overview-card">
 
-                        <span class="productivity-summary-label">
-                            PROD Activities
-                        </span>
+                        <div class="overview-card-label">
+                            Work Activity Time
+                        </div>
 
-                        <strong
-                            id="summaryProdTime"
-                            class="productivity-summary-value"
+                        <div
+                            id="workActivityTimeToday"
+                            class="overview-card-value overview-time"
                         >
                             00:00:00
-                        </strong>
+                        </div>
+
+                        <div class="overview-card-help">
+                            PROD + NON-PROD + PROD LOSS + TRAINING.
+                        </div>
 
                     </div>
 
-
-                    <!-- NON-PROD -->
-
-                    <div class="productivity-summary-item">
-
-                        <span class="productivity-summary-label">
-                            NON-PROD Activities
-                        </span>
-
-                        <strong
-                            id="summaryNonProdTime"
-                            class="productivity-summary-value"
-                        >
-                            00:00:00
-                        </strong>
-
-                    </div>
-
-
-                    <!-- TOTAL -->
-
-                    <div class="productivity-summary-item summary-total-item">
-
-                        <span class="productivity-summary-label">
-                            Total Recorded Time
-                        </span>
-
-                        <strong
-                            id="summaryTotalTime"
-                            class="productivity-summary-value"
-                        >
-                            00:00:00
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <!-- INSIGHT -->
-
-                <div
-                    id="productivityInsight"
-                    class="productivity-insight"
-                >
-
-                    No recorded activity yet today.
 
                 </div>
 
             </section>
 
-            <br></br>
 
 
-                        <!-- RECENT WORK ACTIVITY -->
+            <!-- =================================================
+                 TIME ACCOUNTING
+                 ================================================= -->
 
-            <section class="section-card">
+            <section class="dashboard-section">
 
                 <div class="section-header">
 
-                    <h2 class="section-title">
-                        Recent Work Activity
-                    </h2>
+                    <div>
+
+                        <h2 class="section-title">
+                            Today's Time Accounting
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Every recorded second is assigned to a visible category below.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOTAL -->
+
+                <div class="total-time-panel">
+
+                    <div>
+
+                        <span class="total-time-label">
+                            Total Recorded Time
+                        </span>
+
+                        <strong
+                            id="totalTimeToday"
+                            class="total-time-value"
+                        >
+                            00:00:00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="total-time-definition">
+
+                        <strong>
+                            Calculation
+                        </strong>
+
+                        <span>
+                            Profiling + PROD + NON-PROD + PROD LOSS + TRAINING
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- CATEGORY GRID -->
+
+                <div class="time-category-grid">
+
+
+                    <!-- PROFILING -->
+
+                    <div class="time-category-card profiling-card">
+
+                        <div class="time-category-top">
+
+                            <div>
+
+                                <span class="time-category-label">
+                                    Profiling
+                                </span>
+
+                                <span class="time-category-description">
+                                    Time spent performing profiling.
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="profilingBreakdownPercent"
+                                class="time-category-percent"
+                            >
+                                0%
+                            </strong>
+
+                        </div>
+
+
+                        <strong
+                            id="profilingBreakdownTime"
+                            class="time-category-time"
+                        >
+                            00:00:00
+                        </strong>
+
+
+                        <div class="progress-track">
+
+                            <div
+                                id="profilingBreakdownBar"
+                                class="progress-fill profiling-fill"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- PROD -->
+
+                    <div class="time-category-card prod-card">
+
+                        <div class="time-category-top">
+
+                            <div>
+
+                                <span class="time-category-label">
+                                    PROD
+                                </span>
+
+                                <span class="time-category-description">
+                                    Production work.
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="prodBreakdownPercent"
+                                class="time-category-percent"
+                            >
+                                0%
+                            </strong>
+
+                        </div>
+
+
+                        <strong
+                            id="prodBreakdownTime"
+                            class="time-category-time"
+                        >
+                            00:00:00
+                        </strong>
+
+
+                        <div class="progress-track">
+
+                            <div
+                                id="prodBreakdownBar"
+                                class="progress-fill prod-fill"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- NON-PROD -->
+
+                    <div class="time-category-card nonprod-card">
+
+                        <div class="time-category-top">
+
+                            <div>
+
+                                <span class="time-category-label">
+                                    NON-PROD
+                                </span>
+
+                                <span class="time-category-description">
+                                    Non-production work.
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="nonProdBreakdownPercent"
+                                class="time-category-percent"
+                            >
+                                0%
+                            </strong>
+
+                        </div>
+
+
+                        <strong
+                            id="nonProdBreakdownTime"
+                            class="time-category-time"
+                        >
+                            00:00:00
+                        </strong>
+
+
+                        <div class="progress-track">
+
+                            <div
+                                id="nonProdBreakdownBar"
+                                class="progress-fill nonprod-fill"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- PROD LOSS -->
+
+                    <div class="time-category-card loss-card">
+
+                        <div class="time-category-top">
+
+                            <div>
+
+                                <span class="time-category-label">
+                                    PROD LOSS
+                                </span>
+
+                                <span class="time-category-description">
+                                    Production loss time.
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="prodLossBreakdownPercent"
+                                class="time-category-percent"
+                            >
+                                0%
+                            </strong>
+
+                        </div>
+
+
+                        <strong
+                            id="prodLossBreakdownTime"
+                            class="time-category-time"
+                        >
+                            00:00:00
+                        </strong>
+
+
+                        <div class="progress-track">
+
+                            <div
+                                id="prodLossBreakdownBar"
+                                class="progress-fill loss-fill"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- TRAINING -->
+
+                    <div class="time-category-card training-card">
+
+                        <div class="time-category-top">
+
+                            <div>
+
+                                <span class="time-category-label">
+                                    TRAINING
+                                </span>
+
+                                <span class="time-category-description">
+                                    Training-related activity.
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="trainingBreakdownPercent"
+                                class="time-category-percent"
+                            >
+                                0%
+                            </strong>
+
+                        </div>
+
+
+                        <strong
+                            id="trainingBreakdownTime"
+                            class="time-category-time"
+                        >
+                            00:00:00
+                        </strong>
+
+
+                        <div class="progress-track">
+
+                            <div
+                                id="trainingBreakdownBar"
+                                class="progress-fill training-fill"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- TRANSPARENCY -->
+
+                <div class="calculation-panel">
+
+                    <div class="calculation-title">
+                        How the dashboard calculates time
+                    </div>
+
+
+                    <div class="calculation-row">
+
+                        <span>
+                            Total Recorded Time
+                        </span>
+
+                        <strong>
+                            Profiling + all Work Activity categories
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calculation-row">
+
+                        <span>
+                            Work Activity Time
+                        </span>
+
+                        <strong>
+                            PROD + NON-PROD + PROD LOSS + TRAINING
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calculation-row">
+
+                        <span>
+                            Productivity Rate
+                        </span>
+
+                        <strong>
+                            PROD ÷ Work Activity Time × 100
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PRODUCTIVITY
+                 ================================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2 class="section-title">
+                            Productivity Snapshot
+                        </h2>
+
+                        <p class="section-subtitle">
+                            This separates productive production time from the rest of the recorded work activity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="productivity-grid">
+
+
+                    <div class="productivity-card primary-productivity">
+
+                        <span class="productivity-label">
+                            PROD Time
+                        </span>
+
+                        <strong
+                            id="productivityProdTime"
+                            class="productivity-value"
+                        >
+                            00:00:00
+                        </strong>
+
+                        <span class="productivity-help">
+                            Production activity.
+                        </span>
+
+                    </div>
+
+
+                    <div class="productivity-card">
+
+                        <span class="productivity-label">
+                            Other Work Activity
+                        </span>
+
+                        <strong
+                            id="productivityOtherTime"
+                            class="productivity-value"
+                        >
+                            00:00:00
+                        </strong>
+
+                        <span class="productivity-help">
+                            NON-PROD + PROD LOSS + TRAINING.
+                        </span>
+
+                    </div>
+
+
+                    <div class="productivity-card">
+
+                        <span class="productivity-label">
+                            Productivity Rate
+                        </span>
+
+                        <strong
+                            id="productivityRate"
+                            class="productivity-value"
+                        >
+                            0%
+                        </strong>
+
+                        <span class="productivity-help">
+                            PROD ÷ total Work Activity Time.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="productivityInsight"
+                    class="productivity-insight"
+                >
+                    No work activity recorded today.
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 WORK ACTIVITY SUMMARY
+                 ================================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2 class="section-title">
+                            Work Activity Summary
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Number of completed activities and time by category.
+                        </p>
+
+                    </div>
 
                     <a
                         href="work-timer.html"
                         class="section-link"
                     >
                         Open Work Activity →
+                    </a>
+
+                </div>
+
+
+                <div class="activity-summary-grid">
+
+
+                    <div class="activity-summary-card">
+
+                        <span>
+                            PROD
+                        </span>
+
+                        <strong id="prodActivityCount">
+                            0
+                        </strong>
+
+                        <small id="prodTimeSummary">
+                            00:00:00
+                        </small>
+
+                    </div>
+
+
+                    <div class="activity-summary-card">
+
+                        <span>
+                            NON-PROD
+                        </span>
+
+                        <strong id="nonProdActivityCount">
+                            0
+                        </strong>
+
+                        <small id="nonProdTimeSummary">
+                            00:00:00
+                        </small>
+
+                    </div>
+
+
+                    <div class="activity-summary-card">
+
+                        <span>
+                            PROD LOSS
+                        </span>
+
+                        <strong id="prodLossActivityCount">
+                            0
+                        </strong>
+
+                        <small id="prodLossTimeSummary">
+                            00:00:00
+                        </small>
+
+                    </div>
+
+
+                    <div class="activity-summary-card">
+
+                        <span>
+                            TRAINING
+                        </span>
+
+                        <strong id="trainingActivityCount">
+                            0
+                        </strong>
+
+                        <small id="trainingTimeSummary">
+                            00:00:00
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 RECENT WORK ACTIVITY
+                 ================================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2 class="section-title">
+                            Recent Work Activity
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Latest completed Work Activity records for today.
+                        </p>
+
+                    </div>
+
+                    <a
+                        href="work-timer.html"
+                        class="section-link"
+                    >
+                        View All →
                     </a>
 
                 </div>
@@ -747,9 +1058,7 @@
                         </thead>
 
 
-                        <tbody
-                            id="recentWorkActivityTable"
-                        >
+                        <tbody id="recentWorkActivityTable">
 
                             <tr>
 
@@ -757,7 +1066,7 @@
                                     colspan="4"
                                     class="status-empty"
                                 >
-                                    No work activities today.
+                                    Loading work activities...
                                 </td>
 
                             </tr>
@@ -770,18 +1079,27 @@
 
             </section>
 
-            <br></br>
 
 
-            <!-- RECENT PROFILING -->
+            <!-- =================================================
+                 RECENT PROFILING
+                 ================================================= -->
 
-            <section class="section-card">
+            <section class="dashboard-section">
 
                 <div class="section-header">
 
-                    <h2 class="section-title">
-                        Recent Profiling
-                    </h2>
+                    <div>
+
+                        <h2 class="section-title">
+                            Recent Profiling
+                        </h2>
+
+                        <p class="section-subtitle">
+                            Latest completed profiling sessions for today.
+                        </p>
+
+                    </div>
 
                     <a
                         href="profiling.html"
@@ -806,7 +1124,7 @@
                                 </th>
 
                                 <th>
-                                    Type
+                                    Members
                                 </th>
 
                                 <th>
@@ -818,7 +1136,7 @@
                                 </th>
 
                                 <th>
-                                    Date
+                                    Finished
                                 </th>
 
                             </tr>
@@ -834,7 +1152,7 @@
                                     colspan="5"
                                     class="status-empty"
                                 >
-                                    No profiling records yet.
+                                    Loading profiling records...
                                 </td>
 
                             </tr>
@@ -847,16 +1165,20 @@
 
             </section>
 
+
         </section>
 
     </main>
 
 </div>
 
+
+
 <script
     type="module"
     src="../js/theme.js"
 ></script>
+
 
 <script
     type="module"
@@ -869,7 +1191,9 @@
     src="../js/dashboard.js"
 ></script>
 
+
 <script src="../js/mobile-navigation.js"></script>
+
 
 </body>
 

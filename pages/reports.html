@@ -259,90 +259,6 @@
 
             </div>
 
-
-
-            <!-- =================================================
-                 KPI CARDS
-                 ================================================= -->
-
-            <div class="report-kpi-grid">
-
-
-                <div class="report-kpi-card">
-
-                    <div class="report-kpi-label">
-                        Total Analysts
-                    </div>
-
-
-                    <div
-                        id="totalAnalysts"
-                        class="report-kpi-value"
-                    >
-                        0
-                    </div>
-
-                </div>
-
-
-
-                <div class="report-kpi-card">
-
-                    <div class="report-kpi-label">
-                        Completed Jobs
-                    </div>
-
-
-                    <div
-                        id="completedJobs"
-                        class="report-kpi-value"
-                    >
-                        0
-                    </div>
-
-                </div>
-
-
-
-                <div class="report-kpi-card">
-
-                    <div class="report-kpi-label">
-                        Total Productivity
-                    </div>
-
-
-                    <div
-                        id="totalProductivity"
-                        class="report-kpi-value"
-                    >
-                        00:00:00
-                    </div>
-
-                </div>
-
-
-
-                <div class="report-kpi-card">
-
-                    <div class="report-kpi-label">
-                        Average Productivity
-                    </div>
-
-
-                    <div
-                        id="averageProductivity"
-                        class="report-kpi-value"
-                    >
-                        00:00:00
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-
             <!-- =================================================
                  FILTERS
                  ================================================= -->
@@ -390,7 +306,7 @@
                             id="exportCsvButton"
                             class="btn btn-primary"
                         >
-                            Export Excel
+                            Export Report Excel
                         </button>
 
                     </div>
@@ -415,15 +331,15 @@
                         </option>
 
                         <option value="PROD">
-                            PROD
+                            Production (PROD)
                         </option>
 
                         <option value="NON-PROD">
-                            NON-PROD
+                            Non-Production (NON-PROD)
                         </option>
 
                         <option value="PROD LOSS">
-                            PROD LOSS
+                            Production Loss (PROD LOSS)
                         </option>
 
                         <option value="TRAINING">
@@ -527,8 +443,126 @@
 
             </section>
 
+            <!-- =================================================
+                 KPI CARDS
+                 ================================================= -->
 
+            <div class="report-kpi-grid report-kpi-grid-primary">
 
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Recorded Analysts</div>
+                    <div id="totalAnalysts" class="report-kpi-value">0</div>
+                    <div class="report-kpi-note">Unique analysts in the selected report data.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Completed Profiling Jobs</div>
+                    <div id="completedJobs" class="report-kpi-value">0</div>
+                    <div class="report-kpi-note">Completed profiling sessions.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Profiling Time</div>
+                    <div id="totalProductivity" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Profiling time classified as Production.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Avg. Profiling / Job</div>
+                    <div id="averageProductivity" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Profiling time ÷ completed profiling jobs.</div>
+                </div>
+
+            </div>
+
+            <div class="report-kpi-grid report-kpi-grid-secondary">
+
+                <div class="report-kpi-card metric-prod">
+                    <div class="report-kpi-label">Production (PROD)</div>
+                    <div id="reportProdTime" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Profiling + PROD work activity.</div>
+                </div>
+
+                <div class="report-kpi-card metric-nonprod">
+                    <div class="report-kpi-label">Non-Production (NON-PROD)</div>
+                    <div id="reportNonProdTime" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Completed NON-PROD activities.</div>
+                </div>
+
+                <div class="report-kpi-card metric-loss">
+                    <div class="report-kpi-label">Production Loss</div>
+                    <div id="reportProdLossTime" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Completed PROD LOSS activities.</div>
+                </div>
+
+                <div class="report-kpi-card metric-training">
+                    <div class="report-kpi-label">Training</div>
+                    <div id="reportTrainingTime" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Completed TRAINING activities.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Total Recorded Time</div>
+                    <div id="reportTotalRecordedTime" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">Profiling + all completed work activities.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Productivity Rate</div>
+                    <div id="reportProductivityRate" class="report-kpi-value">0.0%</div>
+                    <div class="report-kpi-note">PROD time ÷ total recorded time.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Non-Production Rate</div>
+                    <div id="reportNonProdRate" class="report-kpi-value">0.0%</div>
+                    <div class="report-kpi-note">NON-PROD time ÷ total recorded time.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Production Loss Rate</div>
+                    <div id="reportProdLossRate" class="report-kpi-value">0.0%</div>
+                    <div class="report-kpi-note">PROD LOSS time ÷ total recorded time.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Work Activities</div>
+                    <div id="reportActivityCount" class="report-kpi-value">0</div>
+                    <div class="report-kpi-note">Completed work activity records.</div>
+                </div>
+
+                <div class="report-kpi-card">
+                    <div class="report-kpi-label">Avg. PROD / Analyst</div>
+                    <div id="reportAvgProdPerAnalyst" class="report-kpi-value">00:00:00</div>
+                    <div class="report-kpi-note">PROD time ÷ recorded analysts.</div>
+                </div>
+
+            </div>
+
+            <section class="report-explanation-card">
+                <div>
+                    <h2>How the metrics are calculated</h2>
+                    <p>All metrics use the records currently visible under the selected filters. Profiling time is classified as Production time. Work Activity time is classified by its saved category.</p>
+                </div>
+                <div class="formula-grid">
+                    <div><strong>PROD</strong><span>Profiling + PROD work</span></div>
+                    <div><strong>Total</strong><span>Profiling + all completed work</span></div>
+                    <div><strong>Productivity rate</strong><span>PROD ÷ Total × 100</span></div>
+                    <div><strong>Avg. profiling</strong><span>Profiling ÷ completed jobs</span></div>
+                </div>
+            </section>
+
+            <section class="report-insights-card">
+                <div class="section-card-header">
+                    <div>
+                        <h2 class="section-title">Data-Based Observations</h2>
+                        <p class="section-subtitle">Automatic observations from the selected report data — not subjective performance ratings.</p>
+                    </div>
+                </div>
+                <ul id="reportInsightList" class="report-insight-list">
+                    <li>Waiting for report data...</li>
+                </ul>
+            </section>
 
 
             <!-- =================================================
@@ -545,11 +579,11 @@
                         <div>
 
                             <h2 class="section-title">
-                                Productivity by Analyst
+                                Analyst Time Composition
                             </h2>
 
                             <p class="section-subtitle">
-                                Total completed productivity time.
+                                Profiling, PROD, NON-PROD, and other recorded work by analyst.
                             </p>
 
                         </div>
@@ -577,11 +611,11 @@
                         <div>
 
                             <h2 class="section-title">
-                                Teams vs Members
+                                Profiling Time: Teams vs Members
                             </h2>
 
                             <p class="section-subtitle">
-                                Total time spent by profiling type.
+                                How completed profiling time is split between Teams and Members.
                             </p>
 
                         </div>
@@ -599,6 +633,19 @@
                     </div>
 
                 </section>
+
+
+                <div class="section-card report-chart-card report-category-card">
+                    <div class="section-card-header">
+                        <div>
+                            <h2 class="section-title">Time by Work Category</h2>
+                            <p class="section-subtitle">Each category is shown as its own bar so Production, Non-Production, Production Loss, and Training can be compared directly.</p>
+                        </div>
+                    </div>
+                    <div id="categoryBreakdownChart" class="chart-placeholder category-breakdown-placeholder">
+                        Loading category breakdown...
+                    </div>
+                </div>
 
 
                 <div class="section-card report-chart-card report-trend-card">

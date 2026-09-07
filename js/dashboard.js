@@ -20,7 +20,7 @@ const supabase = createClient(
 const userName =
     document.getElementById("userName");
 
-const userRoleElement =
+const userRole =
     document.getElementById("userRole");
 
 const userAvatar =
@@ -29,12 +29,36 @@ const userAvatar =
 const welcomeTitle =
     document.getElementById("welcomeTitle");
 
+const dashboardDate =
+    document.getElementById("dashboardDate");
+
 const logoutButton =
     document.getElementById("logoutButton");
 
+const userSection =
+    document.getElementById("userSection");
+
+const reportsNavItem =
+    document.getElementById("reportsNavItem");
+
+const dashboardDateFilter =
+    document.getElementById(
+        "dashboardDateFilter"
+    );
+
+const dashboardTodayButton =
+    document.getElementById(
+        "dashboardTodayButton"
+    );
+
+const dashboardDateLabel =
+    document.getElementById(
+        "dashboardDateLabel"
+    );
+
 
 // =========================================================
-// DASHBOARD ELEMENTS
+// OVERVIEW
 // =========================================================
 
 const teamsToday =
@@ -43,26 +67,18 @@ const teamsToday =
 const membersToday =
     document.getElementById("membersToday");
 
+const profilingTimeToday =
+    document.getElementById("profilingTimeToday");
+
+const workActivityTimeToday =
+    document.getElementById("workActivityTimeToday");
+
 const totalTimeToday =
     document.getElementById("totalTimeToday");
 
-const recentProfilingBody =
-    document.getElementById("recentProfilingTable");
-
-const prodTimeToday =
-    document.getElementById("prodTimeToday");
-
-const nonProdTimeToday =
-    document.getElementById("nonProdTimeToday");
-
-const activitiesToday =
-    document.getElementById("activitiesToday");
-
-const recentWorkActivityTable =
-    document.getElementById("recentWorkActivityTable");
 
 // =========================================================
-// TIME BREAKDOWN ELEMENTS
+// TIME BREAKDOWN
 // =========================================================
 
 const profilingBreakdownTime =
@@ -93,39 +109,101 @@ const nonProdBreakdownPercent =
 
 const nonProdBreakdownBar =
     document.getElementById("nonProdBreakdownBar");
-    
+
+
+const prodLossBreakdownTime =
+    document.getElementById("prodLossBreakdownTime");
+
+const prodLossBreakdownPercent =
+    document.getElementById("prodLossBreakdownPercent");
+
+const prodLossBreakdownBar =
+    document.getElementById("prodLossBreakdownBar");
+
+
+const trainingBreakdownTime =
+    document.getElementById("trainingBreakdownTime");
+
+const trainingBreakdownPercent =
+    document.getElementById("trainingBreakdownPercent");
+
+const trainingBreakdownBar =
+    document.getElementById("trainingBreakdownBar");
+
+
 // =========================================================
-// PRODUCTIVITY SUMMARY ELEMENTS
+// PRODUCTIVITY
 // =========================================================
 
-const summaryProfilingTime =
-    document.getElementById(
-        "summaryProfilingTime"
-    );
+const productivityProdTime =
+    document.getElementById("productivityProdTime");
 
+const productivityOtherTime =
+    document.getElementById("productivityOtherTime");
 
-const summaryProdTime =
-    document.getElementById(
-        "summaryProdTime"
-    );
-
-
-const summaryNonProdTime =
-    document.getElementById(
-        "summaryNonProdTime"
-    );
-
-
-const summaryTotalTime =
-    document.getElementById(
-        "summaryTotalTime"
-    );
-
+const productivityRate =
+    document.getElementById("productivityRate");
 
 const productivityInsight =
+    document.getElementById("productivityInsight");
+
+
+// =========================================================
+// ACTIVITY SUMMARY
+// =========================================================
+
+const prodActivityCount =
+    document.getElementById("prodActivityCount");
+
+const nonProdActivityCount =
+    document.getElementById("nonProdActivityCount");
+
+const prodLossActivityCount =
+    document.getElementById("prodLossActivityCount");
+
+const trainingActivityCount =
+    document.getElementById("trainingActivityCount");
+
+
+const prodTimeSummary =
+    document.getElementById("prodTimeSummary");
+
+const nonProdTimeSummary =
+    document.getElementById("nonProdTimeSummary");
+
+const prodLossTimeSummary =
+    document.getElementById("prodLossTimeSummary");
+
+const trainingTimeSummary =
+    document.getElementById("trainingTimeSummary");
+
+
+// =========================================================
+// TABLES
+// =========================================================
+
+const recentWorkActivityTable =
     document.getElementById(
-        "productivityInsight"
+        "recentWorkActivityTable"
     );
+
+const recentProfilingTable =
+    document.getElementById(
+        "recentProfilingTable"
+    );
+
+
+// =========================================================
+// CATEGORY CONSTANTS
+// =========================================================
+
+const CATEGORY = {
+    PROD: "PROD",
+    NON_PROD: "NON-PROD",
+    PROD_LOSS: "PROD LOSS",
+    TRAINING: "TRAINING"
+};
+
 
 // =========================================================
 // INITIALIZE
@@ -134,10 +212,6 @@ const productivityInsight =
 async function initializeDashboard() {
 
     try {
-
-        // -------------------------------------------------
-        // GET AUTHENTICATED USER
-        // -------------------------------------------------
 
         const {
             data: {
@@ -153,10 +227,6 @@ async function initializeDashboard() {
         }
 
 
-        // -------------------------------------------------
-        // NOT LOGGED IN
-        // -------------------------------------------------
-
         if (!user) {
 
             window.location.href =
@@ -166,9 +236,9 @@ async function initializeDashboard() {
         }
 
 
-        // -------------------------------------------------
-        // GET PROFILE
-        // -------------------------------------------------
+        // =================================================
+        // PROFILE
+        // =================================================
 
         const {
             data: profile,
@@ -194,10 +264,6 @@ async function initializeDashboard() {
         }
 
 
-        // -------------------------------------------------
-        // ACCOUNT STATUS
-        // -------------------------------------------------
-
         const accountStatus =
             String(
                 profile.status || ""
@@ -222,18 +288,11 @@ async function initializeDashboard() {
         }
 
 
-        // -------------------------------------------------
-        // REPORTS VISIBILITY
-        // ADMIN ONLY
-        // -------------------------------------------------
+        // =================================================
+        // ROLE
+        // =================================================
 
-        const reportsNavItem =
-            document.getElementById(
-                "reportsNavItem"
-            );
-
-
-        const profileRole =
+        const role =
             String(
                 profile.role || ""
             )
@@ -244,16 +303,16 @@ async function initializeDashboard() {
         if (reportsNavItem) {
 
             reportsNavItem.style.display =
-                profileRole === "ADMIN"
+                role === "ADMIN"
                     ? "flex"
                     : "none";
 
         }
 
 
-        // -------------------------------------------------
-        // DISPLAY USER
-        // -------------------------------------------------
+        // =================================================
+        // USER DISPLAY
+        // =================================================
 
         const fullName =
             profile.full_name ||
@@ -261,44 +320,57 @@ async function initializeDashboard() {
 
 
         if (userName) {
-
             userName.textContent =
                 fullName;
-
         }
 
 
-        if (userRoleElement) {
-
-            userRoleElement.textContent =
+        if (userRole) {
+            userRole.textContent =
                 profile.role ||
                 "ANALYST";
-
         }
 
 
         if (welcomeTitle) {
-
             welcomeTitle.textContent =
                 `Good day, ${fullName}! 👋`;
-
         }
 
 
         if (userAvatar) {
-
             userAvatar.textContent =
                 getInitials(fullName);
+        }
+
+
+        if (dashboardDate) {
+
+            dashboardDate.textContent =
+                new Date().toLocaleDateString(
+                    undefined,
+                    {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                    }
+                );
 
         }
 
 
-        // -------------------------------------------------
-        // LOAD DASHBOARD
-        // -------------------------------------------------
+        // =================================================
+        // LOAD DATA
+        // =================================================
+
+        window.currentDashboardUserId =
+        user.id;
+
+        initializeDateFilter();
 
         await loadDashboardData(
-            user.id
+            user.id,
+            getLocalTodayString()
         );
 
 
@@ -314,6 +386,11 @@ async function initializeDashboard() {
             error
         );
 
+
+        showDashboardError(
+            error
+        );
+
     }
 
 }
@@ -324,52 +401,23 @@ async function initializeDashboard() {
 // =========================================================
 
 async function loadDashboardData(
-    userId
-) {
+    userId,
+        selectedDate = null
+    ) {
 
-    // -----------------------------------------------------
-    // GET TODAY'S LOCAL DATE RANGE
-    // -----------------------------------------------------
-
-    const now =
-        new Date();
-
-
-    const startOfToday =
-        new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            0,
-            0,
-            0,
-            0
-        );
+        const {
+            startISO,
+            endISO,
+            date
+        } =
+            getDateRange(
+                selectedDate
+            );
 
 
-    const endOfToday =
-        new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            23,
-            59,
-            59,
-            999
-        );
-
-
-    const startOfTodayISO =
-        startOfToday.toISOString();
-
-
-    const endOfTodayISO =
-        endOfToday.toISOString();
-
-
-    // -----------------------------------------------------
+    // =================================================
     // LOAD PROFILING JOBS
-    // -----------------------------------------------------
+    // =================================================
 
     const {
         data: jobs,
@@ -398,11 +446,11 @@ async function loadDashboardData(
             )
             .gte(
                 "finished_at",
-                startOfTodayISO
+                startISO
             )
             .lte(
                 "finished_at",
-                endOfTodayISO
+                endISO
             )
             .order(
                 "finished_at",
@@ -413,24 +461,21 @@ async function loadDashboardData(
 
 
     if (jobsError) {
-
         throw jobsError;
-
     }
 
 
     const completedJobs =
-        jobs ||
-        [];
+        jobs || [];
 
 
-    // -----------------------------------------------------
+    // =================================================
     // LOAD WORK ACTIVITIES
-    // -----------------------------------------------------
+    // =================================================
 
     const {
-        data: workActivities,
-        error: workActivitiesError
+        data: activities,
+        error: activitiesError
     } =
         await supabase
             .from("task_logs")
@@ -454,11 +499,11 @@ async function loadDashboardData(
             )
             .gte(
                 "ended_at",
-                startOfTodayISO
+                startISO
             )
             .lte(
                 "ended_at",
-                endOfTodayISO
+                endISO
             )
             .order(
                 "ended_at",
@@ -468,474 +513,557 @@ async function loadDashboardData(
             );
 
 
-    if (workActivitiesError) {
-
-        throw workActivitiesError;
-
+    if (activitiesError) {
+        throw activitiesError;
     }
 
 
-    const completedWorkActivities =
-        workActivities ||
-        [];
+    const completedActivities =
+        activities || [];
 
 
-    // -----------------------------------------------------
-    // LOAD TIMER SESSIONS
-    // ONLY IF PROFILING JOBS EXIST
-    // -----------------------------------------------------
-
-    let sessions =
-        [];
-
-
-    if (
-        completedJobs.length > 0
-    ) {
-
-        const jobIds =
-            completedJobs.map(
-                job =>
-                    job.id
-            );
-
-
-        const {
-            data: timerSessions,
-            error: sessionsError
-        } =
-            await supabase
-                .from("timer_sessions")
-                .select(`
-                    id,
-                    profiling_job_id,
-                    session_type,
-                    status,
-                    started_at,
-                    stopped_at,
-                    total_seconds
-                `)
-                .in(
-                    "profiling_job_id",
-                    jobIds
-                );
-
-
-        if (sessionsError) {
-
-            throw sessionsError;
-
-        }
-
-
-        sessions =
-            timerSessions ||
-            [];
-
-    }
-
-
-    // -----------------------------------------------------
-    // GET TIMER EVENTS FOR ACTUAL DAILY ATTRIBUTION
-    // -----------------------------------------------------
-
-    const dashboardSessionIds =
-        sessions
-            .map(session => session.id)
-            .filter(Boolean);
-
-    let dashboardTimerEvents = [];
-
-    if (dashboardSessionIds.length > 0) {
-
-        const {
-            data: eventRows,
-            error: eventRowsError
-        } =
-            await supabase
-                .from("timer_events")
-                .select(`
-                    session_id,
-                    event_type,
-                    event_time
-                `)
-                .in(
-                    "session_id",
-                    dashboardSessionIds
-                )
-                .order(
-                    "event_time",
-                    {
-                        ascending: true
-                    }
-                );
-
-        if (eventRowsError) {
-            throw eventRowsError;
-        }
-
-        dashboardTimerEvents =
-            eventRows || [];
-
-    }
-
-
-    // -----------------------------------------------------
+    // =================================================
     // PROFILING STATISTICS
-    // -----------------------------------------------------
+    // =================================================
 
-    let teamCount =
-        0;
-
-
-    let membersCount =
-        0;
-
-
-    let profilingSeconds =
-        0;
-
-
-    const dashboardEventsBySession = new Map();
-
-    dashboardTimerEvents.forEach(event => {
-
-        if (!dashboardEventsBySession.has(String(event.session_id))) {
-            dashboardEventsBySession.set(
-                String(event.session_id),
-                []
-            );
-        }
-
-        dashboardEventsBySession
-            .get(String(event.session_id))
-            .push(event);
-
-    });
-
-
-    function secondsWithinToday(start, end) {
-
-        if (!start || !end || end <= start) {
-            return 0;
-        }
-
-        const startToday = new Date(startOfToday);
-        const endToday = new Date(endOfToday);
-
-        const overlapStart =
-            start > startToday
-                ? start
-                : startToday;
-
-        const overlapEnd =
-            end < endToday
-                ? end
-                : endToday;
-
-        return Math.max(
-            0,
-            Math.floor(
-                (overlapEnd - overlapStart) / 1000
-            )
+    const profilingSeconds =
+        calculateProfilingTime(
+            completedJobs
         );
 
-    }
+
+    // =================================================
+    // WORK ACTIVITY STATISTICS
+    // =================================================
+
+    const activityStats =
+        calculateActivityStatistics(
+            completedActivities
+        );
+
+
+    // =================================================
+    // TOTALS
+    // =================================================
+
+    const workActivitySeconds =
+        activityStats.prodSeconds +
+        activityStats.nonProdSeconds +
+        activityStats.prodLossSeconds +
+        activityStats.trainingSeconds;
+
+
+    const totalRecordedSeconds =
+        profilingSeconds +
+        workActivitySeconds;
+
+
+    // =================================================
+    // TEAM / MEMBER COUNTS
+    // =================================================
+
+    const uniqueTeams =
+        new Set();
+
+
+    let memberCount =
+        0;
 
 
     completedJobs.forEach(
         job => {
 
-            const jobSessions =
-                sessions.filter(
-                    session =>
-                        String(
-                            session.profiling_job_id
-                        ) ===
-                        String(
-                            job.id
-                        )
-                );
-
-            jobSessions.forEach(session => {
-
-                const events =
-                    dashboardEventsBySession.get(
-                        String(session.id)
-                    ) || [];
-
-                let activeStart = null;
-
-                events.forEach(event => {
-
-                    const eventTime =
-                        new Date(event.event_time);
-
-                    if (Number.isNaN(eventTime.getTime())) {
-                        return;
-                    }
-
-                    if (
-                        event.event_type === "START" ||
-                        event.event_type === "RESUME"
-                    ) {
-                        activeStart = eventTime;
-                    }
-
-                    if (
-                        event.event_type === "PAUSE" ||
-                        event.event_type === "STOP"
-                    ) {
-
-                        if (activeStart) {
-
-                            profilingSeconds +=
-                                secondsWithinToday(
-                                    activeStart,
-                                    eventTime
-                                );
-
-                        }
-
-                        activeStart = null;
-
-                    }
-
-                });
-
-                // A completed job normally has STOP events.
-                // This fallback also handles incomplete legacy event history.
-                if (
-                    activeStart &&
-                    job.finished_at
-                ) {
-
-                    const finishedAt =
-                        new Date(job.finished_at);
-
-                    if (!Number.isNaN(finishedAt.getTime())) {
-
-                        profilingSeconds +=
-                            secondsWithinToday(
-                                activeStart,
-                                finishedAt
-                            );
-
-                    }
-
-                }
-
-                if (
-                    events.length === 0 &&
-                    session.started_at &&
-                    session.stopped_at
-                ) {
-
-                    const start =
-                        new Date(session.started_at);
-
-                    const end =
-                        new Date(session.stopped_at);
-
-                    if (
-                        !Number.isNaN(start.getTime()) &&
-                        !Number.isNaN(end.getTime())
-                    ) {
-
-                        profilingSeconds +=
-                            secondsWithinToday(
-                                start,
-                                end
-                            );
-
-                    }
-
-                }
-
-            });
+            const teamKey =
+                job.team_id ||
+                job.team_name ||
+                job.id;
 
 
-            const teamSession =
-                jobSessions.find(
-                    session =>
-                        String(
-                            session.session_type ||
-                            ""
-                        )
-                            .trim()
-                            .toUpperCase() ===
-                        "TEAM"
-                );
+            uniqueTeams.add(
+                String(teamKey)
+            );
 
 
-            if (teamSession) {
-
-                teamCount++;
-
-            }
-
-
-            const membersSession =
-                jobSessions.find(
-                    session =>
-                        String(
-                            session.session_type ||
-                            ""
-                        )
-                            .trim()
-                            .toUpperCase() ===
-                        "MEMBERS"
-                );
-
-
-            if (membersSession) {
-
-                membersCount++;
-
-            }
-
-        }
-    );
-
-
-    // -----------------------------------------------------
-    // WORK ACTIVITY STATISTICS
-    // -----------------------------------------------------
-
-    let prodSeconds =
-        0;
-
-
-    let nonProdSeconds =
-        0;
-
-
-    completedWorkActivities.forEach(
-        activity => {
-
-            const category =
-                String(
-                    activity.category ||
-                    ""
-                )
-                    .trim()
-                    .toUpperCase();
-
-
-            const duration =
+            memberCount +=
                 Number(
-                    activity.duration_seconds ||
-                    0
-                );
-
-
-            if (
-                category ===
-                "PROD"
-            ) {
-
-                prodSeconds +=
-                    duration;
-
-            }
-
-
-            if (
-                category ===
-                "NON-PROD"
-            ) {
-
-                nonProdSeconds +=
-                    duration;
-
-            }
+                    job.member_count
+                ) || 0;
 
         }
     );
 
 
-    // -----------------------------------------------------
-    // UPDATE ORIGINAL KPI CARDS
-    // -----------------------------------------------------
+    // =================================================
+    // UPDATE OVERVIEW
+    // =================================================
 
-    // -----------------------------------------------------
-// CALCULATE TOTAL TIME TODAY
-// -----------------------------------------------------
-
-const totalTimeSeconds =
-    profilingSeconds +
-    prodSeconds +
-    nonProdSeconds;
-
-
-// -----------------------------------------------------
-// UPDATE ORIGINAL KPI CARDS
-// -----------------------------------------------------
-
-updateDashboardKPIs(
-    teamCount,
-    membersCount,
-    totalTimeSeconds
-);
-
-
-updateTimeBreakdown(
-    profilingSeconds,
-    prodSeconds,
-    nonProdSeconds,
-    totalTimeSeconds
-);
-
-
-updateProductivitySummary(
-    profilingSeconds,
-    prodSeconds,
-    nonProdSeconds,
-    totalTimeSeconds
-);
-
-
-    // -----------------------------------------------------
-    // UPDATE WORK ACTIVITY KPI CARDS
-    // -----------------------------------------------------
-
-    updateWorkActivityKPIs(
-        prodSeconds,
-        nonProdSeconds,
-        completedWorkActivities.length
+    updateOverview(
+        uniqueTeams.size,
+        memberCount,
+        profilingSeconds,
+        workActivitySeconds,
+        totalRecordedSeconds
     );
 
 
-    // -----------------------------------------------------
-    // RENDER TABLES
-    // -----------------------------------------------------
+    // =================================================
+    // UPDATE TIME BREAKDOWN
+    // =================================================
+
+    updateTimeBreakdown({
+
+        profiling:
+            profilingSeconds,
+
+        prod:
+            activityStats.prodSeconds,
+
+        nonProd:
+            activityStats.nonProdSeconds,
+
+        prodLoss:
+            activityStats.prodLossSeconds,
+
+        training:
+            activityStats.trainingSeconds,
+
+        total:
+            totalRecordedSeconds
+
+    });
+
+
+    // =================================================
+    // UPDATE PRODUCTIVITY
+    // =================================================
+
+    updateProductivity(
+        activityStats.prodSeconds,
+        workActivitySeconds
+    );
+
+
+    // =================================================
+    // UPDATE ACTIVITY SUMMARY
+    // =================================================
+
+    updateActivitySummary(
+        activityStats
+    );
+
+
+    // =================================================
+    // TABLES
+    // =================================================
+
+    renderRecentWorkActivities(
+        completedActivities
+    );
+
 
     renderRecentProfiling(
         completedJobs
-    );
-
-
-    renderRecentWorkActivities(
-        completedWorkActivities
     );
 
 }
 
 
 // =========================================================
-// UPDATE KPI CARDS
+// SELECTED DATE RANGE
 // =========================================================
 
-function updateDashboardKPIs(
-    teamCount,
-    membersCount,
+function getDateRange(dateString) {
+
+    let selectedDate;
+
+    if (dateString) {
+
+        const parts =
+            dateString.split("-");
+
+        selectedDate =
+            new Date(
+                Number(parts[0]),
+                Number(parts[1]) - 1,
+                Number(parts[2])
+            );
+
+    } else {
+
+        const now =
+            new Date();
+
+        selectedDate =
+            new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate()
+            );
+    }
+
+
+    const start =
+        new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            0,
+            0,
+            0,
+            0
+        );
+
+
+    const end =
+        new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            23,
+            59,
+            59,
+            999
+        );
+
+
+    return {
+
+        startISO:
+            start.toISOString(),
+
+        endISO:
+            end.toISOString(),
+
+        date:
+            selectedDate
+
+    };
+
+}
+
+// =========================================================
+// FORMAT FILTER DATE
+// =========================================================
+
+function formatFilterDate(
+    dateString
+) {
+
+    const {
+        date
+    } =
+        getDateRange(
+            dateString
+        );
+
+    return date.toLocaleDateString(
+        undefined,
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    );
+
+}
+
+
+// =========================================================
+// GET LOCAL TODAY AS YYYY-MM-DD
+// =========================================================
+
+function getLocalTodayString() {
+
+    const now =
+        new Date();
+
+    const year =
+        now.getFullYear();
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+// =========================================================
+// UPDATE DATE LABEL
+// =========================================================
+
+function updateDashboardDateLabel(
+    dateString
+) {
+
+    if (!dashboardDateLabel) {
+        return;
+    }
+
+    dashboardDateLabel.textContent =
+        `Showing data for ${formatFilterDate(
+            dateString
+        )}`;
+
+}
+
+
+// =========================================================
+// PROFILING TIME
+// =========================================================
+
+function calculateProfilingTime(
+    jobs
+) {
+
+    let total =
+        0;
+
+
+    jobs.forEach(
+        job => {
+
+            const seconds =
+                Number(
+                    job.total_seconds
+                ) || 0;
+
+
+            if (seconds > 0) {
+
+                total +=
+                    seconds;
+
+            } else {
+
+                const start =
+                    parseDate(
+                        job.started_at
+                    );
+
+                const end =
+                    parseDate(
+                        job.finished_at
+                    );
+
+
+                if (
+                    start &&
+                    end &&
+                    end > start
+                ) {
+
+                    total +=
+                        Math.floor(
+                            (
+                                end - start
+                            ) / 1000
+                        );
+
+                }
+
+            }
+
+        }
+    );
+
+
+    return total;
+
+}
+
+
+// =========================================================
+// WORK ACTIVITY STATISTICS
+// =========================================================
+
+function calculateActivityStatistics(
+    activities
+) {
+
+    const stats = {
+
+        prodSeconds: 0,
+
+        nonProdSeconds: 0,
+
+        prodLossSeconds: 0,
+
+        trainingSeconds: 0,
+
+        prodCount: 0,
+
+        nonProdCount: 0,
+
+        prodLossCount: 0,
+
+        trainingCount: 0
+
+    };
+
+
+    activities.forEach(
+        activity => {
+
+            const category =
+                normalizeCategory(
+                    activity.category
+                );
+
+
+            const duration =
+                Math.max(
+                    0,
+                    Number(
+                        activity.duration_seconds
+                    ) || 0
+                );
+
+
+            switch (category) {
+
+                case CATEGORY.PROD:
+
+                    stats.prodSeconds +=
+                        duration;
+
+                    stats.prodCount++;
+
+                    break;
+
+
+                case CATEGORY.NON_PROD:
+
+                    stats.nonProdSeconds +=
+                        duration;
+
+                    stats.nonProdCount++;
+
+                    break;
+
+
+                case CATEGORY.PROD_LOSS:
+
+                    stats.prodLossSeconds +=
+                        duration;
+
+                    stats.prodLossCount++;
+
+                    break;
+
+
+                case CATEGORY.TRAINING:
+
+                    stats.trainingSeconds +=
+                        duration;
+
+                    stats.trainingCount++;
+
+                    break;
+
+            }
+
+        }
+    );
+
+
+    return stats;
+
+}
+
+
+// =========================================================
+// CATEGORY NORMALIZATION
+// =========================================================
+
+function normalizeCategory(
+    value
+) {
+
+    const category =
+        String(
+            value || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        category === "PROD" ||
+        category === "PRODUCTION"
+    ) {
+
+        return CATEGORY.PROD;
+
+    }
+
+
+    if (
+        category === "NON-PROD" ||
+        category === "NON PRODUCTION" ||
+        category === "NON-PROD ACTIVITIES" ||
+        category === "NON-PRODUCTION"
+    ) {
+
+        return CATEGORY.NON_PROD;
+
+    }
+
+
+    if (
+        category === "PROD LOSS" ||
+        category === "PRODUCTION LOSS" ||
+        category === "PROD_LOSS"
+    ) {
+
+        return CATEGORY.PROD_LOSS;
+
+    }
+
+
+    if (
+        category === "TRAINING"
+    ) {
+
+        return CATEGORY.TRAINING;
+
+    }
+
+
+    return category;
+
+}
+
+
+// =========================================================
+// OVERVIEW
+// =========================================================
+
+function updateOverview(
+    teams,
+    members,
+    profilingSeconds,
+    workActivitySeconds,
     totalSeconds
 ) {
 
     if (teamsToday) {
 
         teamsToday.textContent =
-            teamCount;
+            teams;
 
     }
 
@@ -943,7 +1071,27 @@ function updateDashboardKPIs(
     if (membersToday) {
 
         membersToday.textContent =
-            membersCount;
+            members;
+
+    }
+
+
+    if (profilingTimeToday) {
+
+        profilingTimeToday.textContent =
+            formatDuration(
+                profilingSeconds
+            );
+
+    }
+
+
+    if (workActivityTimeToday) {
+
+        workActivityTimeToday.textContent =
+            formatDuration(
+                workActivitySeconds
+            );
 
     }
 
@@ -961,183 +1109,113 @@ function updateDashboardKPIs(
 
 
 // =========================================================
-// UPDATE WORK ACTIVITY KPI CARDS
-// =========================================================
-
-function updateWorkActivityKPIs(
-    prodSeconds,
-    nonProdSeconds,
-    activityCount
-) {
-
-    if (prodTimeToday) {
-
-        prodTimeToday.textContent =
-            formatDuration(
-                prodSeconds
-            );
-
-    }
-
-
-    if (nonProdTimeToday) {
-
-        nonProdTimeToday.textContent =
-            formatDuration(
-                nonProdSeconds
-            );
-
-    }
-
-
-    if (activitiesToday) {
-
-        activitiesToday.textContent =
-            activityCount;
-
-    }
-
-}
-
-
-// =========================================================
-// TODAY'S TIME BREAKDOWN
+// TIME BREAKDOWN
 // =========================================================
 
 function updateTimeBreakdown(
-    profilingSeconds,
-    prodSeconds,
-    nonProdSeconds,
-    totalSeconds
+    data
 ) {
 
-    const safeTotal =
-        Number(totalSeconds) || 0;
+    const total =
+        Number(data.total) || 0;
 
 
-    // -----------------------------------------------------
-    // CALCULATE PERCENTAGES
-    // -----------------------------------------------------
+    updateBreakdownItem(
+        profilingBreakdownTime,
+        profilingBreakdownPercent,
+        profilingBreakdownBar,
+        data.profiling,
+        total
+    );
 
-    const profilingPercent =
-        safeTotal > 0
+
+    updateBreakdownItem(
+        prodBreakdownTime,
+        prodBreakdownPercent,
+        prodBreakdownBar,
+        data.prod,
+        total
+    );
+
+
+    updateBreakdownItem(
+        nonProdBreakdownTime,
+        nonProdBreakdownPercent,
+        nonProdBreakdownBar,
+        data.nonProd,
+        total
+    );
+
+
+    updateBreakdownItem(
+        prodLossBreakdownTime,
+        prodLossBreakdownPercent,
+        prodLossBreakdownBar,
+        data.prodLoss,
+        total
+    );
+
+
+    updateBreakdownItem(
+        trainingBreakdownTime,
+        trainingBreakdownPercent,
+        trainingBreakdownBar,
+        data.training,
+        total
+    );
+
+}
+
+
+// =========================================================
+// BREAKDOWN ITEM
+// =========================================================
+
+function updateBreakdownItem(
+    timeElement,
+    percentElement,
+    barElement,
+    seconds,
+    total
+) {
+
+    const safeSeconds =
+        Number(seconds) || 0;
+
+
+    const percentage =
+        total > 0
             ? Math.round(
                 (
-                    Number(profilingSeconds) /
-                    safeTotal
+                    safeSeconds /
+                    total
                 ) * 100
             )
             : 0;
 
 
-    const prodPercent =
-        safeTotal > 0
-            ? Math.round(
-                (
-                    Number(prodSeconds) /
-                    safeTotal
-                ) * 100
-            )
-            : 0;
+    if (timeElement) {
 
-
-    const nonProdPercent =
-        safeTotal > 0
-            ? Math.round(
-                (
-                    Number(nonProdSeconds) /
-                    safeTotal
-                ) * 100
-            )
-            : 0;
-
-
-    // -----------------------------------------------------
-    // PROFILING
-    // -----------------------------------------------------
-
-    if (profilingBreakdownTime) {
-
-        profilingBreakdownTime.textContent =
+        timeElement.textContent =
             formatDuration(
-                profilingSeconds
+                safeSeconds
             );
 
     }
 
 
-    if (profilingBreakdownPercent) {
+    if (percentElement) {
 
-        profilingBreakdownPercent.textContent =
-            `${profilingPercent}%`;
-
-    }
-
-
-    if (profilingBreakdownBar) {
-
-        profilingBreakdownBar.style.width =
-            `${profilingPercent}%`;
+        percentElement.textContent =
+            `${percentage}%`;
 
     }
 
 
-    // -----------------------------------------------------
-    // PROD
-    // -----------------------------------------------------
+    if (barElement) {
 
-    if (prodBreakdownTime) {
-
-        prodBreakdownTime.textContent =
-            formatDuration(
-                prodSeconds
-            );
-
-    }
-
-
-    if (prodBreakdownPercent) {
-
-        prodBreakdownPercent.textContent =
-            `${prodPercent}%`;
-
-    }
-
-
-    if (prodBreakdownBar) {
-
-        prodBreakdownBar.style.width =
-            `${prodPercent}%`;
-
-    }
-
-
-    // -----------------------------------------------------
-    // NON-PROD
-    // -----------------------------------------------------
-
-    if (nonProdBreakdownTime) {
-
-        nonProdBreakdownTime.textContent =
-            formatDuration(
-                nonProdSeconds
-            );
-
-    }
-
-
-    if (nonProdBreakdownPercent) {
-
-        nonProdBreakdownPercent.textContent =
-            `${nonProdPercent}%`;
-
-    }
-
-
-    if (nonProdBreakdownBar) {
-
-        nonProdBreakdownBar.style.width =
-            `${nonProdPercent}%`;
+        barElement.style.width =
+            `${percentage}%`;
 
     }
 
@@ -1145,49 +1223,42 @@ function updateTimeBreakdown(
 
 
 // =========================================================
-// PRODUCTIVITY SUMMARY
+// PRODUCTIVITY
 // =========================================================
 
-function updateProductivitySummary(
-    profilingSeconds,
+function updateProductivity(
     prodSeconds,
-    nonProdSeconds,
-    totalSeconds
+    workActivitySeconds
 ) {
-
-    const profiling =
-        Number(profilingSeconds) || 0;
-
 
     const prod =
         Number(prodSeconds) || 0;
 
-
-    const nonProd =
-        Number(nonProdSeconds) || 0;
-
-
-    const total =
-        Number(totalSeconds) || 0;
+    const work =
+        Number(workActivitySeconds) || 0;
 
 
-    // -----------------------------------------------------
-    // UPDATE SUMMARY VALUES
-    // -----------------------------------------------------
-
-    if (summaryProfilingTime) {
-
-        summaryProfilingTime.textContent =
-            formatDuration(
-                profiling
-            );
-
-    }
+    const other =
+        Math.max(
+            0,
+            work - prod
+        );
 
 
-    if (summaryProdTime) {
+    const rate =
+        work > 0
+            ? Math.round(
+                (
+                    prod /
+                    work
+                ) * 100
+            )
+            : 0;
 
-        summaryProdTime.textContent =
+
+    if (productivityProdTime) {
+
+        productivityProdTime.textContent =
             formatDuration(
                 prod
             );
@@ -1195,103 +1266,213 @@ function updateProductivitySummary(
     }
 
 
-    if (summaryNonProdTime) {
+    if (productivityOtherTime) {
 
-        summaryNonProdTime.textContent =
+        productivityOtherTime.textContent =
             formatDuration(
-                nonProd
+                other
             );
 
     }
 
 
-    if (summaryTotalTime) {
+    if (productivityRate) {
 
-        summaryTotalTime.textContent =
-            formatDuration(
-                total
-            );
+        productivityRate.textContent =
+            `${rate}%`;
 
     }
 
 
-    // -----------------------------------------------------
-    // NO ACTIVITY
-    // -----------------------------------------------------
+    if (productivityInsight) {
 
-    if (total <= 0) {
-
-        if (productivityInsight) {
+        if (work <= 0) {
 
             productivityInsight.textContent =
-                "No recorded activity yet today.";
+                "No Work Activity has been recorded today.";
+
+        } else {
+
+            productivityInsight.textContent =
+                `Productivity rate is ${rate}%. ` +
+                `${formatDuration(prod)} of ${formatDuration(work)} ` +
+                "of total Work Activity time is classified as PROD.";
 
         }
+
+    }
+
+}
+
+
+// =========================================================
+// ACTIVITY SUMMARY
+// =========================================================
+
+function updateActivitySummary(
+    stats
+) {
+
+    if (prodActivityCount) {
+
+        prodActivityCount.textContent =
+            stats.prodCount;
+
+    }
+
+
+    if (nonProdActivityCount) {
+
+        nonProdActivityCount.textContent =
+            stats.nonProdCount;
+
+    }
+
+
+    if (prodLossActivityCount) {
+
+        prodLossActivityCount.textContent =
+            stats.prodLossCount;
+
+    }
+
+
+    if (trainingActivityCount) {
+
+        trainingActivityCount.textContent =
+            stats.trainingCount;
+
+    }
+
+
+    if (prodTimeSummary) {
+
+        prodTimeSummary.textContent =
+            formatDuration(
+                stats.prodSeconds
+            );
+
+    }
+
+
+    if (nonProdTimeSummary) {
+
+        nonProdTimeSummary.textContent =
+            formatDuration(
+                stats.nonProdSeconds
+            );
+
+    }
+
+
+    if (prodLossTimeSummary) {
+
+        prodLossTimeSummary.textContent =
+            formatDuration(
+                stats.prodLossSeconds
+            );
+
+    }
+
+
+    if (trainingTimeSummary) {
+
+        trainingTimeSummary.textContent =
+            formatDuration(
+                stats.trainingSeconds
+            );
+
+    }
+
+}
+
+
+// =========================================================
+// RECENT WORK ACTIVITIES
+// =========================================================
+
+function renderRecentWorkActivities(
+    activities
+) {
+
+    if (!recentWorkActivityTable) {
+        return;
+    }
+
+
+    if (
+        !activities ||
+        activities.length === 0
+    ) {
+
+        recentWorkActivityTable.innerHTML = `
+            <tr>
+                <td
+                    colspan="4"
+                    class="status-empty"
+                >
+                    No completed Work Activity records today.
+                </td>
+            </tr>
+        `;
 
         return;
 
     }
 
 
-    // -----------------------------------------------------
-    // FIND THE LARGEST TIME CATEGORY
-    // -----------------------------------------------------
-
-    const categories = [
-
-        {
-            name: "Profiling",
-            seconds: profiling
-        },
-
-        {
-            name: "PROD Activities",
-            seconds: prod
-        },
-
-        {
-            name: "NON-PROD Activities",
-            seconds: nonProd
-        }
-
-    ];
-
-
-    const largestCategory =
-        categories.reduce(
-            (
-                largest,
-                current
-            ) =>
-
-                current.seconds >
-                largest.seconds
-
-                    ? current
-                    : largest
-
+    const recent =
+        activities.slice(
+            0,
+            8
         );
 
 
-    const percentage =
-        Math.round(
-            (
-                largestCategory.seconds /
-                total
-            ) * 100
-        );
+    recentWorkActivityTable.innerHTML =
+        recent
+            .map(
+                activity => {
+
+                    const category =
+                        normalizeCategory(
+                            activity.category
+                        );
 
 
-    // -----------------------------------------------------
-    // UPDATE INSIGHT
-    // -----------------------------------------------------
+                    return `
+                        <tr>
 
-    if (productivityInsight) {
+                            <td class="table-primary">
+                                ${escapeHtml(
+                                    activity.task_name ||
+                                    "--"
+                                )}
+                            </td>
 
-        productivityInsight.textContent =
-            `Most of your recorded time today was spent on ${largestCategory.name} (${percentage}%).`;
+                            <td>
+                                ${renderCategoryBadge(
+                                    category
+                                )}
+                            </td>
 
-    }
+                            <td class="table-duration">
+                                ${formatDuration(
+                                    activity.duration_seconds
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatDateTime(
+                                    activity.ended_at
+                                )}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
 
 }
 
@@ -1304,67 +1485,48 @@ function renderRecentProfiling(
     jobs
 ) {
 
-    if (!recentProfilingBody) {
+    if (!recentProfilingTable) {
         return;
     }
 
-
-    // -----------------------------------------------------
-    // NO RECORDS
-    // -----------------------------------------------------
 
     if (
         !jobs ||
         jobs.length === 0
     ) {
 
-        recentProfilingBody.innerHTML =
-            `
+        recentProfilingTable.innerHTML = `
             <tr>
-
                 <td
                     colspan="5"
                     class="status-empty"
                 >
-                    No profiling records today.
+                    No completed profiling records today.
                 </td>
-
             </tr>
-            `;
+        `;
 
         return;
+
     }
 
 
-    // -----------------------------------------------------
-    // DISPLAY MAXIMUM 5
-    // -----------------------------------------------------
-
-    const recentJobs =
+    const recent =
         jobs.slice(
             0,
-            5
+            8
         );
 
 
-    recentProfilingBody.innerHTML =
-        recentJobs
+    recentProfilingTable.innerHTML =
+        recent
             .map(
                 job => {
-
-                    const duration =
-                        formatDuration(
-                            Number(
-                                job.total_seconds ||
-                                0
-                            )
-                        );
-
 
                     return `
                         <tr>
 
-                            <td>
+                            <td class="table-primary">
                                 ${escapeHtml(
                                     job.team_name ||
                                     "--"
@@ -1372,21 +1534,28 @@ function renderRecentProfiling(
                             </td>
 
                             <td>
-                                TEAM + MEMBERS
+                                ${Number(
+                                    job.member_count
+                                ) || 0}
+                            </td>
+
+                            <td class="table-duration">
+                                ${formatDuration(
+                                    job.total_seconds
+                                )}
                             </td>
 
                             <td>
-                                ${duration}
-                            </td>
-
-                            <td>
-                                <span class="status-badge completed">
-                                    COMPLETED
+                                <span class="status-badge status-completed">
+                                    ${escapeHtml(
+                                        job.status ||
+                                        "COMPLETED"
+                                    )}
                                 </span>
                             </td>
 
                             <td>
-                                ${formatDate(
+                                ${formatDateTime(
                                     job.finished_at
                                 )}
                             </td>
@@ -1402,102 +1571,81 @@ function renderRecentProfiling(
 
 
 // =========================================================
-// RECENT WORK ACTIVITIES
+// CATEGORY BADGE
 // =========================================================
 
-function renderRecentWorkActivities(
-    activities
+function renderCategoryBadge(
+    category
 ) {
 
+    let className =
+        "category-neutral";
+
+    let label =
+        category || "--";
+
+
     if (
-        !recentWorkActivityTable
+        category ===
+        CATEGORY.PROD
     ) {
 
-        return;
+        className =
+            "category-prod";
+
+        label =
+            "PROD";
 
     }
 
 
     if (
-        !activities ||
-        activities.length === 0
+        category ===
+        CATEGORY.NON_PROD
     ) {
 
-        recentWorkActivityTable.innerHTML =
-            `
-            <tr>
+        className =
+            "category-nonprod";
 
-                <td
-                    colspan="4"
-                    class="status-empty"
-                >
-                    No work activities today.
-                </td>
-
-            </tr>
-            `;
-
-        return;
+        label =
+            "NON-PROD";
 
     }
 
 
-    const recentActivities =
-        activities.slice(
-            0,
-            5
-        );
+    if (
+        category ===
+        CATEGORY.PROD_LOSS
+    ) {
+
+        className =
+            "category-loss";
+
+        label =
+            "PROD LOSS";
+
+    }
 
 
-    recentWorkActivityTable.innerHTML =
-        recentActivities
-            .map(
-                activity => `
+    if (
+        category ===
+        CATEGORY.TRAINING
+    ) {
 
-                    <tr>
+        className =
+            "category-training";
 
-                        <td>
+        label =
+            "TRAINING";
 
-                            ${escapeHtml(
-                                activity.task_name ||
-                                "--"
-                            )}
-
-                        </td>
+    }
 
 
-                        <td>
-
-                            ${escapeHtml(
-                                activity.category ||
-                                "--"
-                            )}
-
-                        </td>
-
-
-                        <td>
-
-                            ${formatDuration(
-                                activity.duration_seconds
-                            )}
-
-                        </td>
-
-
-                        <td>
-
-                            ${formatDateTime(
-                                activity.ended_at
-                            )}
-
-                        </td>
-
-                    </tr>
-
-                `
-            )
-            .join("");
+    return `
+        <span class="category-badge ${className}">
+            ${escapeHtml(label)}
+        </span>
+    `;
 
 }
 
@@ -1516,16 +1664,14 @@ function formatDuration(
             Math.round(
                 Number(
                     totalSeconds
-                ) ||
-                0
+                ) || 0
             )
         );
 
 
     const hours =
         Math.floor(
-            seconds /
-            3600
+            seconds / 3600
         );
 
 
@@ -1535,8 +1681,7 @@ function formatDuration(
 
     const minutes =
         Math.floor(
-            seconds /
-            60
+            seconds / 60
         );
 
 
@@ -1545,7 +1690,6 @@ function formatDuration(
 
 
     return [
-
         String(hours)
             .padStart(
                 2,
@@ -1570,66 +1714,47 @@ function formatDuration(
 
 
 // =========================================================
-// FORMAT DATE
+// FORMAT DATE TIME — 12-HOUR FORMAT
 // =========================================================
 
-function formatDate(
-    value
-) {
+function formatDateTime(value) {
 
     if (!value) {
         return "--";
     }
 
+    const date = new Date(value);
 
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
+    if (Number.isNaN(date.getTime())) {
         return "--";
-
     }
 
-
-    return date.toLocaleDateString(
-        undefined,
-        {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        }
-    );
-
+    return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
 }
 
 
 // =========================================================
-// FORMAT DATE TIME
+// PARSE DATE
 // =========================================================
 
-function formatDateTime(
+function parseDate(
     value
 ) {
 
     if (!value) {
-
-        return "--";
-
+        return null;
     }
 
 
     const date =
-        new Date(
-            value
-        );
+        new Date(value);
 
 
     if (
@@ -1638,20 +1763,12 @@ function formatDateTime(
         )
     ) {
 
-        return "--";
+        return null;
 
     }
 
 
-    return date.toLocaleString(
-        undefined,
-        {
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit"
-        }
-    );
+    return date;
 
 }
 
@@ -1741,6 +1858,30 @@ function escapeHtml(
 
 
 // =========================================================
+// DASHBOARD ERROR
+// =========================================================
+
+function showDashboardError(
+    error
+) {
+
+    console.error(
+        "Dashboard error:",
+        error
+    );
+
+
+    if (productivityInsight) {
+
+        productivityInsight.textContent =
+            "Dashboard data could not be loaded. Check the browser console for the database error.";
+
+    }
+
+}
+
+
+// =========================================================
 // LOGOUT
 // =========================================================
 
@@ -1787,15 +1928,9 @@ if (logoutButton) {
 }
 
 
-// =====================================================
+// =========================================================
 // ACCOUNT MANAGEMENT
-// =====================================================
-
-const userSection =
-    document.getElementById(
-        "userSection"
-    );
-
+// =========================================================
 
 function openAccountManagement() {
 
@@ -1805,9 +1940,7 @@ function openAccountManagement() {
 }
 
 
-if (
-    userSection
-) {
+if (userSection) {
 
     userSection.addEventListener(
         "click",
@@ -1834,6 +1967,127 @@ if (
     );
 
 }
+
+// =========================================================
+// DATE FILTER
+// =========================================================
+
+function initializeDateFilter() {
+
+    if (!dashboardDateFilter) {
+        return;
+    }
+
+
+    const today =
+        getLocalTodayString();
+
+
+    dashboardDateFilter.value =
+        today;
+
+
+    updateDashboardDateLabel(
+        today
+    );
+
+
+    // -----------------------------------------------------
+    // DATE CHANGED
+    // -----------------------------------------------------
+
+    dashboardDateFilter.addEventListener(
+        "change",
+        async () => {
+
+            const selectedDate =
+                dashboardDateFilter.value;
+
+            if (!selectedDate) {
+                return;
+            }
+
+
+            updateDashboardDateLabel(
+                selectedDate
+            );
+
+
+            try {
+
+                await loadDashboardData(
+                    window.currentDashboardUserId,
+                    selectedDate
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Date filter error:",
+                    error
+                );
+
+                showDashboardError(
+                    error
+                );
+
+            }
+
+        }
+    );
+
+
+    // -----------------------------------------------------
+    // TODAY BUTTON
+    // -----------------------------------------------------
+
+    if (dashboardTodayButton) {
+
+        dashboardTodayButton.addEventListener(
+            "click",
+            async () => {
+
+                const today =
+                    getLocalTodayString();
+
+
+                dashboardDateFilter.value =
+                    today;
+
+
+                updateDashboardDateLabel(
+                    today
+                );
+
+
+                try {
+
+                    await loadDashboardData(
+                        window.currentDashboardUserId,
+                        today
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Today filter error:",
+                        error
+                    );
+
+                    showDashboardError(
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+}
+
+
 
 
 // =========================================================
