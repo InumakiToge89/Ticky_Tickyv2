@@ -537,7 +537,6 @@ async function loadReports() {
 
     clearError();
 
-
     // -----------------------------------------------------
     // GET COMPLETED PROFILING JOBS
     // -----------------------------------------------------
@@ -545,94 +544,97 @@ async function loadReports() {
     const {
         data: jobs,
         error: jobsError
-    } =
-        await supabase
-            .from("profiling_jobs")
-            .select(`
-                id,
-                analyst_id,
-                team_name,
-                team_id,
-                member_count,
-                status,
-                started_at,
-                finished_at,
-                total_seconds
-            `)
-            .eq(
-                "status",
-                "COMPLETED"
-            )
-            .order(
-                "finished_at",
-                {
-                    ascending: false
-                }
-            );
-
+    } = await supabase
+        .from("profiling_jobs")
+        .select(`
+            id,
+            analyst_id,
+            team_name,
+            team_id,
+            member_count,
+            status,
+            started_at,
+            finished_at,
+            total_seconds
+        `)
+        .eq(
+            "status",
+            "COMPLETED"
+        )
+        .order(
+            "finished_at",
+            {
+                ascending: false
+            }
+        );
 
     if (jobsError) {
         throw jobsError;
     }
-
 
     console.log(
         "Completed profiling jobs:",
         jobs
     );
 
-
-    // -----------------------------------------------------
-    // NO DATA
-    // -----------------------------------------------------
-
-    if (
-        !jobs ||
-        jobs.length === 0
-    ) {
-
+    if (!jobs || jobs.length === 0) {
         reportRecords = [];
-
         filteredRecords = [];
-
-        populateAnalystFilter(
-            []
-        );
-
-        populateTeamFilter(
-            []
-        );
-
-        renderReports(
-            []
-        );
-
+        populateAnalystFilter([]);
+        renderReports([]);
         return;
     }
 
+    // =====================================================
+    // STAGE 1 + 2
+    // LOAD ALL COMPLETED TIMER SESSIONS
+    //
+    // Do NOT filter timer_sessions by profiling_jobs.id here.
+    // Older Ticky Ticky records may contain a legacy job ID.
+    // Loading the complete completed-session set allows us to
+    // recover those records using their real time window.
+    // =====================================================
 
-    // -----------------------------------------------------
-    // GET JOB IDs
-    // -----------------------------------------------------
+    async function fetchAllRows(
+        tableName,
+        selectColumns,
+        pageSize = 1000
+    ) {
+        const rows = [];
 
-    const jobIds =
-        jobs.map(
-            job =>
-                job.id
-        );
+        for (let from = 0; ; from += pageSize) {
 
+            const {
+                data,
+                error
+            } = await supabase
+                .from(tableName)
+                .select(selectColumns)
+                .range(
+                    from,
+                    from + pageSize - 1
+                );
 
-    // -----------------------------------------------------
-    // GET TIMER SESSIONS
-    // -----------------------------------------------------
+            if (error) {
+                throw error;
+            }
 
-    const {
-        data: sessions,
-        error: sessionsError
-    } =
-        await supabase
-            .from("timer_sessions")
-            .select(`
+            const page = data || [];
+
+            rows.push(...page);
+
+            if (page.length < pageSize) {
+                break;
+            }
+        }
+
+        return rows;
+    }
+
+    const sessions =
+        await fetchAllRows(
+            "timer_sessions",
+            `
                 id,
                 profiling_job_id,
                 session_type,
@@ -640,73 +642,84 @@ async function loadReports() {
                 started_at,
                 stopped_at,
                 total_seconds
-            `)
-            .in(
-                "profiling_job_id",
-                jobIds
-            );
-
-
-    if (sessionsError) {
-        throw sessionsError;
-    }
-
+            `
+        );
 
     console.log(
-        "Timer sessions:",
-        sessions
+        "Reports timer sessions loaded:",
+        sessions.length
     );
 
-
     // -----------------------------------------------------
-    // GET TIMER EVENTS
-    // Used to attribute profiling time to the actual
-    // calendar day(s) on which it was performed.
+    // TIMER EVENTS
+    // Loaded in batches so large report histories do not
+    // create an oversized Supabase .in() request.
     // -----------------------------------------------------
 
     const sessionIds =
-        (sessions || [])
-            .map(session => session.id)
-            .filter(Boolean);
+        sessions
+            .map(
+                session => session.id
+            )
+            .filter(
+                id =>
+                    id !== null &&
+                    id !== undefined
+            );
 
     let timerEvents = [];
 
-    if (sessionIds.length > 0) {
+    const EVENT_BATCH_SIZE = 100;
+
+    for (
+        let i = 0;
+        i < sessionIds.length;
+        i += EVENT_BATCH_SIZE
+    ) {
+
+        const batchIds =
+            sessionIds.slice(
+                i,
+                i + EVENT_BATCH_SIZE
+            );
 
         const {
             data: eventRows,
             error: eventsError
-        } =
-            await supabase
-                .from("timer_events")
-                .select(`
-                    session_id,
-                    event_type,
-                    event_time
-                `)
-                .in(
-                    "session_id",
-                    sessionIds
-                )
-                .order(
-                    "event_time",
-                    {
-                        ascending: true
-                    }
-                );
+        } = await supabase
+            .from("timer_events")
+            .select(`
+                session_id,
+                event_type,
+                event_time
+            `)
+            .in(
+                "session_id",
+                batchIds
+            )
+            .order(
+                "event_time",
+                {
+                    ascending: true
+                }
+            );
 
         if (eventsError) {
             throw eventsError;
         }
 
-        timerEvents =
-            eventRows || [];
-
+        timerEvents.push(
+            ...(eventRows || [])
+        );
     }
 
+    console.log(
+        "Reports timer events loaded:",
+        timerEvents.length
+    );
 
     // -----------------------------------------------------
-    // GET ANALYST PROFILES
+    // ANALYST PROFILES
     // -----------------------------------------------------
 
     const analystIds =
@@ -721,80 +734,287 @@ async function loadReports() {
             )
         ];
 
-
     let profiles = [];
 
-
-    if (
-        analystIds.length >
-        0
-    ) {
+    if (analystIds.length > 0) {
 
         const {
             data: profileRows,
             error: profilesError
-        } =
-            await supabase
-                .from("profiles")
-                .select(`
-                    id,
-                    full_name,
-                    role
-                `)
-                .in(
-                    "id",
-                    analystIds
-                );
-
+        } = await supabase
+            .from("profiles")
+            .select(`
+                id,
+                full_name,
+                role
+            `)
+            .in(
+                "id",
+                analystIds
+            );
 
         if (profilesError) {
             throw profilesError;
         }
 
-
         profiles =
-            profileRows ||
-            [];
-
+            profileRows || [];
     }
 
+    // =====================================================
+    // TIME HELPERS
+    // =====================================================
+
+    function toMilliseconds(value) {
+
+        const time =
+            new Date(value).getTime();
+
+        return Number.isFinite(time)
+            ? time
+            : NaN;
+    }
+
+    function safeSeconds(value) {
+
+        const seconds =
+            Number(value);
+
+        return Number.isFinite(seconds) &&
+            seconds > 0
+            ? Math.floor(seconds)
+            : 0;
+    }
+
+    function getEventsForSession(
+        session
+    ) {
+
+        return timerEvents
+            .filter(
+                event =>
+                    String(
+                        event.session_id
+                    ) ===
+                    String(
+                        session.id
+                    )
+            )
+            .sort(
+                (a, b) =>
+                    toMilliseconds(
+                        a.event_time
+                    ) -
+                    toMilliseconds(
+                        b.event_time
+                    )
+            );
+    }
+
+    // Calculates ONLY active time from START/RESUME
+    // through PAUSE/STOP.
+    function calculateEventSeconds(
+        session
+    ) {
+
+        if (!session) {
+            return 0;
+        }
+
+        const events =
+            getEventsForSession(
+                session
+            );
+
+        let totalMilliseconds = 0;
+        let activeStart = null;
+
+        for (
+            const event of events
+        ) {
+
+            const eventTime =
+                toMilliseconds(
+                    event.event_time
+                );
+
+            if (
+                !Number.isFinite(
+                    eventTime
+                )
+            ) {
+                continue;
+            }
+
+            const type =
+                String(
+                    event.event_type ||
+                    ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            if (
+                type === "START" ||
+                type === "RESUME"
+            ) {
+
+                // A repeated START/RESUME should not
+                // create a second simultaneous interval.
+                if (
+                    activeStart === null
+                ) {
+                    activeStart =
+                        eventTime;
+                }
+
+                continue;
+            }
+
+            if (
+                type === "PAUSE" ||
+                type === "STOP"
+            ) {
+
+                if (
+                    activeStart !== null &&
+                    eventTime > activeStart
+                ) {
+
+                    totalMilliseconds +=
+                        eventTime -
+                        activeStart;
+
+                }
+
+                activeStart = null;
+            }
+        }
+
+        return Math.max(
+            0,
+            Math.floor(
+                totalMilliseconds /
+                1000
+            )
+        );
+    }
+
+    // Source-of-truth priority:
+    // 1. timer_sessions.total_seconds
+    // 2. timer_events active intervals
+    // 3. started_at -> stopped_at for legacy records
+    function getAccurateSessionSeconds(
+        session
+    ) {
+
+        if (!session) {
+            return 0;
+        }
+
+        const stored =
+            safeSeconds(
+                session.total_seconds
+            );
+
+        if (stored > 0) {
+            return stored;
+        }
+
+        const eventSeconds =
+            calculateEventSeconds(
+                session
+            );
+
+        if (eventSeconds > 0) {
+            return eventSeconds;
+        }
+
+        const start =
+            toMilliseconds(
+                session.started_at
+            );
+
+        const stop =
+            toMilliseconds(
+                session.stopped_at
+            );
+
+        if (
+            Number.isFinite(start) &&
+            Number.isFinite(stop) &&
+            stop > start
+        ) {
+
+            return Math.floor(
+                (
+                    stop -
+                    start
+                ) / 1000
+            );
+
+        }
+
+        return 0;
+    }
 
     // -----------------------------------------------------
-    // ATTRIBUTE SESSION TIME TO LOCAL CALENDAR DAYS
+    // DAILY BREAKDOWN
     // -----------------------------------------------------
 
-    function buildDailySessionBreakdown(sessionList) {
+    function buildDailySessionBreakdown(
+        sessionList
+    ) {
 
         const breakdown = {};
 
-        const eventsBySession = new Map();
+        function addInterval(
+            startMs,
+            endMs
+        ) {
 
-        (timerEvents || []).forEach(event => {
-
-            if (!eventsBySession.has(String(event.session_id))) {
-                eventsBySession.set(String(event.session_id), []);
-            }
-
-            eventsBySession.get(String(event.session_id)).push(event);
-
-        });
-
-
-        function addInterval(start, end) {
-
-            if (!start || !end || end <= start) {
+            if (
+                !Number.isFinite(startMs) ||
+                !Number.isFinite(endMs) ||
+                endMs <= startMs
+            ) {
                 return;
             }
 
-            let cursor = new Date(start);
+            let cursor =
+                new Date(
+                    startMs
+                );
 
-            while (cursor < end) {
+            const end =
+                new Date(
+                    endMs
+                );
 
-                const dayStart = new Date(cursor);
-                dayStart.setHours(0, 0, 0, 0);
+            while (
+                cursor < end
+            ) {
 
-                const nextDay = new Date(dayStart);
-                nextDay.setDate(nextDay.getDate() + 1);
+                const dayStart =
+                    new Date(
+                        cursor
+                    );
+
+                dayStart.setHours(
+                    0,
+                    0,
+                    0,
+                    0
+                );
+
+                const nextDay =
+                    new Date(
+                        dayStart
+                    );
+
+                nextDay.setDate(
+                    nextDay.getDate() + 1
+                );
 
                 const segmentEnd =
                     end < nextDay
@@ -805,174 +1025,670 @@ async function loadReports() {
                     Math.max(
                         0,
                         Math.floor(
-                            (segmentEnd - cursor) / 1000
+                            (
+                                segmentEnd -
+                                cursor
+                            ) / 1000
                         )
                     );
 
-                if (seconds > 0) {
+                if (
+                    seconds > 0
+                ) {
 
                     const dateKey =
                         [
                             cursor.getFullYear(),
-                            String(cursor.getMonth() + 1).padStart(2, "0"),
-                            String(cursor.getDate()).padStart(2, "0")
+                            String(
+                                cursor.getMonth() + 1
+                            ).padStart(
+                                2,
+                                "0"
+                            ),
+                            String(
+                                cursor.getDate()
+                            ).padStart(
+                                2,
+                                "0"
+                            )
                         ].join("-");
 
                     breakdown[dateKey] =
-                        (breakdown[dateKey] || 0) +
+                        (
+                            breakdown[dateKey] ||
+                            0
+                        ) +
                         seconds;
-
                 }
 
-                cursor = segmentEnd;
-
+                cursor =
+                    segmentEnd;
             }
-
         }
 
+        (
+            sessionList || []
+        ).forEach(
+            session => {
 
-        (sessionList || []).forEach(session => {
+                const events =
+                    getEventsForSession(
+                        session
+                    );
 
-            const events =
-                eventsBySession.get(String(session.id)) || [];
+                let eventSeconds = 0;
+                let activeStart = null;
 
-            let activeStart = null;
+                for (
+                    const event of events
+                ) {
 
-            events.forEach(event => {
+                    const eventTime =
+                        toMilliseconds(
+                            event.event_time
+                        );
 
-                const time = new Date(event.event_time);
+                    if (
+                        !Number.isFinite(
+                            eventTime
+                        )
+                    ) {
+                        continue;
+                    }
 
-                if (Number.isNaN(time.getTime())) {
+                    const type =
+                        String(
+                            event.event_type ||
+                            ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+                    if (
+                        type === "START" ||
+                        type === "RESUME"
+                    ) {
+
+                        if (
+                            activeStart === null
+                        ) {
+                            activeStart =
+                                eventTime;
+                        }
+
+                        continue;
+                    }
+
+                    if (
+                        type === "PAUSE" ||
+                        type === "STOP"
+                    ) {
+
+                        if (
+                            activeStart !== null &&
+                            eventTime > activeStart
+                        ) {
+
+                            addInterval(
+                                activeStart,
+                                eventTime
+                            );
+
+                            eventSeconds +=
+                                Math.floor(
+                                    (
+                                        eventTime -
+                                        activeStart
+                                    ) / 1000
+                                );
+                        }
+
+                        activeStart = null;
+                    }
+                }
+
+                // If there are usable timer events, use those
+                // exact active intervals for daily attribution.
+                if (
+                    eventSeconds > 0
+                ) {
                     return;
                 }
 
-                if (
-                    event.event_type === "START" ||
-                    event.event_type === "RESUME"
-                ) {
-                    activeStart = time;
-                }
+                // Legacy fallback. This is intentionally used
+                // only when event data cannot produce a duration.
+                const start =
+                    toMilliseconds(
+                        session.started_at
+                    );
 
-                if (event.event_type === "PAUSE") {
-
-                    if (activeStart) {
-                        addInterval(activeStart, time);
-                    }
-
-                    activeStart = null;
-                }
-
-                if (event.event_type === "STOP") {
-
-                    if (activeStart) {
-                        addInterval(activeStart, time);
-                    }
-
-                    activeStart = null;
-                }
-
-            });
-
-
-            // For legacy rows with no events, fall back to the
-            // stored total and the session's start/stop timestamps.
-            if (
-                events.length === 0 &&
-                session.started_at &&
-                session.stopped_at
-            ) {
-
-                const start = new Date(session.started_at);
-                const end = new Date(session.stopped_at);
+                const stop =
+                    toMilliseconds(
+                        session.stopped_at
+                    );
 
                 if (
-                    !Number.isNaN(start.getTime()) &&
-                    !Number.isNaN(end.getTime())
+                    Number.isFinite(start) &&
+                    Number.isFinite(stop) &&
+                    stop > start
                 ) {
-                    addInterval(start, end);
-                }
 
+                    addInterval(
+                        start,
+                        stop
+                    );
+                }
             }
-
-        });
+        );
 
         return breakdown;
-
     }
 
+    function getBreakdownTotal(
+        breakdown
+    ) {
 
-    // -----------------------------------------------------
-    // BUILD REPORT RECORDS
-    // -----------------------------------------------------
+        return Object.values(
+            breakdown || {}
+        ).reduce(
+            (
+                total,
+                value
+            ) => {
+
+                const seconds =
+                    Number(value);
+
+                return total +
+                    (
+                        Number.isFinite(
+                            seconds
+                        )
+                            ? seconds
+                            : 0
+                    );
+
+            },
+            0
+        );
+    }
+
+    // =====================================================
+    // STAGE 1
+    // BUILD AN UNAMBIGUOUS SESSION POOL
+    //
+    // Exact profiling_job_id matches always win.
+    // Every timer session can belong to at most ONE report.
+    // =====================================================
+
+    const jobById =
+        new Map(
+            jobs.map(
+                job => [
+                    String(job.id),
+                    job
+                ]
+            )
+        );
+
+    const sessionsByJobId =
+        new Map();
+
+    const assignedSessionIds =
+        new Set();
+
+    // First pass: exact foreign-key matches.
+    for (
+        const session of sessions
+    ) {
+
+        const job =
+            jobById.get(
+                String(
+                    session.profiling_job_id
+                )
+            );
+
+        if (!job) {
+            continue;
+        }
+
+        const jobKey =
+            String(
+                job.id
+            );
+
+        if (
+            !sessionsByJobId.has(
+                jobKey
+            )
+        ) {
+            sessionsByJobId.set(
+                jobKey,
+                []
+            );
+        }
+
+        sessionsByJobId
+            .get(jobKey)
+            .push(session);
+
+        assignedSessionIds.add(
+            String(session.id)
+        );
+    }
+
+    // =====================================================
+    // STAGE 1 LEGACY RECOVERY
+    //
+    // For sessions whose profiling_job_id does not match
+    // a current profiling_jobs.id, find the closest valid
+    // profiling-job time window.
+    //
+    // A legacy session is assigned ONCE, preventing one timer
+    // from being counted against multiple jobs.
+    // =====================================================
+
+    function getLegacyCandidateScore(
+        session,
+        job
+    ) {
+
+        const sessionStart =
+            toMilliseconds(
+                session.started_at
+            );
+
+        const sessionStop =
+            toMilliseconds(
+                session.stopped_at
+            );
+
+        const jobStart =
+            toMilliseconds(
+                job.started_at
+            );
+
+        const jobFinish =
+            toMilliseconds(
+                job.finished_at
+            );
+
+        if (
+            !Number.isFinite(sessionStart) ||
+            !Number.isFinite(sessionStop) ||
+            !Number.isFinite(jobStart) ||
+            !Number.isFinite(jobFinish) ||
+            sessionStop <= sessionStart ||
+            jobFinish <= jobStart
+        ) {
+            return null;
+        }
+
+        // Keep the same safety boundary as the previous
+        // recovery logic, with a slightly more forgiving
+        // two-minute clock boundary for legacy data.
+        const tolerance =
+            2 * 60 * 1000;
+
+        if (
+            sessionStart <
+                jobStart - tolerance ||
+            sessionStop >
+                jobFinish + tolerance
+        ) {
+            return null;
+        }
+
+        const sessionMid =
+            (
+                sessionStart +
+                sessionStop
+            ) / 2;
+
+        const jobMid =
+            (
+                jobStart +
+                jobFinish
+            ) / 2;
+
+        const startDistance =
+            Math.abs(
+                sessionStart -
+                jobStart
+            );
+
+        const stopDistance =
+            Math.abs(
+                sessionStop -
+                jobFinish
+            );
+
+        const midpointDistance =
+            Math.abs(
+                sessionMid -
+                jobMid
+            );
+
+        // Lower score = stronger match.
+        return (
+            startDistance +
+            stopDistance +
+            (
+                midpointDistance *
+                0.25
+            )
+        );
+    }
+
+    const legacyCandidates = [];
+
+    for (
+        const session of sessions
+    ) {
+
+        const sessionId =
+            String(
+                session.id
+            );
+
+        if (
+            assignedSessionIds.has(
+                sessionId
+            )
+        ) {
+            continue;
+        }
+
+        const sessionType =
+            String(
+                session.session_type ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+        if (
+            sessionType !== "TEAM" &&
+            sessionType !== "MEMBERS" &&
+            sessionType !== "MEMBER"
+        ) {
+            continue;
+        }
+
+        for (
+            const job of jobs
+        ) {
+
+            const score =
+                getLegacyCandidateScore(
+                    session,
+                    job
+                );
+
+            if (
+                score === null
+            ) {
+                continue;
+            }
+
+            legacyCandidates.push({
+                session,
+                job,
+                score
+            });
+        }
+    }
+
+    // Strongest matches first.
+    legacyCandidates.sort(
+        (a, b) =>
+            a.score -
+            b.score
+    );
+
+    const legacyAssignedJobs =
+        new Set();
+
+    for (
+        const candidate of legacyCandidates
+    ) {
+
+        const sessionKey =
+            String(
+                candidate.session.id
+            );
+
+        const jobKey =
+            String(
+                candidate.job.id
+            );
+
+        if (
+            assignedSessionIds.has(
+                sessionKey
+            )
+        ) {
+            continue;
+        }
+
+        if (
+            !sessionsByJobId.has(
+                jobKey
+            )
+        ) {
+            sessionsByJobId.set(
+                jobKey,
+                []
+            );
+        }
+
+        // A session is allowed to be assigned once.
+        sessionsByJobId
+            .get(jobKey)
+            .push(
+                candidate.session
+            );
+
+        assignedSessionIds.add(
+            sessionKey
+        );
+
+        legacyAssignedJobs.add(
+            jobKey
+        );
+    }
+
+    // =====================================================
+    // STAGE 2 + 3
+    // BUILD VALIDATED REPORT RECORDS
+    // =====================================================
 
     reportRecords =
         jobs.map(
             job => {
 
+                const jobKey =
+                    String(
+                        job.id
+                    );
+
                 const jobSessions =
                     (
-                        sessions ||
-                        []
-                    ).filter(
+                        sessionsByJobId.get(
+                            jobKey
+                        ) || []
+                    ).slice();
+
+                // -------------------------------------------------
+                // SUM ALL TEAM/MEMBER SESSIONS
+                // Never use Array.find() here.
+                // -------------------------------------------------
+
+                const teamSessions =
+                    jobSessions.filter(
+                        session => {
+
+                            const type =
+                                String(
+                                    session.session_type ||
+                                    ""
+                                )
+                                    .trim()
+                                    .toUpperCase();
+
+                            return (
+                                type === "TEAM" ||
+                                type.includes(
+                                    "TEAM"
+                                )
+                            );
+                        }
+                    );
+
+                const membersSessions =
+                    jobSessions.filter(
+                        session => {
+
+                            const type =
+                                String(
+                                    session.session_type ||
+                                    ""
+                                )
+                                    .trim()
+                                    .toUpperCase();
+
+                            return (
+                                type === "MEMBERS" ||
+                                type === "MEMBER" ||
+                                type.includes(
+                                    "MEMBER"
+                                )
+                            );
+                        }
+                    );
+
+                const teamSeconds =
+                    teamSessions.reduce(
+                        (
+                            total,
+                            session
+                        ) =>
+                            total +
+                            getAccurateSessionSeconds(
+                                session
+                            ),
+                        0
+                    );
+
+                const membersSeconds =
+                    membersSessions.reduce(
+                        (
+                            total,
+                            session
+                        ) =>
+                            total +
+                            getAccurateSessionSeconds(
+                                session
+                            ),
+                        0
+                    );
+
+                const sessionTotalSeconds =
+                    teamSeconds +
+                    membersSeconds;
+
+                const jobTotalSeconds =
+                    safeSeconds(
+                        job.total_seconds
+                    );
+
+                // -------------------------------------------------
+                // STAGE 2:
+                // SESSION TOTAL IS PRIMARY.
+                // Job total is only a fallback when the detailed
+                // session breakdown is genuinely unavailable.
+                // -------------------------------------------------
+
+                const hasDetailedSessionTime =
+                    sessionTotalSeconds > 0;
+
+                const totalSeconds =
+                    hasDetailedSessionTime
+                        ? sessionTotalSeconds
+                        : jobTotalSeconds;
+
+                // -------------------------------------------------
+                // STAGE 5:
+                // VALIDATE the stored job total against the
+                // detailed TEAM + MEMBERS total.
+                // -------------------------------------------------
+
+                const differenceSeconds =
+                    Math.abs(
+                        sessionTotalSeconds -
+                        jobTotalSeconds
+                    );
+
+                let accuracyStatus =
+                    "NO_BREAKDOWN";
+
+                if (
+                    sessionTotalSeconds > 0 &&
+                    jobTotalSeconds > 0
+                ) {
+
+                    accuracyStatus =
+                        differenceSeconds <= 2
+                            ? "VERIFIED"
+                            : "INCONSISTENT";
+
+                }
+                else if (
+                    sessionTotalSeconds > 0
+                ) {
+
+                    accuracyStatus =
+                        "SESSION_VERIFIED";
+
+                }
+                else if (
+                    jobTotalSeconds > 0
+                ) {
+
+                    accuracyStatus =
+                        "JOB_TOTAL_ONLY";
+
+                }
+
+                const wasLegacyMatched =
+                    jobSessions.some(
                         session =>
                             String(
                                 session.profiling_job_id
-                            ) ===
-                            String(
-                                job.id
-                            )
+                            ) !==
+                            jobKey
                     );
 
-
-                const teamSession =
-                    jobSessions.find(
-                        session =>
-                            String(
-                                session.session_type ||
-                                ""
-                            )
-                                .trim()
-                                .toUpperCase() ===
-                            "TEAM"
-                    );
-
-
-                const membersSession =
-                    jobSessions.find(
-                        session =>
-                            String(
-                                session.session_type ||
-                                ""
-                            )
-                                .trim()
-                                .toUpperCase() ===
-                            "MEMBERS"
-                    );
-
-
-                const teamSeconds =
-                    Number(
-                        teamSession?.total_seconds ||
-                        0
-                    );
-
-
-                const membersSeconds =
-                    Number(
-                        membersSession?.total_seconds ||
-                        0
-                    );
-
-
-                const totalSeconds =
-                        teamSeconds +
-                        membersSeconds;
+                if (
+                    wasLegacyMatched &&
+                    accuracyStatus === "VERIFIED"
+                ) {
+                    accuracyStatus =
+                        "LEGACY_VERIFIED";
+                }
+                else if (
+                    wasLegacyMatched &&
+                    accuracyStatus === "SESSION_VERIFIED"
+                ) {
+                    accuracyStatus =
+                        "LEGACY_SESSION";
+                }
 
                 const dailyBreakdown =
                     buildDailySessionBreakdown(
                         jobSessions
                     );
-
 
                 const analyst =
                     profiles.find(
@@ -984,7 +1700,6 @@ async function loadReports() {
                                 job.analyst_id
                             )
                     );
-
 
                 return {
 
@@ -1029,29 +1744,148 @@ async function loadReports() {
                     totalSeconds:
                         totalSeconds,
 
+                    storedJobTotalSeconds:
+                        jobTotalSeconds,
+
+                    sessionTotalSeconds:
+                        sessionTotalSeconds,
+
+                    differenceSeconds:
+                        differenceSeconds,
+
+                    accuracyStatus:
+                        accuracyStatus,
+
+                    wasLegacyMatched:
+                        wasLegacyMatched,
+
+                    teamSessionCount:
+                        teamSessions.length,
+
+                    membersSessionCount:
+                        membersSessions.length,
+
                     dailyBreakdown:
-                        dailyBreakdown
+                        dailyBreakdown,
+
+                    // Full session/event data used by the clickable
+                    // report-details audit panel.
+                    detailSessions:
+                        jobSessions.map(
+                            session => {
+                                const sessionEvents =
+                                    getEventsForSession(
+                                        session
+                                    );
+
+                                const eventActiveSeconds =
+                                    calculateEventSeconds(
+                                        session
+                                    );
+
+                                const storedSeconds =
+                                    safeSeconds(
+                                        session.total_seconds
+                                    );
+
+                                const sessionStart =
+                                    toMilliseconds(
+                                        session.started_at
+                                    );
+
+                                const sessionStop =
+                                    toMilliseconds(
+                                        session.stopped_at
+                                    );
+
+                                const wallSeconds =
+                                    Number.isFinite(sessionStart) &&
+                                    Number.isFinite(sessionStop) &&
+                                    sessionStop > sessionStart
+                                        ? Math.floor(
+                                            (sessionStop - sessionStart) / 1000
+                                        )
+                                        : 0;
+
+                                const activeForPauseEstimate =
+                                    eventActiveSeconds > 0
+                                        ? eventActiveSeconds
+                                        : storedSeconds;
+
+                                return {
+                                    ...session,
+                                    events: sessionEvents,
+                                    eventActiveSeconds,
+                                    storedSeconds,
+                                    wallSeconds,
+                                    pauseSeconds: Math.max(
+                                        0,
+                                        wallSeconds - activeForPauseEstimate
+                                    )
+                                };
+                            }
+                        )
 
                 };
 
             }
         );
 
+    // =====================================================
+    // STAGE 5 SUMMARY LOGGING
+    // =====================================================
+
+    const accuracySummary =
+        reportRecords.reduce(
+            (
+                summary,
+                record
+            ) => {
+
+                const key =
+                    record.accuracyStatus ||
+                    "UNKNOWN";
+
+                summary[key] =
+                    (
+                        summary[key] ||
+                        0
+                    ) + 1;
+
+                return summary;
+
+            },
+            {}
+        );
+
+    console.log(
+        "REPORT ACCURACY SUMMARY:",
+        accuracySummary
+    );
+
+    console.table(
+        reportRecords.map(
+            record => ({
+                jobId: record.id,
+                analyst: record.analystName,
+                team: record.team_name,
+                teamsSeconds: record.teamSeconds,
+                membersSeconds: record.membersSeconds,
+                detailedTotal: record.sessionTotalSeconds,
+                storedJobTotal: record.storedJobTotalSeconds,
+                difference: record.differenceSeconds,
+                status: record.accuracyStatus
+            })
+        )
+    );
 
     // -----------------------------------------------------
-    // POPULATE FILTERS
+    // FILTERS + INITIAL RENDER
     // -----------------------------------------------------
 
     populateAnalystFilter(
         reportRecords
     );
-
-
-
-
-    // -----------------------------------------------------
-    // INITIAL RENDER
-    // -----------------------------------------------------
 
     renderReports(
         reportRecords
@@ -2293,44 +3127,27 @@ function renderTable(
         return;
     }
 
-
     const totalRecords =
         records?.length || 0;
-
-
-    // -----------------------------------------------------
-    // NO RECORDS
-    // -----------------------------------------------------
 
     if (totalRecords === 0) {
 
         reportsTableBody.innerHTML =
             `
             <tr>
-
                 <td
                     colspan="8"
                     class="status-empty"
                 >
                     No completed profiling records found.
                 </td>
-
             </tr>
             `;
 
-
-        updatePagination(
-            0
-        );
+        updatePagination(0);
 
         return;
-
     }
-
-
-    // -----------------------------------------------------
-    // CALCULATE PAGE DETAILS
-    // -----------------------------------------------------
 
     const totalPages =
         Math.ceil(
@@ -2338,37 +3155,25 @@ function renderTable(
             recordsPerPage
         );
 
-
-    // Prevent an invalid page number
-
     if (
         currentPage >
         totalPages
     ) {
-
         currentPage =
             totalPages;
-
     }
-
 
     if (
-        currentPage <
-        1
+        currentPage < 1
     ) {
-
-        currentPage =
-            1;
-
+        currentPage = 1;
     }
-
 
     const startIndex =
         (
             currentPage - 1
         ) *
         recordsPerPage;
-
 
     const endIndex =
         Math.min(
@@ -2377,24 +3182,95 @@ function renderTable(
             totalRecords
         );
 
-
     const pageRecords =
         records.slice(
             startIndex,
             endIndex
         );
 
+    function accuracyLabel(
+        record
+    ) {
 
-    // -----------------------------------------------------
-    // RENDER CURRENT PAGE ONLY
-    // -----------------------------------------------------
+        const status =
+            record.accuracyStatus ||
+            "UNKNOWN";
+
+        const labels = {
+            VERIFIED:
+                "✓ Verified",
+            SESSION_VERIFIED:
+                "✓ Session",
+            LEGACY_VERIFIED:
+                "✓ Legacy match",
+            LEGACY_SESSION:
+                "✓ Legacy session",
+            INCONSISTENT:
+                "⚠ Check total",
+            JOB_TOTAL_ONLY:
+                "⚠ Job total only",
+            NO_BREAKDOWN:
+                "— No breakdown"
+        };
+
+        const label =
+            labels[status] ||
+            "—";
+
+        const isWarning =
+            status === "INCONSISTENT" ||
+            status === "JOB_TOTAL_ONLY";
+
+        const isLegacy =
+            status === "LEGACY_VERIFIED" ||
+            status === "LEGACY_SESSION";
+
+        const title =
+            status === "INCONSISTENT"
+                ? `Detailed TEAM + MEMBERS time differs from the stored job total by ${formatDuration(record.differenceSeconds)}.`
+                : status === "JOB_TOTAL_ONLY"
+                    ? "No usable TEAM/MEMBERS session duration was found. The stored profiling job total is being used."
+                    : isLegacy
+                        ? "This report recovered a legacy timer session using its profiling-job time window."
+                        : status === "NO_BREAKDOWN"
+                            ? "No usable detailed profiling duration was found."
+                            : "Detailed profiling time is available.";
+
+        const textColor =
+            isWarning
+                ? "#b42318"
+                : isLegacy
+                    ? "#7567D8"
+                    : "var(--text-secondary)";
+
+        return `
+            <span
+                title="${escapeHtml(title)}"
+                style="
+                    display:inline-block;
+                    margin-left:7px;
+                    font-size:10px;
+                    font-weight:700;
+                    color:${textColor};
+                    white-space:nowrap;
+                "
+            >
+                ${escapeHtml(label)}
+            </span>
+        `;
+    }
 
     reportsTableBody.innerHTML =
         pageRecords
             .map(
                 record =>
                     `
-                    <tr>
+                    <tr
+                        class="report-clickable-row"
+                        data-report-id="${escapeHtml(String(record.id))}"
+                        data-report-accuracy="${escapeHtml(record.accuracyStatus || "UNKNOWN")}"
+                        title="Click to view detailed session timeline"
+                    >
 
                         <td>
                             ${escapeHtml(
@@ -2440,6 +3316,7 @@ function renderTable(
                                     record.totalSeconds
                                 )}
                             </strong>
+                            ${accuracyLabel(record)}
                         </td>
 
                         <td>
@@ -2453,15 +3330,9 @@ function renderTable(
             )
             .join("");
 
-
-    // -----------------------------------------------------
-    // UPDATE PAGINATION
-    // -----------------------------------------------------
-
     updatePagination(
         totalRecords
     );
-
 }
 
 
@@ -4423,6 +5294,20 @@ async function exportCsv() {
         totalTeamsSeconds +
         totalMembersSeconds;
 
+    const inconsistentProfilingCount =
+        profilingData.filter(
+            record =>
+                record.accuracyStatus ===
+                "INCONSISTENT"
+        ).length;
+
+    const legacyRecoveredCount =
+        profilingData.filter(
+            record =>
+                record.wasLegacyMatched
+        ).length;
+
+
 
     // =====================================================
     // PROFILING PERCENTAGES
@@ -4659,6 +5544,28 @@ activityCategoryTotals.PROD +=
         // =================================================
         // KEY PERFORMANCE SUMMARY
         // =================================================
+
+        [
+            "DATA ACCURACY",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Inconsistent Profiling Records",
+            inconsistentProfilingCount,
+            "",
+            "Legacy-Recovered Records",
+            legacyRecoveredCount,
+            "",
+            "",
+            ""
+        ],
 
         [
             "KEY PERFORMANCE SUMMARY",
@@ -5078,9 +5985,10 @@ activityCategoryTotals.PROD +=
     [
         "A4:H4",
         "A8:H8",
-        "A12:H12",
-        "A17:H17",
-        "A24:H24"
+        "A10:H10",
+        "A14:H14",
+        "A19:H19",
+        "A26:H26"
     ].forEach(
         range => {
 
@@ -5170,7 +6078,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "A9:B10",
+        "A11:B12",
         {
 
             border:
@@ -5192,7 +6100,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "D9:E10",
+        "D11:E12",
         {
 
             border:
@@ -5274,7 +6182,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "A13:C13",
+        "A15:C15",
         {
 
             fill: {
@@ -5304,7 +6212,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "A14:C15",
+        "A16:C17",
         {
 
             border:
@@ -5320,9 +6228,9 @@ activityCategoryTotals.PROD +=
 
     // TEAMS ROW
 
-    summarySheet["A14"].s = {
+    summarySheet["A16"].s = {
 
-        ...summarySheet["A14"].s,
+        ...summarySheet["A16"].s,
 
         fill: {
             fgColor: {
@@ -5340,9 +6248,9 @@ activityCategoryTotals.PROD +=
     };
 
 
-    summarySheet["B14"].s = {
+    summarySheet["B16"].s = {
 
-        ...summarySheet["B14"].s,
+        ...summarySheet["B16"].s,
 
         font: {
             bold: true,
@@ -5359,9 +6267,9 @@ activityCategoryTotals.PROD +=
     };
 
 
-    summarySheet["C14"].s = {
+    summarySheet["C16"].s = {
 
-        ...summarySheet["C14"].s,
+        ...summarySheet["C16"].s,
 
         font: {
             bold: true
@@ -5377,9 +6285,9 @@ activityCategoryTotals.PROD +=
 
     // MEMBERS ROW
 
-    summarySheet["A15"].s = {
+    summarySheet["A17"].s = {
 
-        ...summarySheet["A15"].s,
+        ...summarySheet["A17"].s,
 
         fill: {
             fgColor: {
@@ -5397,9 +6305,9 @@ activityCategoryTotals.PROD +=
     };
 
 
-    summarySheet["B15"].s = {
+    summarySheet["B17"].s = {
 
-        ...summarySheet["B15"].s,
+        ...summarySheet["B17"].s,
 
         font: {
             bold: true,
@@ -5416,9 +6324,9 @@ activityCategoryTotals.PROD +=
     };
 
 
-    summarySheet["C15"].s = {
+    summarySheet["C17"].s = {
 
-        ...summarySheet["C15"].s,
+        ...summarySheet["C17"].s,
 
         font: {
             bold: true
@@ -5438,7 +6346,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "A18:C18",
+        "A20:C20",
         {
 
             fill: {
@@ -5604,7 +6512,7 @@ activityCategoryTotals.PROD +=
 
     styleRange(
         summarySheet,
-        "A25:B29",
+        "A27:B31",
         {
 
             border:
@@ -5619,8 +6527,8 @@ activityCategoryTotals.PROD +=
 
 
     for (
-        let row = 25;
-        row <= 29;
+        let row = 27;
+        row <= 31;
         row++
     ) {
 
@@ -5679,6 +6587,7 @@ activityCategoryTotals.PROD +=
             "Teams Time",
             "Members Time",
             "Total Time",
+            "Data Check",
             "Completed"
         ],
 
@@ -5719,6 +6628,9 @@ activityCategoryTotals.PROD +=
                         0
                     )
                 ),
+
+                record.accuracyStatus ||
+                "UNKNOWN",
 
                 formatDateTime(
                     record.finished_at
@@ -5774,7 +6686,7 @@ activityCategoryTotals.PROD +=
     productivitySheet["!autofilter"] = {
 
         ref:
-            `A1:H${productivityRows.length}`
+            `A1:I${productivityRows.length}`
 
     };
 
@@ -5782,7 +6694,7 @@ activityCategoryTotals.PROD +=
     styleTable(
         productivitySheet,
         productivityRows.length,
-        "H"
+        "I"
     );
 
 
@@ -5795,6 +6707,7 @@ activityCategoryTotals.PROD +=
         { wch: 16 },
         { wch: 16 },
         { wch: 16 },
+        { wch: 18 },
         { wch: 24 }
 
     ];
@@ -5818,7 +6731,8 @@ activityCategoryTotals.PROD +=
             `D${row}`,
             `E${row}`,
             `F${row}`,
-            `G${row}`
+            `G${row}`,
+            `I${row}`
         ].forEach(
             cell => {
 
@@ -7873,6 +8787,499 @@ logoutButton.addEventListener(
 
     }
 
+
+
+    // =========================================================
+    // CLICKABLE REPORT DETAILS / TIMER AUDIT PANEL
+    // =========================================================
+    // Clicking any completed profiling row opens a detailed view
+    // showing TEAM + MEMBERS sessions, START/PAUSE/RESUME/STOP
+    // events, active time, pause time, and total reconciliation.
+
+    function ensureReportDetailsStyles() {
+
+        if (document.getElementById("reportDetailsStyles")) {
+            return;
+        }
+
+        const style = document.createElement("style");
+        style.id = "reportDetailsStyles";
+        style.textContent = `
+            .report-clickable-row {
+                cursor: pointer;
+                transition: background-color .15s ease, box-shadow .15s ease;
+            }
+
+            .report-clickable-row:hover {
+                background: rgba(16, 185, 129, .10) !important;
+                box-shadow: inset 3px 0 0 var(--accent, #10b981);
+            }
+
+            #reportDetailsModal {
+                position: fixed;
+                inset: 0;
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: rgba(0, 0, 0, .48);
+                backdrop-filter: blur(5px);
+            }
+
+            #reportDetailsModal .report-details-dialog {
+                width: min(980px, 96vw);
+                max-height: 92vh;
+                overflow: hidden;
+                background: var(--card-bg, #ffffff);
+                color: var(--text-primary, #17211b);
+                border: 1px solid rgba(16, 185, 129, .22);
+                border-radius: 18px;
+                box-shadow: 0 24px 70px rgba(0,0,0,.28);
+                display: flex;
+                flex-direction: column;
+            }
+
+            #reportDetailsModal .report-details-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 20px 22px 16px;
+                border-bottom: 1px solid rgba(16, 185, 129, .16);
+            }
+
+            #reportDetailsModal .report-details-title {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 800;
+            }
+
+            #reportDetailsModal .report-details-subtitle {
+                margin-top: 4px;
+                font-size: 12px;
+                opacity: .72;
+            }
+
+            #reportDetailsModal .report-details-close {
+                width: 36px;
+                height: 36px;
+                border: 0;
+                border-radius: 10px;
+                background: rgba(16, 185, 129, .10);
+                cursor: pointer;
+                font-size: 20px;
+                line-height: 1;
+            }
+
+            #reportDetailsModal .report-details-body {
+                overflow: auto;
+                padding: 20px 22px 24px;
+            }
+
+            #reportDetailsModal .report-details-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            #reportDetailsModal .report-detail-card {
+                padding: 12px 13px;
+                border-radius: 12px;
+                background: rgba(16, 185, 129, .055);
+                border: 1px solid rgba(16, 185, 129, .13);
+            }
+
+            #reportDetailsModal .report-detail-label {
+                display: block;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                opacity: .62;
+                margin-bottom: 4px;
+            }
+
+            #reportDetailsModal .report-detail-value {
+                font-size: 13px;
+                font-weight: 700;
+                word-break: break-word;
+            }
+
+            #reportDetailsModal .report-details-summary {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            #reportDetailsModal .report-time-card {
+                padding: 14px;
+                border-radius: 13px;
+                border: 1px solid rgba(16, 185, 129, .15);
+                background: rgba(255,255,255,.45);
+            }
+
+            #reportDetailsModal .report-time-card strong {
+                display: block;
+                margin-top: 4px;
+                font-size: 18px;
+            }
+
+            #reportDetailsModal .report-accuracy-box {
+                padding: 13px 14px;
+                border-radius: 13px;
+                margin-bottom: 20px;
+                border: 1px solid rgba(16, 185, 129, .18);
+                background: rgba(16, 185, 129, .055);
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            #reportDetailsModal .report-accuracy-box.warning {
+                border-color: rgba(180, 35, 24, .22);
+                background: rgba(180, 35, 24, .055);
+            }
+
+            #reportDetailsModal .report-session-block {
+                margin-top: 16px;
+                border: 1px solid rgba(16, 185, 129, .15);
+                border-radius: 14px;
+                overflow: hidden;
+            }
+
+            #reportDetailsModal .report-session-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 13px 15px;
+                background: rgba(16, 185, 129, .065);
+                border-bottom: 1px solid rgba(16, 185, 129, .12);
+            }
+
+            #reportDetailsModal .report-session-heading strong {
+                font-size: 13px;
+            }
+
+            #reportDetailsModal .report-session-meta {
+                font-size: 11px;
+                opacity: .68;
+                text-align: right;
+            }
+
+            #reportDetailsModal .report-event-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            #reportDetailsModal .report-event-row {
+                display: grid;
+                grid-template-columns: 105px 1fr auto;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 15px;
+                border-bottom: 1px solid rgba(16, 185, 129, .08);
+                font-size: 12px;
+            }
+
+            #reportDetailsModal .report-event-row:last-child {
+                border-bottom: 0;
+            }
+
+            #reportDetailsModal .report-event-type {
+                font-weight: 800;
+            }
+
+            #reportDetailsModal .report-event-time {
+                opacity: .72;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            #reportDetailsModal .event-start,
+            #reportDetailsModal .event-resume {
+                color: #087443;
+            }
+
+            #reportDetailsModal .event-pause {
+                color: #a15c00;
+            }
+
+            #reportDetailsModal .event-stop {
+                color: #b42318;
+            }
+
+            #reportDetailsModal .report-no-events {
+                padding: 16px;
+                font-size: 12px;
+                opacity: .68;
+            }
+
+            @media (max-width: 760px) {
+                #reportDetailsModal {
+                    padding: 10px;
+                }
+
+                #reportDetailsModal .report-details-grid,
+                #reportDetailsModal .report-details-summary {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                #reportDetailsModal .report-event-row {
+                    grid-template-columns: 90px 1fr;
+                }
+
+                #reportDetailsModal .report-event-time {
+                    grid-column: 2;
+                    text-align: left;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function detailEventIcon(type) {
+        const normalized = String(type || "").toUpperCase();
+
+        if (normalized === "START") return "▶";
+        if (normalized === "RESUME") return "▶";
+        if (normalized === "PAUSE") return "⏸";
+        if (normalized === "STOP") return "⏹";
+
+        return "•";
+    }
+
+    function detailEventClass(type) {
+        const normalized = String(type || "").toUpperCase();
+
+        if (normalized === "START") return "event-start";
+        if (normalized === "RESUME") return "event-resume";
+        if (normalized === "PAUSE") return "event-pause";
+        if (normalized === "STOP") return "event-stop";
+
+        return "";
+    }
+
+    function getDetailWallSeconds(session) {
+        const start = new Date(session?.started_at).getTime();
+        const stop = new Date(session?.stopped_at).getTime();
+
+        if (!Number.isFinite(start) || !Number.isFinite(stop) || stop <= start) {
+            return 0;
+        }
+
+        return Math.floor((stop - start) / 1000);
+    }
+
+    function getDetailPauseSeconds(session, eventActiveSeconds) {
+        const stored = Number(session?.storedSeconds || 0);
+        const wall = Number(session?.wallSeconds || getDetailWallSeconds(session));
+        const active = Number(eventActiveSeconds) > 0
+            ? Number(eventActiveSeconds)
+            : stored;
+
+        if (wall <= 0 || active <= 0) {
+            return 0;
+        }
+
+        return Math.max(0, wall - active);
+    }
+
+    function renderDetailSession(session, index) {
+        const type = String(session?.session_type || "SESSION").toUpperCase();
+        const events = Array.isArray(session?.events)
+            ? [...session.events].sort(
+                (a, b) => new Date(a.event_time).getTime() - new Date(b.event_time).getTime()
+            )
+            : [];
+
+        const eventActiveSeconds = Number(session?.eventActiveSeconds || 0);
+        const storedSeconds = Number(session?.storedSeconds || 0);
+        const wallSeconds = Number(session?.wallSeconds || getDetailWallSeconds(session));
+        const pauseSeconds = Number(session?.pauseSeconds || getDetailPauseSeconds(session, eventActiveSeconds));
+        const displayedActiveSeconds = storedSeconds || eventActiveSeconds || wallSeconds;
+
+        const eventRows = events.length
+            ? events.map(event => {
+                const eventType = String(event?.event_type || "EVENT").toUpperCase();
+                return `
+                    <li class="report-event-row">
+                        <span class="report-event-type ${detailEventClass(eventType)}">
+                            ${detailEventIcon(eventType)} ${escapeHtml(eventType)}
+                        </span>
+                        <span>${escapeHtml(eventType === "PAUSE" ? "Timer paused" : eventType === "RESUME" ? "Timer resumed" : eventType === "START" ? "Timer started" : eventType === "STOP" ? "Timer stopped" : "Timer event recorded")}</span>
+                        <span class="report-event-time">${escapeHtml(formatDateTime(event?.event_time))}</span>
+                    </li>
+                `;
+            }).join("")
+            : `<li class="report-no-events">No timer events were recorded for this session. The report is using stored/timestamp duration.</li>`;
+
+        const recordedLabel = storedSeconds > 0
+            ? formatDuration(storedSeconds)
+            : "Not stored";
+
+        const eventLabel = eventActiveSeconds > 0
+            ? formatDuration(eventActiveSeconds)
+            : "Not available";
+
+        const pauseLabel = pauseSeconds > 0
+            ? formatDuration(pauseSeconds)
+            : "00:00:00";
+
+        return `
+            <section class="report-session-block">
+                <div class="report-session-heading">
+                    <div>
+                        <strong>${escapeHtml(type)} SESSION #${index + 1}</strong>
+                    </div>
+                    <div class="report-session-meta">
+                        Active: ${escapeHtml(formatDuration(displayedActiveSeconds))}<br>
+                        Paused estimate: ${escapeHtml(pauseLabel)}
+                    </div>
+                </div>
+
+                <div style="padding:12px 15px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:11px;">
+                    <div><span style="opacity:.65;display:block;">STARTED</span><strong>${escapeHtml(formatDateTime(session?.started_at))}</strong></div>
+                    <div><span style="opacity:.65;display:block;">STOPPED</span><strong>${escapeHtml(formatDateTime(session?.stopped_at))}</strong></div>
+                    <div><span style="opacity:.65;display:block;">STORED ACTIVE TIME</span><strong>${escapeHtml(recordedLabel)}</strong></div>
+                </div>
+
+                <div style="padding:0 15px 10px;font-size:11px;opacity:.72;">
+                    Event-derived active time: <strong>${escapeHtml(eventLabel)}</strong>
+                    ${wallSeconds > 0 ? ` · Wall-clock span: <strong>${escapeHtml(formatDuration(wallSeconds))}</strong>` : ""}
+                </div>
+
+                <ul class="report-event-list">
+                    ${eventRows}
+                </ul>
+            </section>
+        `;
+    }
+
+    function closeReportDetails() {
+        const modal = document.getElementById("reportDetailsModal");
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = "";
+        }
+    }
+
+    function openReportDetails(recordId) {
+        const record = reportRecords.find(
+            item => String(item?.id) === String(recordId)
+        );
+
+        if (!record) {
+            return;
+        }
+
+        ensureReportDetailsStyles();
+        closeReportDetails();
+
+        const sessions = Array.isArray(record.detailSessions)
+            ? [...record.detailSessions].sort(
+                (a, b) => new Date(a?.started_at).getTime() - new Date(b?.started_at).getTime()
+            )
+            : [];
+
+        const status = String(record.accuracyStatus || "UNKNOWN");
+        const isWarning = status === "INCONSISTENT" || status === "JOB_TOTAL_ONLY";
+        const statusText = {
+            VERIFIED: "✓ Verified — detailed TEAM + MEMBERS time agrees with the stored profiling total.",
+            SESSION_VERIFIED: "✓ Session verified — detailed timer sessions are available; no stored job total was available for comparison.",
+            LEGACY_VERIFIED: "✓ Legacy match — the timer session was recovered using the profiling job time window and the totals agree.",
+            LEGACY_SESSION: "✓ Legacy session — the timer session was recovered using the profiling job time window.",
+            INCONSISTENT: `⚠ Check total — detailed TEAM + MEMBERS time differs from the stored profiling total by ${formatDuration(record.differenceSeconds)}.`,
+            JOB_TOTAL_ONLY: "⚠ Job total only — no usable detailed TEAM/MEMBERS session duration was found.",
+            NO_BREAKDOWN: "— No detailed timer breakdown was available."
+        }[status] || "— Report accuracy status is unavailable.";
+
+        const modal = document.createElement("div");
+        modal.id = "reportDetailsModal";
+        modal.innerHTML = `
+            <div class="report-details-dialog" role="dialog" aria-modal="true" aria-labelledby="reportDetailsTitle">
+                <div class="report-details-header">
+                    <div>
+                        <h2 id="reportDetailsTitle" class="report-details-title">Profiling Session Details</h2>
+                        <div class="report-details-subtitle">Job #${escapeHtml(String(record.id))} · Click outside or press Esc to close</div>
+                    </div>
+                    <button type="button" class="report-details-close" aria-label="Close">×</button>
+                </div>
+
+                <div class="report-details-body">
+                    <div class="report-details-grid">
+                        <div class="report-detail-card"><span class="report-detail-label">Analyst</span><span class="report-detail-value">${escapeHtml(record.analystName)}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Team</span><span class="report-detail-value">${escapeHtml(record.team_name)}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Team ID</span><span class="report-detail-value">${escapeHtml(String(record.team_id))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Members</span><span class="report-detail-value">${escapeHtml(formatNumber(record.member_count))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Started</span><span class="report-detail-value">${escapeHtml(formatDateTime(record.started_at))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Completed</span><span class="report-detail-value">${escapeHtml(formatDateTime(record.finished_at))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">TEAM Sessions</span><span class="report-detail-value">${escapeHtml(String(record.teamSessionCount || 0))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">MEMBERS Sessions</span><span class="report-detail-value">${escapeHtml(String(record.membersSessionCount || 0))}</span></div>
+                    </div>
+
+                    <div class="report-details-summary">
+                        <div class="report-time-card"><span class="report-detail-label">Teams Time</span><strong>${escapeHtml(formatDuration(record.teamSeconds))}</strong></div>
+                        <div class="report-time-card"><span class="report-detail-label">Members Time</span><strong>${escapeHtml(formatDuration(record.membersSeconds))}</strong></div>
+                        <div class="report-time-card"><span class="report-detail-label">Total Time</span><strong>${escapeHtml(formatDuration(record.totalSeconds))}</strong></div>
+                    </div>
+
+                    <div class="report-accuracy-box ${isWarning ? "warning" : ""}">
+                        <strong>${escapeHtml(statusText)}</strong><br>
+                        Stored job total: <strong>${escapeHtml(formatDuration(record.storedJobTotalSeconds))}</strong>
+                        · Detailed session total: <strong>${escapeHtml(formatDuration(record.sessionTotalSeconds))}</strong>
+                        · Difference: <strong>${escapeHtml(formatDuration(record.differenceSeconds))}</strong>
+                    </div>
+
+                    <div style="font-size:15px;font-weight:800;margin-bottom:8px;">Timer Timeline</div>
+                    ${sessions.length
+                        ? sessions.map((session, index) => renderDetailSession(session, index)).join("")
+                        : `<div class="report-no-events">No detailed TEAM/MEMBERS sessions are attached to this profiling job.</div>`}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = "hidden";
+
+        modal.querySelector(".report-details-close")?.addEventListener("click", closeReportDetails);
+
+        modal.addEventListener("click", event => {
+            if (event.target === modal) {
+                closeReportDetails();
+            }
+        });
+    }
+
+    function initializeReportRowDetails() {
+        if (!reportsTableBody || reportsTableBody.dataset.detailsListenerAttached === "1") {
+            return;
+        }
+
+        reportsTableBody.dataset.detailsListenerAttached = "1";
+
+        reportsTableBody.addEventListener("click", event => {
+            const row = event.target.closest("tr[data-report-id]");
+            if (!row) {
+                return;
+            }
+
+            openReportDetails(row.dataset.reportId);
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                closeReportDetails();
+            }
+        });
+    }
+
+    ensureReportDetailsStyles();
+    initializeReportRowDetails();
 
     // ---------------------------------------------------------
     // START REPORTS
