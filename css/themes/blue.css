@@ -1,0 +1,871 @@
+/* =========================================================
+   TICKY TICKY
+   BLUE THEME — SOFT BLUE PALETTE
+   ========================================================= */
+
+/*
+   Palette reference (sampled from the supplied 6-step blue image):
+   #D9F0F6  light cyan
+   #D5E3F0  pale blue
+   #C9D9F0  soft blue
+   #C1D5F0  powder blue
+   #B3CBEF  cornflower blue
+   #A8B5E1  muted periwinkle
+
+   Keep new UI colors within this family so the Blue theme stays soft
+   rather than becoming a saturated/dark blue theme.
+*/
+
+[data-theme="blue"] {
+    --primary-green: #A8B5E1;
+    --dark-green: #8FA3D5;
+    --medium-green: #B3CBEF;
+    --light-green: #D5E3F0;
+    --very-light-green: #D9F0F6;
+    --background: #D9F0F6;
+    --white: #ffffff;
+    --text-primary: #34415F;
+    --text-secondary: #667692;
+    --border: #C1D5F0;
+    --gold: #b68b2c;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --success: #A8B5E1;
+    --card-background: #F4F8FC;
+    --input-background: #F4F8FC;
+    --soft-background: #D9F0F6;
+    --nav-background: #A8B5E1;
+    --sidebar-bg: #EDF4FA;
+    --sidebar-hover-bg: #D5E3F0;
+    --sidebar-active-bg: #C9D9F0;
+    --sidebar-text: #52688F;
+    --sidebar-active-text: #46577D;
+    --accent: #A8B5E1;
+    --accent-dark: #8FA3D5;
+    --accent-deep: #46577D;
+    --accent-soft: #D5E3F0;
+    --accent-border: #B3CBEF;
+
+    /* Future PNG locations — add the files under assets/branding/blue/ when ready. */
+    --brand-mascot: url("../../assets/branding/blue/ticky-ticky-blue-mascot.png");
+    --brand-favicon: url("../../assets/branding/blue/ticky-ticky-favicon-blue.png");
+    --brand-dashboard: url("../../assets/branding/blue/01-dashboard.png");
+    --brand-profiling: url("../../assets/branding/blue/02-profiling.png");
+    --brand-work-activity: url("../../assets/branding/blue/03-work-activity.png");
+    --brand-teams: url("../../assets/branding/blue/04-teams.png");
+    --brand-history: url("../../assets/branding/blue/05-history.png");
+    --brand-reports: url("../../assets/branding/blue/06-reports.png");
+    --brand-logout: url("../../assets/branding/blue/07-logout.png");
+
+    --blue-main: #A8B5E1;
+    --blue-dark: #8FA3D5;
+    --blue-deep: #46577D;
+    --blue-bg: #D9F0F6;
+    --blue-surface: #F4F8FC;
+    --blue-soft: #D5E3F0;
+    --blue-border: #B3CBEF;
+}
+
+
+/* =========================================================
+   BLUE THEME — SOFT BLUE PALETTE ASSET PLACEHOLDERS
+   ---------------------------------------------------------
+   Put your future PNG assets here:
+
+   assets/branding/blue/
+   ├── ticky-ticky-blue-mascot.png
+   ├── ticky-ticky-favicon-blue.png
+   ├── 01-dashboard.png
+   ├── 02-profiling.png
+   ├── 03-work-activity.png
+   ├── 04-teams.png
+   ├── 05-history.png
+   ├── 06-reports.png
+   └── 07-logout.png
+
+   Optional artwork can also be added later, for example:
+   ├── header-bg.png
+   ├── sidebar-bg.png
+   └── page-bg.png
+
+   The theme is intentionally NOT dependent on these files yet.
+   ========================================================= */
+
+/* =========================================================
+   PAGE BACKGROUND
+   ========================================================= */
+
+[data-theme="blue"] body {
+    /*
+       BLUE PAGE BACKGROUND
+       Put the PNG here:
+       assets/branding/blue/page-bg.png
+    */
+    background:
+        linear-gradient(
+            rgba(217, 240, 246, 0.35),
+            rgba(168, 181, 225, 0.35)
+        ),
+        url("../../assets/branding/blue/page-bg.png")
+        center center / cover no-repeat fixed !important;
+
+    color: #34415F !important;
+}
+
+
+/* =========================================================
+   MAIN CONTENT AREA
+   ========================================================= */
+
+[data-theme="blue"] .dashboard-main {
+    /* Keep the page background visible behind the main content. */
+    background: transparent !important;
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+[data-theme="blue"] .topbar {
+    /*
+       BLUE TOPBAR BACKGROUND
+       Put the PNG here:
+       assets/branding/blue/header-bg.png
+    */
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        linear-gradient(
+            rgba(168, 181, 225, 0.22),
+            rgba(168, 181, 225, 0.22)
+        ),
+        url("../../assets/branding/blue/header-bg.png")
+        center center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
+
+    border-bottom:
+        1px solid #C9D9F0 !important;
+}
+
+[data-theme="blue"] .topbar > * {
+    position: relative;
+    z-index: 1;
+}
+
+
+[data-theme="blue"] .topbar-title {
+
+    color:
+        #46577D !important;
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+[data-theme="blue"] .sidebar {
+    /*
+       BLUE SIDEBAR BACKGROUND
+       Put the PNG here:
+       assets/branding/blue/sidebar-bg.png
+    */
+    background:
+        linear-gradient(
+            rgba(237, 244, 250, 0.30),
+            rgba(237, 244, 250, 0.30)
+        ),
+        url("../../assets/branding/blue/sidebar-bg.png")
+        center center / cover no-repeat !important;
+
+    border-right:
+        1px solid #C9D9F0 !important;
+}
+
+
+/* Sidebar brand */
+
+[data-theme="blue"] .sidebar-brand {
+
+    border-bottom:
+        1px solid #C9D9F0 !important;
+
+}
+
+
+[data-theme="blue"] .sidebar-title {
+
+    color:
+        #34415F !important;
+
+}
+
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+   ========================================================= */
+
+[data-theme="blue"] .sidebar .nav-item {
+
+    color:
+        #52688F !important;
+
+}
+
+
+[data-theme="blue"] .sidebar .nav-item:hover {background:
+        #D5E3F0 !important;color: #8FA3D5 !important;}
+
+
+/* Active item */
+
+[data-theme="blue"]
+.sidebar
+.nav-item.active {background:
+        rgba(
+            223,
+            233,
+            223,
+            0.20
+        ) !important;color: #ffffff !important;border-left: 4px solid #A8B5E1 !important;box-shadow:
+        inset 0 0 0 1px
+        rgba(5, 150, 105, 0.08);}
+
+
+[data-theme="blue"]
+.sidebar
+.nav-item.active > span:not(.nav-icon),
+
+[data-theme="blue"]
+.sidebar
+.nav-item.active
+.nav-label {color: #46577D !important;}
+
+
+/* =========================================================
+   LOGOUT AREA
+   ========================================================= */
+
+[data-theme="blue"] .sidebar-bottom {
+
+    border-top:
+        1px solid #C9D9F0 !important;
+
+}
+
+
+[data-theme="blue"] #logoutButton {
+
+    color:
+        #52688F !important;
+
+}
+
+
+[data-theme="blue"] #logoutButton:hover {
+
+    background:
+        #D5E3F0 !important;
+
+    color:
+        #46577D !important;
+
+}
+
+
+/* =========================================================
+   PAGE HEADERS
+   ========================================================= */
+
+[data-theme="blue"] .page-title,
+[data-theme="blue"] .welcome-title {
+
+    color:
+        #34415F !important;
+
+}
+
+
+[data-theme="blue"] .page-subtitle,
+[data-theme="blue"] .welcome-subtitle {
+
+    color:
+        #667692 !important;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+[data-theme="blue"] .section-card,
+[data-theme="blue"] .stat-card,
+[data-theme="blue"] .profiling-card {
+
+    background:
+        #F4F8FC !important;
+
+    border-color:
+        #C9D9F0 !important;
+
+    box-shadow:
+        0 4px 18px
+        rgba(5, 150, 105, 0.06) !important;
+
+}
+
+
+/* =========================================================
+   CARD TEXT
+   ========================================================= */
+
+[data-theme="blue"] .section-title,
+[data-theme="blue"] .stat-card-label {
+
+    color:
+        #52688F !important;
+
+}
+
+
+[data-theme="blue"] .stat-card-value {color: #34415F !important;}
+
+
+/* =========================================================
+   TIME BREAKDOWN
+   ========================================================= */
+
+[data-theme="blue"] .time-breakdown-item {
+
+    border-color:
+        #D5E3F0 !important;
+
+}
+
+
+[data-theme="blue"] .time-breakdown-label {color: #586A86 !important;}
+
+
+[data-theme="blue"] .time-breakdown-duration {color: #70819B !important;}
+
+
+[data-theme="blue"] .time-breakdown-percent {background:
+        #D5E3F0 !important;color: #586A86 !important;}
+
+
+/* =========================================================
+   PRODUCTIVITY SUMMARY
+   ========================================================= */
+
+[data-theme="blue"]
+.productivity-summary-card {
+
+    background:
+        #EDF4FA !important;
+
+    border-color:
+        #B3CBEF !important;
+
+}
+
+
+[data-theme="blue"]
+.productivity-summary-item {background: #ffffff !important;border:
+        1px solid #D5E3F0 !important;color: #34415F !important;}
+
+
+[data-theme="blue"]
+.productivity-summary-label {color: #667692 !important;}
+
+
+[data-theme="blue"]
+.productivity-summary-value {color: #34415F !important;}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+[data-theme="blue"] input,
+[data-theme="blue"] select,
+[data-theme="blue"] textarea {
+
+    background:
+        #F4F8FC !important;
+
+    border:
+        1px solid #C9D9F0 !important;
+
+    color:
+        #34415F !important;
+
+}
+
+
+[data-theme="blue"] input::placeholder,
+[data-theme="blue"] textarea::placeholder {
+
+    color:
+        #8296A8 !important;
+
+}
+
+
+[data-theme="blue"] input:focus,
+[data-theme="blue"] select:focus,
+[data-theme="blue"] textarea:focus {border-color: #A8B5E1 !important;box-shadow:
+        0 0 0 3px
+        rgba(5, 150, 105, 0.20) !important;}
+
+
+/* =========================================================
+   PRIMARY BUTTONS
+   ========================================================= */
+
+[data-theme="blue"]
+.btn-primary,
+
+[data-theme="blue"]
+.primary-button,
+
+[data-theme="blue"]
+.save-button,
+
+[data-theme="blue"]
+.add-button {background: #A8B5E1 !important;border-color: #A8B5E1 !important;color: #ffffff !important;}
+
+
+[data-theme="blue"]
+.btn-primary:hover,
+
+[data-theme="blue"]
+.primary-button:hover,
+
+[data-theme="blue"]
+.save-button:hover,
+
+[data-theme="blue"]
+.add-button:hover {background: #8FA3D5 !important;border-color: #8FA3D5 !important;}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+[data-theme="blue"] .section-link {color: #A8B5E1 !important;}
+
+
+[data-theme="blue"] .section-link:hover {color: #8FA3D5 !important;}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+[data-theme="blue"] .data-table {
+
+    background:
+        #F4F8FC !important;
+
+}
+
+
+[data-theme="blue"] .data-table thead {
+
+    background:
+        #D5E3F0 !important;
+
+}
+
+
+[data-theme="blue"] .data-table th {color: #667692 !important;}
+
+
+[data-theme="blue"] .data-table td {color: #34415F !important;border-color:
+        #D5E3F0 !important;}
+
+
+[data-theme="blue"] .data-table tbody tr:hover {
+
+    background:
+        #D9F0F6 !important;
+
+}
+
+
+/* =========================================================
+   SEARCH / FILTER CONTAINERS
+   ========================================================= */
+
+[data-theme="blue"] .filter-card,
+[data-theme="blue"] .search-card,
+[data-theme="blue"] .report-filters {
+
+    background:
+        #EDF4FA !important;
+
+    border-color:
+        #C9D9F0 !important;
+
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+[data-theme="blue"] .badge,
+[data-theme="blue"] .count-badge {background: #D5E3F0 !important;color: #46577D !important;border-color:
+        #B3CBEF !important;}
+
+
+/* =========================================================
+   PROGRESS BARS
+   ========================================================= */
+
+[data-theme="blue"] .prod-fill,
+[data-theme="blue"] .time-breakdown-fill {background: #A8B5E1 !important;}
+
+
+/* =========================================================
+   THEME SWITCHER
+   ========================================================= */
+
+[data-theme="blue"]
+.color-mode-button.active {background: #A8B5E1 !important;color: #ffffff !important;border-color: #8FA3D5 !important;}
+
+/* =========================================================
+   ACTIVE TEXT
+   ========================================================= */
+
+[data-theme="blue"]
+.sidebar .nav-item.active .nav-label,
+[data-theme="blue"]
+.sidebar .nav-item.active span {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   BLUE MODE
+   ========================================================= */
+
+
+[data-theme="blue"] .productivity-summary-item
+.productivity-summary-label {
+
+    color: #667692 !important;
+
+}
+
+
+[data-theme="blue"] .productivity-summary-item
+.productivity-summary-value {
+
+    color: #34415F !important;
+
+}
+
+
+[data-theme="blue"] .productivity-summary-item strong {color: #34415F !important;}
+
+/* =========================================================
+   FIX: BLUE / LIGHT DASHBOARD TEXT
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   MAIN PAGE TEXT
+   --------------------------------------------------------- */
+
+[data-theme="blue"] .welcome-title,
+[data-theme="blue"] .section-title {
+
+    color: #34415F !important;
+
+}
+
+
+[data-theme="blue"] .welcome-subtitle {
+
+    color: #70819B !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   STAT CARDS
+   --------------------------------------------------------- */
+
+[data-theme="blue"] .stat-card-label {
+
+    color: #586A86 !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   TIME BREAKDOWN
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   PRODUCTIVITY SUMMARY
+   THESE CARDS ARE LIGHT
+   --------------------------------------------------------- */
+
+[data-theme="blue"] .productivity-summary-card
+.section-title {
+
+    color: #34415F !important;
+
+}
+
+
+[data-theme="blue"] .productivity-summary-subtitle {
+
+    color: #70819B !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   INSIGHT
+   --------------------------------------------------------- */
+
+[data-theme="blue"] .productivity-insight {
+
+    color: #667692 !important;
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLE
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   DASHBOARD LINKS
+   --------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------
+   BLUE
+   Light background = dark green text
+   --------------------------------------------------------- */
+
+
+[data-theme="blue"] .sidebar .nav-item.active > span:not(.nav-icon) {
+
+    color: #46577D !important;
+
+}
+
+
+[data-theme="blue"] .sidebar .nav-item.active .nav-label {
+
+    color: #46577D !important;
+
+}
+
+/* =========================================================
+   STRONG BLUE LIGHT THEME
+   ========================================================= */
+
+
+/* =========================================================
+   MAIN GREEN BUTTONS
+   ========================================================= */
+
+
+/* =========================================================
+   ACTIVE SIDEBAR
+   ========================================================= */
+
+
+/* =========================================================
+   SIDEBAR HOVER
+   ========================================================= */
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+[data-theme="blue"] a,
+[data-theme="blue"] .section-link {
+
+    color: #8FA3D5 !important;
+
+}
+
+
+[data-theme="blue"] a:hover,
+[data-theme="blue"] .section-link:hover {
+
+    color: #46577D !important;
+
+}
+
+
+/* =========================================================
+   THEME BUTTON
+   ========================================================= */
+
+
+/* =========================================================
+   PROGRESS / TIME BARS
+   ========================================================= */
+
+
+/* =========================================================
+   ACCENT ICONS
+   ========================================================= */
+
+[data-theme="blue"] .stat-card-icon {
+
+    color: #A8B5E1 !important;
+
+}
+
+
+/* =========================================================
+   FOCUS STATES
+   ========================================================= */
+
+
+/* =========================================================
+   BLUE BORDERS
+   ========================================================= */
+
+[data-theme="blue"] .section-card,
+[data-theme="blue"] .stat-card {
+
+    border-color: #C9D9F0 !important;
+
+}
+
+
+/* =========================================================
+   BLUE BADGES
+   ========================================================= */
+
+
+/* =========================================================
+   BLUE ACTIVE
+   ========================================================= */
+
+
+/* =========================================================
+   BLUE SIDEBAR TEXT + ACTIVE STATE FIX
+   ========================================================= */
+[data-theme="blue"] .sidebar .nav-item,
+[data-theme="blue"] .sidebar .nav-item span:not(.nav-icon) {
+    color: #52688F !important;
+}
+
+[data-theme="blue"] .sidebar .nav-item:hover,
+[data-theme="blue"] .sidebar .nav-item:hover span:not(.nav-icon) {
+    color: #8FA3D5 !important;
+}
+
+[data-theme="blue"] .sidebar .nav-item.active,
+[data-theme="blue"] .sidebar .nav-item.active > span:not(.nav-icon),
+[data-theme="blue"] .sidebar .nav-item.active .nav-label {
+    color: #46577D !important;
+}
+
+[data-theme="blue"] .sidebar .nav-item.active {
+    background: #D5E3F0 !important;
+    border-left-color: #A8B5E1 !important;
+}
+
+/* =========================================================
+   ACCOUNT HOVER CARD FIX
+   ========================================================= */
+[data-theme="blue"] .user-section:hover,
+[data-theme="blue"] .user-profile:hover {
+    background: #D5E3F0 !important;
+}
+
+[data-theme="blue"] .user-hover-card,
+[data-theme="blue"] .global-account-card {
+    background: #F4F8FC !important;
+    border-color: #C9D9F0 !important;
+}
+
+
+
+/* =========================================================
+   BLUE FULL-PAGE / HEADER / SIDEBAR BACKGROUND INTEGRATION
+   Modeled after the working Pink theme structure.
+   Expected files:
+   ../../assets/branding/blue/page-bg.png
+   ../../assets/branding/blue/header-bg.png
+   ../../assets/branding/blue/sidebar-bg.png
+   ========================================================= */
+
+/* Actual page wallpaper */
+html[data-theme="blue"],
+html[data-theme="blue"] body {
+    min-height: 100%;
+    background:
+        #D9F0F6
+        url("../../assets/branding/blue/page-bg.png")
+        center center / cover fixed no-repeat !important;
+}
+
+/* Remove wrapper backgrounds so the wallpaper can show through */
+html[data-theme="blue"] .dashboard-layout,
+html[data-theme="blue"] .dashboard-main,
+html[data-theme="blue"] .main-content,
+html[data-theme="blue"] .dashboard-content,
+html[data-theme="blue"] .page-content,
+html[data-theme="blue"] .app,
+html[data-theme="blue"] .content {
+    background: transparent !important;
+}
+
+/* Keep the wallpaper visible through the full page area */
+html[data-theme="blue"] .dashboard-main,
+html[data-theme="blue"] .main-content {
+    min-height: 100vh;
+}
+
+/* Blue topbar artwork */
+html[data-theme="blue"] .topbar {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        url("../../assets/branding/blue/header-bg.png")
+        center center / cover no-repeat !important;
+    background-color: #A8B5E1 !important;
+    backdrop-filter: blur(16px);
+}
+
+/* Blue sidebar artwork */
+html[data-theme="blue"] .sidebar {
+    background-color: #EDF4FA !important;
+    background-image:
+        url("../../assets/branding/blue/sidebar-bg.png") !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+}
+
+/* Fallback colors if any artwork file is missing */
+html[data-theme="blue"] body {
+    background-color: #D9F0F6 !important;
+}
+
+html[data-theme="blue"] .topbar {
+    background-color: #A8B5E1 !important;
+}
+
+html[data-theme="blue"] .sidebar {
+    background-color: #EDF4FA !important;
+}

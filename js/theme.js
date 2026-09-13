@@ -66,6 +66,21 @@ const THEMES = {
         favicon:
             "rainbow/favicon.png"
 
+    },
+
+
+    blue: {
+
+        label: "Blue",
+        icon: "💙",
+
+        // Add these PNGs later under: assets/branding/blue/
+        mascot:
+            "blue/ticky-ticky-blue-mascot.png",
+
+        favicon:
+            "blue/ticky-ticky-favicon-blue.png"
+
     }
 
 };
@@ -206,6 +221,39 @@ function updateTickyBrand(theme) {
 
 }
 
+/* =========================================================
+   BLUE THEME STYLESHEET
+   ---------------------------------------------------------
+   Blue is loaded dynamically so we only need to modify this
+   JS file plus css/themes/blue.css — no need to edit every
+   page HTML file.
+   ========================================================= */
+
+function loadBlueThemeStylesheet(theme) {
+
+    const existing =
+        document.getElementById("blueThemeStylesheet");
+
+    if (existing) {
+        existing.remove();
+    }
+
+    if (theme !== "blue") {
+        return;
+    }
+
+    const link =
+        document.createElement("link");
+
+    link.id = "blueThemeStylesheet";
+    link.rel = "stylesheet";
+
+    link.href =
+        `${getAssetPrefix()}css/themes/blue.css`;
+
+    document.head.appendChild(link);
+
+}
 
 
 /* =========================================================
@@ -233,6 +281,11 @@ function applyTheme(theme) {
         );
 
 
+    loadBlueThemeStylesheet(
+        theme
+    );
+
+
     localStorage.setItem(
         THEME_KEY,
         theme
@@ -242,6 +295,7 @@ function applyTheme(theme) {
     updateTickyBrand(
         theme
     );
+
 
 
     updateThemeButtons(
@@ -374,9 +428,28 @@ function createColorModeSwitcher() {
     );
 
 
-    document.body.appendChild(
-        switcher
-    );
+    const sidebarBottom =
+        document.querySelector(".sidebar-bottom");
+
+    if (sidebarBottom) {
+        const logoutButton =
+            sidebarBottom.querySelector("#logoutButton");
+
+        if (logoutButton) {
+            sidebarBottom.insertBefore(
+                switcher,
+                logoutButton
+            );
+        } else {
+            sidebarBottom.appendChild(
+                switcher
+            );
+        }
+    } else {
+        document.body.appendChild(
+            switcher
+        );
+    }
 
 
     updateThemeButtons(

@@ -64,12 +64,20 @@
 
 [data-theme="emerald"] .topbar {
 
-    background:
-        #f5fffa !important;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--emerald-header-bg) center / cover no-repeat !important;
+    backdrop-filter: blur(16px);
 
     border-bottom:
         1px solid #a7f3d0 !important;
 
+}
+
+[data-theme="emerald"] .topbar > * {
+    position: relative;
+    z-index: 1;
 }
 
 
@@ -745,102 +753,28 @@
 }
 
 /* =========================================================
-   EMERALD TOPBAR ASSET
-   ========================================================= */
-
-[data-theme="emerald"] .topbar {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    background: var(--emerald-header-bg) center / cover no-repeat !important;
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.18) !important;
-}
-
-/* =========================================================
-   🌈 EMERALD FULL-PAGE BACKGROUND
+   EMERALD FULL-PAGE BACKGROUND
+   Keep the artwork behind the application without adding
+   any element to normal document flow.
    ========================================================= */
 
 html[data-theme="emerald"],
 html[data-theme="emerald"] body {
-
     min-height: 100%;
-
-    background:
-        #fff9fe
-        url("../../assets/branding/emerald/emeraldbg.png")
-        center center / cover
-        fixed
-        no-repeat !important;
-
+    background-color: #ecfdf5 !important;
+    background-image: url("../../assets/branding/emerald/emeraldbg.png") !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
 }
 
-
-/* Main application background must stay transparent */
-
+/* Let the page artwork show through empty application space. */
+html[data-theme="emerald"] .dashboard-layout,
 html[data-theme="emerald"] .dashboard-main,
 html[data-theme="emerald"] .main-content,
 html[data-theme="emerald"] .dashboard-content,
 html[data-theme="emerald"] .page-content {
-
-    background:
-        transparent !important;
-
+    background: transparent !important;
 }
-
-
-/* Keep the background visible through empty space */
-
-html[data-theme="emerald"] .dashboard-main,
-html[data-theme="emerald"] .main-content {
-
-    min-height:
-        100vh;
-
-}
-
-/* =========================================================
-   🌈 EMERALD - REMOVE APP WRAPPER BACKGROUND
-   ========================================================= */
-
-html[data-theme="emerald"] .dashboard-layout {
-
-    background:
-        transparent !important;
-
-}
-
-
-html[data-theme="emerald"] .dashboard-main,
-html[data-theme="emerald"] .main-content {
-
-    background:
-        transparent !important;
-
-}
-
-/* =========================================================
-   🌈 EMERALD - ACTUAL PAGE BACKGROUND
-   ========================================================= */
-
-html[data-theme="emerald"],
-html[data-theme="emerald"] body {
-
-    background-image:
-        url("../../assets/branding/emerald/emeraldbg.png") !important;
-
-    background-size:
-        cover !important;
-
-    background-position:
-        center center !important;
-
-    background-repeat:
-        no-repeat !important;
-
-    background-attachment:
-        fixed !important;
-
-}
-
 

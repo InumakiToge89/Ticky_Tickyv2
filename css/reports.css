@@ -898,3 +898,183 @@
     .formula-grid { grid-template-columns: 1fr; }
     .category-chart-legend { align-items: flex-start; flex-direction: column; }
 }
+
+/* =========================================================
+   MANUAL NON-PROD TIME REQUESTS
+   ========================================================= */
+
+.manual-time-requests-card {
+    margin-top: 18px;
+}
+
+.manual-time-requests-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.manual-time-request-count {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(21, 154, 112, 0.12);
+    color: var(--primary-green, #159a70);
+    font-weight: 800;
+}
+
+.manual-time-requests-body {
+    display: grid;
+    gap: 14px;
+}
+
+.manual-request-card {
+    border: 1px solid rgba(21, 154, 112, 0.22);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.manual-request-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.manual-request-card-header h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: var(--text-primary, #12352b);
+}
+
+.manual-request-status {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(229, 154, 40, 0.14);
+    color: #9a5c00;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.manual-request-duration {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--primary-green, #159a70);
+    white-space: nowrap;
+}
+
+.manual-request-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.manual-request-grid div,
+.manual-request-justification {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(21, 154, 112, 0.055);
+}
+
+.manual-request-grid span,
+.manual-request-justification > span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-secondary, #5b746b);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.manual-request-grid strong {
+    display: block;
+    color: var(--text-primary, #12352b);
+    font-size: 12px;
+}
+
+.manual-request-justification p {
+    margin: 0;
+    color: var(--text-primary, #12352b);
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.manual-request-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.manual-request-actions button {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 14px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.manual-request-approve {
+    background: #159a70;
+    color: #fff;
+}
+
+.manual-request-reject {
+    background: #e55c5c;
+    color: #fff;
+}
+
+.manual-request-actions button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.manual-request-empty,
+.manual-request-loading,
+.manual-request-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary, #5b746b);
+    font-size: 13px;
+}
+
+.manual-request-error {
+    color: #b42318;
+}
+
+@media (max-width: 800px) {
+    .manual-request-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .manual-request-card-header {
+        flex-direction: column;
+    }
+
+    .manual-request-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .manual-request-actions {
+        flex-direction: column;
+    }
+
+    .manual-request-actions button {
+        width: 100%;
+    }
+}

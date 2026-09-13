@@ -1753,3 +1753,256 @@
     }
 
 }
+
+/* =========================================================
+   COMPATIBILITY LAYOUT FOR LEGACY DASHBOARD MARKUP
+   ========================================================= */
+
+/*
+   The dashboard HTML still uses the original stat-card,
+   time-breakdown and productivity-summary markup.  Keep these
+   compatibility rules here so the newer dashboard styles above
+   can coexist with that markup.
+*/
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+}
+
+.stat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.stat-card-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.stat-card-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--very-light-green);
+    color: var(--primary-green);
+    border-radius: 9px;
+}
+
+.stat-card-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+}
+
+.section-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* =====================================================
+   TODAY'S TIME BREAKDOWN
+   ===================================================== */
+
+.time-breakdown-card {
+    margin-bottom: 24px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.time-breakdown-card .section-header {
+    padding: 22px 24px;
+    margin-bottom: 0;
+}
+
+.time-breakdown-card .section-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.time-breakdown-item {
+    padding: 20px 24px;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.time-breakdown-item:last-child {
+    border-bottom: none;
+}
+
+.time-breakdown-info {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.time-breakdown-info > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.time-breakdown-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.time-breakdown-duration {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    opacity: 1;
+}
+
+.time-breakdown-percent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--very-light-green);
+    color: var(--text-primary);
+}
+
+.time-breakdown-bar {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--soft-background);
+}
+
+.time-breakdown-fill {
+    width: 0;
+    height: 100%;
+    min-width: 0;
+    border-radius: inherit;
+    transition: width 0.6s ease;
+}
+
+.profiling-fill { background: #6366f1; }
+.prod-fill { background: var(--medium-green); }
+.nonprod-fill { background: #f59e0b; }
+
+/* =====================================================
+   PRODUCTIVITY SUMMARY
+   ===================================================== */
+
+.productivity-summary-card {
+    margin-bottom: 24px;
+}
+
+.productivity-summary-subtitle {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.productivity-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    padding: 24px;
+}
+
+.productivity-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+    box-sizing: border-box;
+}
+
+.productivity-summary-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.productivity-summary-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.summary-total-item {
+    background: var(--very-light-green);
+}
+
+.productivity-insight {
+    margin: 0 24px 24px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: var(--soft-background);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+/* =====================================================
+   COMPATIBILITY RESPONSIVE RULES
+   ===================================================== */
+
+@media (max-width: 1100px) {
+    .stats-grid,
+    .productivity-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .stats-grid,
+    .productivity-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .time-breakdown-card .section-header,
+    .time-breakdown-item {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .productivity-summary-grid {
+        gap: 12px;
+        padding: 18px;
+    }
+
+    .productivity-insight {
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+}
+

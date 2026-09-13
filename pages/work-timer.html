@@ -373,6 +373,102 @@
 
 
 
+                <!-- =====================================================
+                     NON-PROD MANUAL TIME + JUSTIFICATION
+                     The live timer remains active below.
+                     ===================================================== -->
+
+                <div
+                    id="nonProdDetailsSection"
+                    class="nonprod-details-section"
+                    hidden
+                >
+
+                    <div class="nonprod-details-header">
+                        <div>
+                            <h3>Non-Prod Manual Time &amp; Justification</h3>
+                            <p>
+                                Enter the date and time range, choose the admin reviewer, and provide a justification. The live timer below remains available for normal tracking. Manual entries are saved only after admin approval.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="nonprod-form-grid nonprod-time-grid">
+
+                        <div class="nonprod-field">
+                            <label for="manualDateInput">Date <span>*</span></label>
+                            <input
+                                id="manualDateInput"
+                                type="date"
+                                autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="nonprod-field">
+                            <label for="manualStartTimeInput">Start Time <span>*</span></label>
+                            <input
+                                id="manualStartTimeInput"
+                                type="time"
+                                step="60"
+                                autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="nonprod-field">
+                            <label for="manualEndTimeInput">End Time <span>*</span></label>
+                            <input
+                                id="manualEndTimeInput"
+                                type="time"
+                                step="60"
+                                autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="nonprod-field">
+                            <label for="manualApproverSelect">Submit To Admin <span>*</span></label>
+                            <select
+                                id="manualApproverSelect"
+                                autocomplete="off"
+                            >
+                                <option value="">Loading admins...</option>
+                            </select>
+                            <small>Select the admin who should review this manual time.</small>
+                        </div>
+
+                    </div>
+
+                    <div class="manual-duration-result">
+                        <span>Computed Duration</span>
+                        <strong id="manualComputedDuration">--:--:--</strong>
+                    </div>
+
+                    <div class="nonprod-manual-bottom">
+
+                        <div class="nonprod-field nonprod-justification-field">
+                            <label for="justificationInput">Justification / Comment <span>*</span></label>
+                            <textarea
+                                id="justificationInput"
+                                rows="4"
+                                maxlength="1000"
+                                placeholder="Explain why this Non-Prod activity was performed..."
+                            ></textarea>
+                            <small>Required when submitting a manual Non-Prod activity.</small>
+                        </div>
+
+                        <button
+                            id="manualSubmitButton"
+                            class="manual-submit-button"
+                            type="button"
+                            disabled
+                        >
+                            ✓ Submit Manual Time
+                        </button>
+
+                    </div>
+
+                </div>
+
+
                 <!-- TIMER -->
 
                 <div class="timer-section">

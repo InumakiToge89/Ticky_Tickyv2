@@ -104,6 +104,46 @@ const resumeTaskButton =
         "resumeTaskButton"
     );
 
+const nonProdDetailsSection =
+    document.getElementById(
+        "nonProdDetailsSection"
+    );
+
+const manualDateInput =
+    document.getElementById(
+        "manualDateInput"
+    );
+
+const manualStartTimeInput =
+    document.getElementById(
+        "manualStartTimeInput"
+    );
+
+const manualEndTimeInput =
+    document.getElementById(
+        "manualEndTimeInput"
+    );
+
+const manualApproverSelect =
+    document.getElementById(
+        "manualApproverSelect"
+    );
+
+const manualComputedDuration =
+    document.getElementById(
+        "manualComputedDuration"
+    );
+
+const manualSubmitButton =
+    document.getElementById(
+        "manualSubmitButton"
+    );
+
+const justificationInput =
+    document.getElementById(
+        "justificationInput"
+    );
+
 const userName =
     document.getElementById(
         "userName"
@@ -177,6 +217,14 @@ let currentTaskLogId = null;
 
 let currentUser = null;
 
+let manualDurationSeconds = null;
+
+let durationSource = "LIVE_TIMER";
+
+let justification = "";
+
+let manualApproversLoaded = false;
+
 
 // =====================================================
 // INITIALIZE PAGE
@@ -220,6 +268,7 @@ async function initializeWorkTimer() {
         // =====================================================
 
         await loadUserProfile();
+        await loadManualApprovers();
 
 
         // =====================================================
@@ -276,7 +325,11 @@ async function restoreActiveTask() {
             task_name,
             started_at,
             ended_at,
-            duration_seconds
+            duration_seconds,
+            manual_duration_seconds,
+            live_duration_seconds,
+            duration_source,
+            justification
         `)
         .eq("analyst_id", currentUser.id)
         .is("ended_at", null)
@@ -352,6 +405,16 @@ async function restoreActiveTask() {
     startTime = new Date(activeLog.started_at).getTime();
     totalPausedMilliseconds = totalPausedMs;
     elapsedSeconds = recoveredElapsed;
+    manualDurationSeconds =
+        Number.isFinite(Number(activeLog.manual_duration_seconds))
+            ? Number(activeLog.manual_duration_seconds)
+            : null;
+    durationSource =
+        activeLog.duration_source === "MANUAL"
+            ? "MANUAL"
+            : "LIVE_TIMER";
+    justification =
+        activeLog.justification || "";
     isRunning = running || paused;
     isPaused = paused;
     pausedAt = pausedAtTime;
@@ -359,6 +422,8 @@ async function restoreActiveTask() {
     if (selectedTaskName) {
         selectedTaskName.textContent = selectedTask || "No task selected";
     }
+
+    syncNonProdDetailsUI();
 
     if (workTimerDisplay) {
         workTimerDisplay.textContent = formatTime(elapsedSeconds);
@@ -602,6 +667,8 @@ function renderTasks() {
 
     categoryTitle.textContent =
         `${currentCategory} Tasks`;
+
+    syncNonProdDetailsUI();
 
 
     const tasks =
@@ -942,7 +1009,19 @@ async function startTimer() {
                     null,
 
                 duration_seconds:
-                    0
+                    0,
+
+                manual_duration_seconds:
+                    null,
+
+                live_duration_seconds:
+                    0,
+
+                duration_source:
+                    "LIVE_TIMER",
+
+                justification:
+                    null
 
             })
             .select("id")
@@ -1006,6 +1085,19 @@ async function startTimer() {
         elapsedSeconds =
             0;
 
+        manualDurationSeconds = null;
+        durationSource = "LIVE_TIMER";
+        justification = "";
+
+        if (manualDateInput) manualDateInput.value = "";
+        if (manualStartTimeInput) manualStartTimeInput.value = "";
+        if (manualEndTimeInput) manualEndTimeInput.value = "";
+        updateManualComputedDuration();
+        if (justificationInput) {
+            justificationInput.value = "";
+        }
+        syncNonProdDetailsUI();
+
 
         workTimerDisplay.textContent =
             "00:00:00";
@@ -1033,6 +1125,9 @@ async function startTimer() {
 
         showToast(
             `${selectedTask} started.`
+       ,
+            "success",
+            "Work Activity Saved"
         );
 
 
@@ -1142,6 +1237,9 @@ async function pauseTimer() {
 
         showToast(
             `${selectedTask} paused.`
+       ,
+            "success",
+            "Work Activity Saved"
         );
 
 
@@ -1243,6 +1341,9 @@ async function resumeTimer() {
 
         showToast(
             `${selectedTask} resumed.`
+       ,
+            "success",
+            "Work Activity Saved"
         );
 
 
@@ -1348,6 +1449,29 @@ async function stopTimer() {
     }
 
 
+    if (currentCategory === "NON-PROD") {
+
+        const justificationValue =
+            String(justificationInput?.value || "").trim();
+
+        if (!justificationValue) {
+            showToast("Please provide a justification for this Non-Prod activity.");
+            return;
+        }
+
+        durationSource = "LIVE_TIMER";
+        manualDurationSeconds = null;
+        justification = justificationValue;
+
+    } else {
+
+        durationSource = "LIVE_TIMER";
+        manualDurationSeconds = null;
+        justification = "";
+
+    }
+
+
     if (
         isPaused &&
         pausedAt
@@ -1437,7 +1561,23 @@ async function stopTimer() {
                     endedAt.toISOString(),
 
                 duration_seconds:
-                    elapsedSeconds
+                    getReportedDurationSeconds(),
+
+                manual_duration_seconds:
+                    durationSource === "MANUAL"
+                        ? manualDurationSeconds
+                        : null,
+
+                live_duration_seconds:
+                    elapsedSeconds,
+
+                duration_source:
+                    durationSource,
+
+                justification:
+                    currentCategory === "NON-PROD"
+                        ? justification.trim()
+                        : null
 
             })
             .eq(
@@ -1462,7 +1602,7 @@ async function stopTimer() {
 
 
         const completedDuration =
-            elapsedSeconds;
+            getReportedDurationSeconds();
 
 
         isRunning =
@@ -1485,6 +1625,18 @@ async function stopTimer() {
 
         elapsedSeconds =
             0;
+
+        manualDurationSeconds = null;
+        durationSource = "LIVE_TIMER";
+        justification = "";
+
+        if (manualDateInput) manualDateInput.value = "";
+        if (manualStartTimeInput) manualStartTimeInput.value = "";
+        if (manualEndTimeInput) manualEndTimeInput.value = "";
+        updateManualComputedDuration();
+        if (justificationInput) {
+            justificationInput.value = "";
+        }
 
 
         workTimerDisplay.textContent =
@@ -1517,7 +1669,10 @@ async function stopTimer() {
 
 
         showToast(
-            `${completedTaskName} saved successfully at ${formatTime(completedDuration)}.`
+            `${completedTaskName} submitted for admin approval (${formatTime(completedDuration)}).`
+       ,
+            "success",
+            "Work Activity Saved"
         );
 
 
@@ -1570,6 +1725,318 @@ async function stopTimer() {
 
 }
 
+
+// =====================================================
+// LOAD ACTIVE ADMIN APPROVERS
+// =====================================================
+
+async function loadManualApprovers() {
+
+    if (!manualApproverSelect || manualApproversLoaded) {
+        return;
+    }
+
+    const { data, error } = await supabase
+        .rpc("get_active_admins");
+
+    if (error) {
+        console.error("Unable to load manual time approvers:", error);
+        manualApproverSelect.innerHTML = `
+            <option value="">Unable to load admins</option>
+        `;
+        return;
+    }
+
+    const admins = Array.isArray(data) ? data : [];
+
+    manualApproverSelect.innerHTML = `
+        <option value="">Select an admin to review this entry</option>
+        ${admins.map(admin => `
+            <option value="${String(admin.id)}">
+                ${String(admin.full_name || "Administrator")}
+            </option>
+        `).join("")}
+    `;
+
+    manualApproversLoaded = true;
+}
+
+
+// =====================================================
+// NON-PROD MANUAL TIME + JUSTIFICATION
+// =====================================================
+
+function syncNonProdDetailsUI() {
+
+    if (!nonProdDetailsSection) return;
+
+    const isNonProd =
+        currentCategory === "NON-PROD";
+
+    nonProdDetailsSection.hidden = !isNonProd;
+
+    if (!isNonProd) return;
+
+    if (manualDateInput && !manualDateInput.value) {
+        const now = new Date();
+        const localYear = now.getFullYear();
+        const localMonth = String(now.getMonth() + 1).padStart(2, "0");
+        const localDay = String(now.getDate()).padStart(2, "0");
+        manualDateInput.value = `${localYear}-${localMonth}-${localDay}`;
+    }
+
+    const locked = isRunning;
+
+    if (manualDateInput) {
+        manualDateInput.disabled = locked;
+        manualDateInput.required = !locked;
+    }
+
+    if (manualStartTimeInput) {
+        manualStartTimeInput.disabled = locked;
+        manualStartTimeInput.required = !locked;
+    }
+
+    if (manualEndTimeInput) {
+        manualEndTimeInput.disabled = locked;
+        manualEndTimeInput.required = !locked;
+    }
+
+    if (manualApproverSelect) {
+        manualApproverSelect.disabled = locked;
+        manualApproverSelect.required = !locked;
+    }
+
+    if (justificationInput) {
+        // Justification is also required for a live Non-Prod timer when it is stopped.
+        justificationInput.disabled = false;
+        justificationInput.required = true;
+    }
+
+    if (manualSubmitButton) {
+        manualSubmitButton.disabled = locked || !selectedTask;
+    }
+
+    updateManualComputedDuration();
+}
+
+function buildLocalDateTime(dateValue, timeValue) {
+
+    if (!dateValue || !timeValue) return null;
+
+    const [year, month, day] = dateValue.split("-").map(Number);
+    const [hours, minutes] = timeValue.split(":").map(Number);
+
+    const date = new Date(
+        year,
+        month - 1,
+        day,
+        hours,
+        minutes,
+        0,
+        0
+    );
+
+    if (Number.isNaN(date.getTime())) return null;
+
+    return date;
+}
+
+function getManualTimeSpan() {
+
+    const start = buildLocalDateTime(
+        manualDateInput?.value,
+        manualStartTimeInput?.value
+    );
+
+    const end = buildLocalDateTime(
+        manualDateInput?.value,
+        manualEndTimeInput?.value
+    );
+
+    if (!start || !end) {
+        return {
+            start: null,
+            end: null,
+            seconds: null
+        };
+    }
+
+    const seconds = Math.floor(
+        (end.getTime() - start.getTime()) / 1000
+    );
+
+    return {
+        start,
+        end,
+        seconds: seconds > 0 ? seconds : null
+    };
+}
+
+function updateManualComputedDuration() {
+
+    if (!manualComputedDuration) return;
+
+    const span = getManualTimeSpan();
+
+    if (span.seconds === null) {
+        manualComputedDuration.textContent = "--:--:--";
+        manualComputedDuration.classList.remove("valid");
+        return;
+    }
+
+    manualComputedDuration.textContent =
+        formatTime(span.seconds);
+
+    manualComputedDuration.classList.add("valid");
+}
+
+function getNonProdDetails() {
+
+    const span = getManualTimeSpan();
+
+    const justificationValue =
+        String(justificationInput?.value || "").trim();
+
+    return {
+        start: span.start,
+        end: span.end,
+        manualSeconds: span.seconds,
+        justification: justificationValue
+    };
+}
+
+async function submitManualNonProd() {
+
+    if (currentCategory !== "NON-PROD") {
+        showToast("Manual time is available only for Non-Prod activities.");
+        return;
+    }
+
+    if (!selectedTask) {
+        showToast("Please select an activity first.");
+        return;
+    }
+
+    if (isRunning) {
+        showToast("Stop the live timer before submitting manual time.");
+        return;
+    }
+
+    if (!currentUser) {
+        showToast("User session not found.");
+        return;
+    }
+
+    const details = getNonProdDetails();
+
+    if (!manualDateInput?.value) {
+        showToast("Please select the activity date.");
+        return;
+    }
+
+    if (!manualStartTimeInput?.value || !manualEndTimeInput?.value) {
+        showToast("Please select both a start and end time.");
+        return;
+    }
+
+    if (details.manualSeconds === null) {
+        showToast("End time must be later than start time.");
+        return;
+    }
+
+    if (!details.justification) {
+        showToast("Please provide a justification for this Non-Prod activity.");
+        justificationInput?.focus();
+        return;
+    }
+
+    if (details.justification.length > 1000) {
+        showToast("The justification must be 1000 characters or fewer.");
+        return;
+    }
+
+    manualSubmitButton.disabled = true;
+
+    try {
+
+        const startIso = details.start.toISOString();
+        const endIso = details.end.toISOString();
+
+        const approverId = String(manualApproverSelect?.value || "").trim();
+
+        if (!approverId) {
+            showToast("Please select the admin who should review this manual time.");
+            manualApproverSelect?.focus();
+            return;
+        }
+
+        const {
+            data: requestId,
+            error: requestError
+        } = await supabase.rpc(
+            "submit_manual_time_request",
+            {
+                p_admin_id: approverId,
+                p_task_name: selectedTask,
+                p_started_at: startIso,
+                p_ended_at: endIso,
+                p_justification: details.justification
+            }
+        );
+
+        if (requestError) throw requestError;
+
+        const completedTaskName = selectedTask;
+        const completedDuration = details.manualSeconds;
+
+        selectedTask = null;
+        selectedTaskName.textContent = "No task selected";
+        manualDateInput.value = "";
+        manualStartTimeInput.value = "";
+        manualEndTimeInput.value = "";
+        justificationInput.value = "";
+        if (manualApproverSelect) manualApproverSelect.value = "";
+        manualDurationSeconds = null;
+        durationSource = "LIVE_TIMER";
+        justification = "";
+        updateManualComputedDuration();
+        renderTasks();
+
+        showToast(
+            `${completedTaskName} submitted for admin approval (${formatTime(completedDuration)}).`,
+            "success",
+            "Manual Time Submitted"
+        );
+
+    } catch (error) {
+
+        console.error("Manual Non-Prod submission error:", error);
+
+        showToast(
+            error.message ||
+            "Unable to submit manual Non-Prod activity."
+        );
+
+    } finally {
+
+        syncNonProdDetailsUI();
+
+    }
+}
+
+function getReportedDurationSeconds() {
+
+    if (
+        currentCategory === "NON-PROD" &&
+        durationSource === "MANUAL" &&
+        Number.isFinite(manualDurationSeconds)
+    ) {
+        return manualDurationSeconds;
+    }
+
+    return Math.max(0, Number(elapsedSeconds) || 0);
+}
 
 // =====================================================
 // FORMAT TIME
@@ -1717,30 +2184,53 @@ function hideConfirmModal() {
 // TOAST
 // =====================================================
 
-function showToast(message) {
+function showToast(message, type = "error", title = "Work Activity") {
+
+    if (typeof window.showAppNotice === "function") {
+        window.showAppNotice(
+            type,
+            title,
+            message
+        );
+        return;
+    }
 
     workToastMessage.textContent =
         message;
-
 
     workToast.classList.add(
         "show"
     );
 
-
     setTimeout(
         () => {
-
             workToast.classList.remove(
                 "show"
             );
-
         },
         3000
     );
 
 }
 
+
+// =====================================================
+// NON-PROD DETAILS EVENTS
+// =====================================================
+
+[
+    manualDateInput,
+    manualStartTimeInput,
+    manualEndTimeInput
+].forEach((input) => {
+    input?.addEventListener("change", updateManualComputedDuration);
+    input?.addEventListener("input", updateManualComputedDuration);
+});
+
+manualSubmitButton?.addEventListener(
+    "click",
+    submitManualNonProd
+);
 
 // =====================================================
 // INITIALIZE

@@ -143,6 +143,21 @@ const workActivityReportsTableBody =
         "workActivityReportsTableBody"
     );
 
+const manualTimeRequestsSection =
+    document.getElementById(
+        "manualTimeRequestsSection"
+    );
+
+const manualTimeRequestCount =
+    document.getElementById(
+        "manualTimeRequestCount"
+    );
+
+const manualTimeRequestsBody =
+    document.getElementById(
+        "manualTimeRequestsBody"
+    );
+
 // =========================================================
 // PAGINATION ELEMENTS
 // =========================================================
@@ -345,9 +360,15 @@ async function initializeReports() {
             "ADMIN"
         ) {
 
-            alert(
-                "Administrator access is required to view Reports."
-            );
+            if (typeof window.showAppNotice === "function") {
+                window.showAppNotice(
+                    "error",
+                    "Administrator Access Required",
+                    "Your account does not have permission to open Productivity Reports."
+                );
+            } else {
+                alert("Administrator access is required to view Reports.");
+            }
 
 
             window.location.href =
@@ -385,6 +406,8 @@ async function initializeReports() {
 
         await loadReports();
         await loadWorkActivityReports();
+        await loadManualTimeRequests();
+        initializeManualTimeRequestActions();
 
         // Include analysts who appear only in work activity logs.
         populateAnalystFilter([
@@ -526,6 +549,390 @@ async function initializeReports() {
 
     }
 
+}
+
+
+// =========================================================
+// MANUAL TIME REQUESTS
+// =========================================================
+
+async function loadManualTimeRequests() {
+
+    if (!manualTimeRequestsSection || !manualTimeRequestsBody) {
+        return;
+    }
+
+    manualTimeRequestsBody.innerHTML = `
+        <div class="manual-request-loading">Loading manual time requests...</div>
+    `;
+
+    const { data, error } = await supabase
+        .from("manual_time_requests")
+        .select(`
+            id,
+            analyst_id,
+            task_name,
+            started_at,
+            ended_at,
+            duration_seconds,
+            justification,
+            status,
+            created_at
+        `)
+        .eq("status", "PENDING")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Manual time requests error:", error);
+        manualTimeRequestsBody.innerHTML = `
+            <div class="manual-request-error">Unable to load manual time requests.</div>
+        `;
+        return;
+    }
+
+    const requests = Array.isArray(data) ? data : [];
+
+    const analystIds = [...new Set(
+        requests.map(request => request.analyst_id).filter(Boolean)
+    )];
+
+    let analystMap = new Map();
+
+    if (analystIds.length > 0) {
+        const { data: analystRows, error: analystError } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", analystIds);
+
+        if (analystError) {
+            console.error("Manual request analyst lookup error:", analystError);
+        } else {
+            analystMap = new Map(
+                (analystRows || []).map(row => [String(row.id), row.full_name || "Unknown Analyst"])
+            );
+        }
+    }
+    manualTimeRequestCount.textContent = String(requests.length);
+
+    if (requests.length === 0) {
+        manualTimeRequestsBody.innerHTML = `
+            <div class="manual-request-empty">No pending manual time requests.</div>
+        `;
+        return;
+    }
+
+    manualTimeRequestsBody.innerHTML = requests.map(request => {
+        const analystName = analystMap.get(String(request.analyst_id)) || "Unknown Analyst";
+        const duration = formatDuration(Number(request.duration_seconds || 0));
+        return `
+            <article class="manual-request-card" data-request-id="${escapeHtml(String(request.id))}">
+                <div class="manual-request-card-header">
+                    <div>
+                        <h3>${escapeHtml(analystName)}</h3>
+                        <span class="manual-request-status">PENDING REVIEW</span>
+                    </div>
+                    <div class="manual-request-duration">${escapeHtml(duration)}</div>
+                </div>
+
+                <div class="manual-request-grid">
+                    <div><span>Activity</span><strong>${escapeHtml(request.task_name || "--")}</strong></div>
+                    <div><span>Date</span><strong>${escapeHtml(formatDateTime(request.started_at).split(",")[0] || "--")}</strong></div>
+                    <div><span>Start</span><strong>${escapeHtml(formatDateTime(request.started_at))}</strong></div>
+                    <div><span>End</span><strong>${escapeHtml(formatDateTime(request.ended_at))}</strong></div>
+                </div>
+
+                <div class="manual-request-justification">
+                    <span>Justification / Comment</span>
+                    <p>${escapeHtml(request.justification || "--")}</p>
+                </div>
+
+                <div class="manual-request-actions">
+                    <button type="button" class="manual-request-approve" data-request-action="approve" data-request-id="${escapeHtml(String(request.id))}">✓ Accept</button>
+                    <button type="button" class="manual-request-reject" data-request-action="reject" data-request-id="${escapeHtml(String(request.id))}">✕ Reject</button>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+function requestManualRejectionReason() {
+    return new Promise(resolve => {
+        const existingModal = document.getElementById("manualRejectReasonModal");
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        if (!document.getElementById("manualRejectReasonModalStyles")) {
+            const style = document.createElement("style");
+            style.id = "manualRejectReasonModalStyles";
+            style.textContent = `
+                #manualRejectReasonModal {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 24px;
+                    background: rgba(9, 30, 24, 0.52);
+                    backdrop-filter: blur(3px);
+                }
+                #manualRejectReasonModal .manual-reject-dialog {
+                    width: min(520px, 100%);
+                    border: 1px solid rgba(0, 148, 104, 0.25);
+                    border-radius: 18px;
+                    background: var(--card-bg, #ffffff);
+                    color: var(--text-primary, #17352d);
+                    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.20);
+                    overflow: hidden;
+                }
+                #manualRejectReasonModal .manual-reject-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 16px;
+                    padding: 20px 22px 14px;
+                    border-bottom: 1px solid rgba(0, 148, 104, 0.14);
+                }
+                #manualRejectReasonModal .manual-reject-title {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+                #manualRejectReasonModal .manual-reject-close {
+                    width: 34px;
+                    height: 34px;
+                    border: 0;
+                    border-radius: 9px;
+                    background: transparent;
+                    color: inherit;
+                    font-size: 22px;
+                    line-height: 1;
+                    cursor: pointer;
+                }
+                #manualRejectReasonModal .manual-reject-close:hover {
+                    background: rgba(0, 148, 104, 0.08);
+                }
+                #manualRejectReasonModal .manual-reject-body {
+                    padding: 20px 22px 8px;
+                }
+                #manualRejectReasonModal .manual-reject-label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                }
+                #manualRejectReasonModal .manual-reject-hint {
+                    margin: 0 0 12px;
+                    color: var(--text-secondary, #657b74);
+                    font-size: 12px;
+                }
+                #manualRejectReasonModal textarea {
+                    width: 100%;
+                    min-height: 120px;
+                    resize: vertical;
+                    box-sizing: border-box;
+                    padding: 12px 14px;
+                    border: 1px solid rgba(0, 148, 104, 0.24);
+                    border-radius: 11px;
+                    background: var(--input-bg, #f8fffc);
+                    color: inherit;
+                    font: inherit;
+                    outline: none;
+                }
+                #manualRejectReasonModal textarea:focus {
+                    border-color: rgba(0, 148, 104, 0.60);
+                    box-shadow: 0 0 0 3px rgba(0, 148, 104, 0.10);
+                }
+                #manualRejectReasonModal .manual-reject-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    padding: 14px 22px 20px;
+                }
+                #manualRejectReasonModal .manual-reject-btn {
+                    border: 0;
+                    border-radius: 10px;
+                    padding: 10px 16px;
+                    font: inherit;
+                    font-weight: 700;
+                    cursor: pointer;
+                }
+                #manualRejectReasonModal .manual-reject-cancel {
+                    background: rgba(0, 148, 104, 0.08);
+                    color: inherit;
+                }
+                #manualRejectReasonModal .manual-reject-confirm {
+                    background: #d9534f;
+                    color: #fff;
+                }
+                #manualRejectReasonModal .manual-reject-confirm:hover {
+                    filter: brightness(0.95);
+                }
+                @media (max-width: 520px) {
+                    #manualRejectReasonModal { padding: 14px; }
+                    #manualRejectReasonModal .manual-reject-actions {
+                        flex-direction: column-reverse;
+                    }
+                    #manualRejectReasonModal .manual-reject-btn {
+                        width: 100%;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const modal = document.createElement("div");
+        modal.id = "manualRejectReasonModal";
+        modal.innerHTML = `
+            <div class="manual-reject-dialog" role="dialog" aria-modal="true" aria-labelledby="manualRejectReasonTitle">
+                <div class="manual-reject-header">
+                    <h2 id="manualRejectReasonTitle" class="manual-reject-title">Reject Manual Time</h2>
+                    <button type="button" class="manual-reject-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="manual-reject-body">
+                    <label class="manual-reject-label" for="manualRejectReasonInput">Rejection reason <span style="font-weight:400;opacity:.7;">(optional)</span></label>
+                    <p class="manual-reject-hint">Tell the analyst why this Non-Prod time request is being rejected.</p>
+                    <textarea id="manualRejectReasonInput" maxlength="1000" placeholder="Enter a reason..."></textarea>
+                </div>
+                <div class="manual-reject-actions">
+                    <button type="button" class="manual-reject-btn manual-reject-cancel">Cancel</button>
+                    <button type="button" class="manual-reject-btn manual-reject-confirm">Reject Request</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const input = modal.querySelector("#manualRejectReasonInput");
+        const closeButton = modal.querySelector(".manual-reject-close");
+        const cancelButton = modal.querySelector(".manual-reject-cancel");
+        const confirmButton = modal.querySelector(".manual-reject-confirm");
+
+        let settled = false;
+        const finish = value => {
+            if (settled) return;
+            settled = true;
+            document.removeEventListener("keydown", onKeyDown);
+            modal.remove();
+            resolve(value);
+        };
+
+        const onKeyDown = event => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                finish(null);
+            } else if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                event.preventDefault();
+                finish(String(input.value).trim() || null);
+            }
+        };
+
+        closeButton.addEventListener("click", () => finish(null));
+        cancelButton.addEventListener("click", () => finish(null));
+        confirmButton.addEventListener("click", () => {
+            finish(String(input.value).trim() || null);
+        });
+        modal.addEventListener("click", event => {
+            if (event.target === modal) {
+                finish(null);
+            }
+        });
+        document.addEventListener("keydown", onKeyDown);
+
+        requestAnimationFrame(() => input.focus());
+    });
+}
+
+async function reviewManualTimeRequest(requestId, decision) {
+
+    let rejectionReason = null;
+
+    if (decision === "REJECTED") {
+        rejectionReason = await requestManualRejectionReason();
+
+        if (rejectionReason === null) {
+            return;
+        }
+    }
+
+    const buttons = document.querySelectorAll(
+        `[data-request-id="${CSS.escape(String(requestId))}"][data-request-action]`
+    );
+    buttons.forEach(button => {
+        button.disabled = true;
+    });
+
+    const { error } = await supabase.rpc(
+        "review_manual_time_request",
+        {
+            p_request_id: requestId,
+            p_decision: decision,
+            p_rejection_reason: rejectionReason
+        }
+    );
+
+    if (error) {
+        console.error("Manual time review error:", error);
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice(
+                "error",
+                "Review Failed",
+                error.message || "Unable to review this manual time request."
+            );
+        } else {
+            alert(error.message || "Unable to review manual time request.");
+        }
+        buttons.forEach(button => {
+            button.disabled = false;
+        });
+        return;
+    }
+
+    await loadManualTimeRequests();
+    await loadWorkActivityReports();
+
+    if (typeof window.showAppNotice === "function") {
+        window.showAppNotice(
+            decision === "APPROVED" ? "success" : "warning",
+            decision === "APPROVED"
+                ? "Manual Time Approved"
+                : "Manual Time Rejected",
+            decision === "APPROVED"
+                ? "The manual Non-Prod entry was accepted and the analyst has been notified."
+                : "The manual Non-Prod entry was rejected and the analyst has been notified."
+        );
+    } else {
+        alert(
+            decision === "APPROVED"
+                ? "Manual time accepted. The analyst has been notified."
+                : "Manual time rejected. The analyst has been notified."
+        );
+    }
+}
+
+function initializeManualTimeRequestActions() {
+
+    if (!manualTimeRequestsBody || manualTimeRequestsBody.dataset.bound === "1") {
+        return;
+    }
+
+    manualTimeRequestsBody.dataset.bound = "1";
+
+    manualTimeRequestsBody.addEventListener("click", event => {
+        const button = event.target.closest("[data-request-action]");
+        if (!button) return;
+
+        const requestId = button.dataset.requestId;
+        const action = button.dataset.requestAction;
+
+        if (!requestId || !action) return;
+
+        reviewManualTimeRequest(
+            requestId,
+            action === "approve" ? "APPROVED" : "REJECTED"
+        );
+    });
 }
 
 
@@ -1940,7 +2347,11 @@ async function loadWorkActivityReports() {
                     task_name,
                     started_at,
                     ended_at,
-                    duration_seconds
+                    duration_seconds,
+                    manual_duration_seconds,
+                    live_duration_seconds,
+                    duration_source,
+                    justification
                 `)
                 .not(
                     "ended_at",
@@ -2169,7 +2580,7 @@ function renderWorkActivityReports(
             <tr>
 
                 <td
-                    colspan="6"
+                    colspan="8"
                     class="status-empty"
                 >
                     No completed work activity logs found.
@@ -2252,7 +2663,11 @@ function renderWorkActivityReports(
             .map(
                 record =>
                     `
-                    <tr>
+                    <tr
+                        class="work-activity-clickable-row"
+                        data-work-activity-id="${escapeHtml(String(record.id))}"
+                        title="Click to view detailed work activity timeline"
+                    >
 
                         <td>
                             ${escapeHtml(
@@ -2287,6 +2702,26 @@ function renderWorkActivityReports(
                                     )
                                 )}
                             </strong>
+                            ${record.duration_source === "MANUAL" ? "<small class=\"report-duration-source\">Manual</small>" : ""}
+                        </td>
+
+
+                        <td>
+                            ${formatDuration(
+                                Number(
+                                    record.live_duration_seconds ??
+                                    record.duration_seconds ??
+                                    0
+                                )
+                            )}
+                        </td>
+
+
+                        <td class="work-activity-justification">
+                            ${escapeHtml(
+                                record.justification ||
+                                "--"
+                            )}
                         </td>
 
 
@@ -4969,9 +5404,15 @@ async function exportCsv() {
         workActivityData.length === 0
     ) {
 
-        alert(
-            "There is no report data to export."
-        );
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice(
+                "warning",
+                "Nothing to Export",
+                "There is no report data in the current filters to export."
+            );
+        } else {
+            alert("There is no report data to export.");
+        }
 
         return;
 
@@ -4986,9 +5427,15 @@ async function exportCsv() {
         typeof XLSX === "undefined"
     ) {
 
-        alert(
-            "Excel export library failed to load."
-        );
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice(
+                "error",
+                "Export Unavailable",
+                "The Excel export library failed to load. Please refresh and try again."
+            );
+        } else {
+            alert("Excel export library failed to load.");
+        }
 
         return;
 
@@ -6777,6 +7224,8 @@ activityCategoryTotals.PROD +=
             "Category",
             "Task",
             "Duration",
+            "Live Timer",
+            "Justification",
             "Started",
             "Completed"
         ],
@@ -6799,6 +7248,17 @@ activityCategoryTotals.PROD +=
                         0
                     )
                 ),
+
+                excelDuration(
+                    Number(
+                        record.live_duration_seconds ??
+                        record.duration_seconds ??
+                        0
+                    )
+                ),
+
+                record.justification ||
+                "",
 
                 formatDateTime(
                     record.started_at
@@ -6827,6 +7287,9 @@ activityCategoryTotals.PROD +=
                 if (workActivitySheet[`D${row}`]) {
                     workActivitySheet[`D${row}`].z = "[h]:mm:ss";
                 }
+                if (workActivitySheet[`E${row}`]) {
+                    workActivitySheet[`E${row}`].z = "[h]:mm:ss";
+                }
             }
 
 
@@ -6845,7 +7308,7 @@ activityCategoryTotals.PROD +=
     workActivitySheet["!autofilter"] = {
 
         ref:
-            `A1:F${workActivityRows.length}`
+            `A1:H${workActivityRows.length}`
 
     };
 
@@ -9280,6 +9743,539 @@ logoutButton.addEventListener(
 
     ensureReportDetailsStyles();
     initializeReportRowDetails();
+
+    // =========================================================
+    // CLICKABLE WORK ACTIVITY DETAILS / TIMER AUDIT PANEL
+    // =========================================================
+    // Work Activity rows open a detailed audit view similar to
+    // the Detailed Productivity Data drill-down above.
+    // The detail view reads the timer events for the selected
+    // task log so START / PAUSE / RESUME / STOP activity can be
+    // inspected without changing the existing table.
+
+    function ensureWorkActivityDetailsStyles() {
+
+        if (document.getElementById("workActivityDetailsStyles")) {
+            return;
+        }
+
+        const style = document.createElement("style");
+        style.id = "workActivityDetailsStyles";
+        style.textContent = `
+            .work-activity-clickable-row {
+                cursor: pointer;
+                transition: background-color .15s ease, box-shadow .15s ease;
+            }
+
+            .work-activity-clickable-row:hover {
+                background: rgba(16, 185, 129, .10) !important;
+                box-shadow: inset 3px 0 0 var(--accent, #10b981);
+            }
+
+            #workActivityDetailsModal {
+                position: fixed;
+                inset: 0;
+                z-index: 100000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: rgba(0, 0, 0, .48);
+                backdrop-filter: blur(5px);
+            }
+
+            #workActivityDetailsModal .work-activity-details-dialog {
+                width: min(980px, 96vw);
+                max-height: 92vh;
+                overflow: hidden;
+                background: var(--card-bg, #ffffff);
+                color: var(--text-primary, #17211b);
+                border: 1px solid rgba(16, 185, 129, .22);
+                border-radius: 18px;
+                box-shadow: 0 24px 70px rgba(0,0,0,.28);
+                display: flex;
+                flex-direction: column;
+            }
+
+            #workActivityDetailsModal .work-activity-details-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 20px 22px 16px;
+                border-bottom: 1px solid rgba(16, 185, 129, .16);
+            }
+
+            #workActivityDetailsModal .work-activity-details-title {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 800;
+            }
+
+            #workActivityDetailsModal .work-activity-details-subtitle {
+                margin-top: 4px;
+                font-size: 12px;
+                opacity: .72;
+            }
+
+            #workActivityDetailsModal .work-activity-details-close {
+                width: 36px;
+                height: 36px;
+                border: 0;
+                border-radius: 10px;
+                background: rgba(16, 185, 129, .10);
+                cursor: pointer;
+                font-size: 20px;
+                line-height: 1;
+            }
+
+            #workActivityDetailsModal .work-activity-details-body {
+                overflow: auto;
+                padding: 20px 22px 24px;
+            }
+
+            #workActivityDetailsModal .work-activity-details-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            #workActivityDetailsModal .work-activity-detail-card {
+                padding: 12px 13px;
+                border-radius: 12px;
+                background: rgba(16, 185, 129, .055);
+                border: 1px solid rgba(16, 185, 129, .13);
+            }
+
+            #workActivityDetailsModal .work-activity-detail-label {
+                display: block;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                opacity: .62;
+                margin-bottom: 4px;
+            }
+
+            #workActivityDetailsModal .work-activity-detail-value {
+                font-size: 13px;
+                font-weight: 700;
+                word-break: break-word;
+            }
+
+            #workActivityDetailsModal .work-activity-details-summary {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            #workActivityDetailsModal .work-activity-time-card {
+                padding: 14px;
+                border-radius: 13px;
+                border: 1px solid rgba(16, 185, 129, .15);
+                background: rgba(255,255,255,.45);
+            }
+
+            #workActivityDetailsModal .work-activity-time-card strong {
+                display: block;
+                margin-top: 4px;
+                font-size: 18px;
+            }
+
+            #workActivityDetailsModal .work-activity-justification-box {
+                padding: 14px;
+                border-radius: 13px;
+                margin-bottom: 20px;
+                border: 1px solid rgba(16, 185, 129, .18);
+                background: rgba(16, 185, 129, .055);
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            #workActivityDetailsModal .work-activity-justification-text {
+                margin-top: 6px;
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-size: 13px;
+            }
+
+            #workActivityDetailsModal .work-activity-event-block {
+                margin-top: 16px;
+                border: 1px solid rgba(16, 185, 129, .15);
+                border-radius: 14px;
+                overflow: hidden;
+            }
+
+            #workActivityDetailsModal .work-activity-event-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 13px 15px;
+                background: rgba(16, 185, 129, .065);
+                border-bottom: 1px solid rgba(16, 185, 129, .12);
+            }
+
+            #workActivityDetailsModal .work-activity-event-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            #workActivityDetailsModal .work-activity-event-row {
+                display: grid;
+                grid-template-columns: 125px 1fr auto;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 15px;
+                border-bottom: 1px solid rgba(16, 185, 129, .08);
+                font-size: 12px;
+            }
+
+            #workActivityDetailsModal .work-activity-event-row:last-child {
+                border-bottom: 0;
+            }
+
+            #workActivityDetailsModal .work-activity-event-type {
+                font-weight: 800;
+            }
+
+            #workActivityDetailsModal .work-activity-event-time {
+                opacity: .72;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            #workActivityDetailsModal .work-activity-event-gap {
+                font-size: 11px;
+                opacity: .72;
+            }
+
+            #workActivityDetailsModal .work-event-start,
+            #workActivityDetailsModal .work-event-resume {
+                color: #087443;
+            }
+
+            #workActivityDetailsModal .work-event-pause {
+                color: #a15c00;
+            }
+
+            #workActivityDetailsModal .work-event-stop {
+                color: #b42318;
+            }
+
+            #workActivityDetailsModal .work-activity-loading,
+            #workActivityDetailsModal .work-activity-no-events {
+                padding: 16px;
+                font-size: 12px;
+                opacity: .68;
+            }
+
+            @media (max-width: 760px) {
+                #workActivityDetailsModal {
+                    padding: 10px;
+                }
+
+                #workActivityDetailsModal .work-activity-details-grid,
+                #workActivityDetailsModal .work-activity-details-summary {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                #workActivityDetailsModal .work-activity-event-row {
+                    grid-template-columns: 100px 1fr;
+                }
+
+                #workActivityDetailsModal .work-activity-event-time {
+                    grid-column: 2;
+                    text-align: left;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function workActivityEventIcon(type) {
+        const normalized = String(type || "").toUpperCase();
+
+        if (normalized === "START") return "▶";
+        if (normalized === "RESUME") return "▶";
+        if (normalized === "PAUSE") return "⏸";
+        if (normalized === "STOP") return "⏹";
+
+        return "•";
+    }
+
+    function workActivityEventClass(type) {
+        const normalized = String(type || "").toUpperCase();
+
+        if (normalized === "START") return "work-event-start";
+        if (normalized === "RESUME") return "work-event-resume";
+        if (normalized === "PAUSE") return "work-event-pause";
+        if (normalized === "STOP") return "work-event-stop";
+
+        return "";
+    }
+
+    function calculateWorkActivityEventTotals(events, fallbackSeconds = 0) {
+        const sorted = [...(events || [])]
+            .filter(event => event?.event_time)
+            .sort((a, b) => new Date(a.event_time).getTime() - new Date(b.event_time).getTime());
+
+        let activeSeconds = 0;
+        let pausedSeconds = 0;
+        let activeStart = null;
+        let pauseStart = null;
+
+        for (const event of sorted) {
+            const eventTime = new Date(event.event_time).getTime();
+            if (!Number.isFinite(eventTime)) continue;
+
+            const type = String(event.event_type || "").toUpperCase();
+
+            if (type === "START" || type === "RESUME") {
+                if (type === "RESUME" && pauseStart !== null) {
+                    pausedSeconds += Math.max(0, Math.floor((eventTime - pauseStart) / 1000));
+                    pauseStart = null;
+                }
+
+                activeStart = eventTime;
+            } else if (type === "PAUSE") {
+                if (activeStart !== null) {
+                    activeSeconds += Math.max(0, Math.floor((eventTime - activeStart) / 1000));
+                    activeStart = null;
+                }
+
+                pauseStart = eventTime;
+            } else if (type === "STOP") {
+                if (activeStart !== null) {
+                    activeSeconds += Math.max(0, Math.floor((eventTime - activeStart) / 1000));
+                    activeStart = null;
+                }
+
+                if (pauseStart !== null) {
+                    pausedSeconds += Math.max(0, Math.floor((eventTime - pauseStart) / 1000));
+                    pauseStart = null;
+                }
+            }
+        }
+
+        return {
+            activeSeconds: activeSeconds || Number(fallbackSeconds) || 0,
+            pausedSeconds
+        };
+    }
+
+    function renderWorkActivityEventTimeline(events) {
+        const sorted = [...(events || [])]
+            .filter(event => event?.event_time)
+            .sort((a, b) => new Date(a.event_time).getTime() - new Date(b.event_time).getTime());
+
+        if (!sorted.length) {
+            return `<div class="work-activity-no-events">No timer events were recorded for this activity.</div>`;
+        }
+
+        let previousTime = null;
+
+        const rows = sorted.map((event, index) => {
+            const currentTime = new Date(event.event_time).getTime();
+            const gapSeconds = Number.isFinite(previousTime) && Number.isFinite(currentTime) && currentTime >= previousTime
+                ? Math.floor((currentTime - previousTime) / 1000)
+                : 0;
+
+            previousTime = currentTime;
+
+            const type = String(event.event_type || "EVENT").toUpperCase();
+            const gapText = index === 0
+                ? ""
+                : `Elapsed since previous: <strong>${escapeHtml(formatDuration(gapSeconds))}</strong>`;
+
+            return `
+                <li class="work-activity-event-row">
+                    <div class="work-activity-event-type ${workActivityEventClass(type)}">
+                        ${workActivityEventIcon(type)} ${escapeHtml(type)}
+                    </div>
+                    <div class="work-activity-event-gap">
+                        ${gapText || "Activity timeline event"}
+                    </div>
+                    <div class="work-activity-event-time">
+                        ${escapeHtml(formatDateTime(event.event_time))}
+                    </div>
+                </li>
+            `;
+        }).join("");
+
+        return `<ul class="work-activity-event-list">${rows}</ul>`;
+    }
+
+    function closeWorkActivityDetails() {
+        const modal = document.getElementById("workActivityDetailsModal");
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = "";
+        }
+    }
+
+    async function openWorkActivityDetails(recordId) {
+        const record = workActivityReportRecords.find(
+            item => String(item?.id) === String(recordId)
+        );
+
+        if (!record) {
+            return;
+        }
+
+        ensureWorkActivityDetailsStyles();
+        closeWorkActivityDetails();
+
+        const source = String(record.duration_source || "LIVE_TIMER").toUpperCase();
+        const durationSeconds = Number(record.duration_seconds || 0);
+        const liveSeconds = Number(record.live_duration_seconds ?? durationSeconds ?? 0);
+        const manualSeconds = record.manual_duration_seconds == null
+            ? null
+            : Number(record.manual_duration_seconds);
+
+        const modal = document.createElement("div");
+        modal.id = "workActivityDetailsModal";
+        modal.innerHTML = `
+            <div class="work-activity-details-dialog" role="dialog" aria-modal="true" aria-labelledby="workActivityDetailsTitle">
+                <div class="work-activity-details-header">
+                    <div>
+                        <h2 id="workActivityDetailsTitle" class="work-activity-details-title">Work Activity Details</h2>
+                        <div class="work-activity-details-subtitle">
+                            Activity #${escapeHtml(String(record.id))} · Loading timer timeline...
+                        </div>
+                    </div>
+                    <button type="button" class="work-activity-details-close" aria-label="Close">×</button>
+                </div>
+
+                <div class="work-activity-details-body">
+                    <div class="work-activity-details-grid">
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Analyst</span><span class="work-activity-detail-value">${escapeHtml(record.analystName || "Unknown Analyst")}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Category</span><span class="work-activity-detail-value">${escapeHtml(record.category || "--")}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Task</span><span class="work-activity-detail-value">${escapeHtml(record.task_name || "--")}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Time Source</span><span class="work-activity-detail-value">${escapeHtml(source === "MANUAL" ? "Manual Entry" : "Live Timer")}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Started</span><span class="work-activity-detail-value">${escapeHtml(formatDateTime(record.started_at))}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Completed</span><span class="work-activity-detail-value">${escapeHtml(formatDateTime(record.ended_at))}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Record ID</span><span class="work-activity-detail-value">${escapeHtml(String(record.id))}</span></div>
+                        <div class="work-activity-detail-card"><span class="work-activity-detail-label">Status</span><span class="work-activity-detail-value">Completed</span></div>
+                    </div>
+
+                    <div class="work-activity-details-summary">
+                        <div class="work-activity-time-card"><span class="work-activity-detail-label">Reported Duration</span><strong>${escapeHtml(formatDuration(durationSeconds))}</strong></div>
+                        <div class="work-activity-time-card"><span class="work-activity-detail-label">Live Timer</span><strong>${escapeHtml(formatDuration(liveSeconds))}</strong></div>
+                        <div class="work-activity-time-card"><span class="work-activity-detail-label">Manual Time</span><strong>${escapeHtml(manualSeconds == null ? "Not used" : formatDuration(manualSeconds))}</strong></div>
+                        <div class="work-activity-time-card"><span class="work-activity-detail-label">Pause Time</span><strong id="workActivityPauseSummary">Calculating...</strong></div>
+                    </div>
+
+                    <div class="work-activity-justification-box">
+                        <span class="work-activity-detail-label">Justification / Comment</span>
+                        <div class="work-activity-justification-text">${escapeHtml(record.justification || "No justification was recorded for this activity.")}</div>
+                    </div>
+
+                    <div class="work-activity-event-block">
+                        <div class="work-activity-event-heading">
+                            <strong>Timer Timeline</strong>
+                            <span id="workActivityEventSummary">Loading events...</span>
+                        </div>
+                        <div id="workActivityEventContent" class="work-activity-loading">Loading START / PAUSE / RESUME / STOP events...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = "hidden";
+
+        modal.querySelector(".work-activity-details-close")?.addEventListener("click", closeWorkActivityDetails);
+
+        modal.addEventListener("click", event => {
+            if (event.target === modal) {
+                closeWorkActivityDetails();
+            }
+        });
+
+        try {
+            const { data: events, error } = await supabase
+                .from("task_activity_events")
+                .select("event_type, event_time")
+                .eq("task_log_id", record.id)
+                .order("event_time", { ascending: true });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!document.getElementById("workActivityDetailsModal")) {
+                return;
+            }
+
+            const totals = calculateWorkActivityEventTotals(events || [], liveSeconds);
+            const eventSummary = document.getElementById("workActivityEventSummary");
+            const pauseSummary = document.getElementById("workActivityPauseSummary");
+            const eventContent = document.getElementById("workActivityEventContent");
+
+            if (eventSummary) {
+                eventSummary.textContent = `${(events || []).length} event${(events || []).length === 1 ? "" : "s"}`;
+            }
+
+            if (pauseSummary) {
+                pauseSummary.textContent = formatDuration(totals.pausedSeconds);
+            }
+
+            if (eventContent) {
+                eventContent.className = "";
+                eventContent.innerHTML = renderWorkActivityEventTimeline(events || []);
+            }
+
+            const subtitle = modal.querySelector(".work-activity-details-subtitle");
+            if (subtitle) {
+                subtitle.textContent = `Activity #${record.id} · Click outside or press Esc to close`;
+            }
+        } catch (error) {
+            console.error("Work activity detail events error:", error);
+
+            const eventSummary = document.getElementById("workActivityEventSummary");
+            const eventContent = document.getElementById("workActivityEventContent");
+
+            if (eventSummary) {
+                eventSummary.textContent = "Unavailable";
+            }
+
+            if (eventContent) {
+                eventContent.className = "work-activity-no-events";
+                eventContent.textContent = "Timer event details could not be loaded for this activity. The saved activity information above is still available.";
+            }
+        }
+    }
+
+    function initializeWorkActivityRowDetails() {
+        if (!workActivityReportsTableBody || workActivityReportsTableBody.dataset.detailsListenerAttached === "1") {
+            return;
+        }
+
+        workActivityReportsTableBody.dataset.detailsListenerAttached = "1";
+
+        workActivityReportsTableBody.addEventListener("click", event => {
+            const row = event.target.closest("tr[data-work-activity-id]");
+            if (!row) {
+                return;
+            }
+
+            openWorkActivityDetails(row.dataset.workActivityId);
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                closeWorkActivityDetails();
+            }
+        });
+    }
+
+    ensureWorkActivityDetailsStyles();
+    initializeWorkActivityRowDetails();
 
     // ---------------------------------------------------------
     // START REPORTS
