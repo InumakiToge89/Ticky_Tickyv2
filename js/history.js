@@ -565,7 +565,11 @@ async function loadWorkActivityHistory() {
                     task_name,
                     started_at,
                     ended_at,
-                    duration_seconds
+                    duration_seconds,
+                    manual_duration_seconds,
+                    live_duration_seconds,
+                    duration_source,
+                    justification
                 `)
                 .eq(
                     "analyst_id",
@@ -741,7 +745,13 @@ function renderWorkActivityHistory() {
         pageRecords
             .map(
                 record => `
-                    <tr>
+                    <tr
+                        class="work-activity-row"
+                        data-task-log-id="${escapeHtml(String(record.id || ""))}"
+                        tabindex="0"
+                        role="button"
+                        aria-label="View details for ${escapeHtml(record.task_name || "work activity")}"
+                    >
 
                         <td>
                             ${escapeHtml(
@@ -1510,6 +1520,31 @@ if (workActivityTableBody) {
         }
     );
 
+    workActivityTableBody.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+
+            const row = event.target.closest(".work-activity-row");
+
+            if (!row) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const taskLogId = row.dataset.taskLogId;
+
+            if (taskLogId) {
+                showWorkActivityDetails(taskLogId);
+            }
+
+        }
+    );
+
 }
 
 
@@ -1755,6 +1790,38 @@ async function showWorkActivityDetails(
             record.duration_seconds
         );
 
+    const modalJustification =
+        document.getElementById("workActivityModalJustification");
+
+    const modalDurationSource =
+        document.getElementById("workActivityModalDurationSource");
+
+    const modalManualDuration =
+        document.getElementById("workActivityModalManualDuration");
+
+    const modalLiveDuration =
+        document.getElementById("workActivityModalLiveDuration");
+
+    if (modalJustification) {
+        modalJustification.textContent =
+            record.justification || "No justification provided.";
+    }
+
+    if (modalDurationSource) {
+        modalDurationSource.textContent =
+            record.duration_source || "--";
+    }
+
+    if (modalManualDuration) {
+        modalManualDuration.textContent =
+            formatDuration(record.manual_duration_seconds);
+    }
+
+    if (modalLiveDuration) {
+        modalLiveDuration.textContent =
+            formatDuration(record.live_duration_seconds);
+    }
+
 
     // Show loading state
 
@@ -1792,11 +1859,7 @@ async function showWorkActivityDetails(
                     "task_log_id",
                     taskLogId
                 )
-                .eq(
-                    "analyst_id",
-                    currentUser.id
-                )
-                .order(
+                    .order(
                     "event_time",
                     {
                         ascending: true
@@ -2361,6 +2424,10 @@ logoutButton.addEventListener(
 // =========================================================
 
 initializeHistory();
+
+window.addEventListener("unhandledrejection", event => {
+    console.error("History unhandled rejection:", event.reason);
+});
 
 // =========================================================
 // CLOSE HISTORY MODAL

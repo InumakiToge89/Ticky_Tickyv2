@@ -567,6 +567,14 @@ async function initializeTimer() {
             selectedType
         );
 
+        sessionStorage.setItem(
+            "activeProfilingSessionId",
+            String(currentSession.id)
+        );
+
+        window.__tickyActiveTimerSessionId =
+            String(currentSession.id);
+
 
         // -------------------------------------------------
         // Display session
@@ -2698,6 +2706,149 @@ logoutButton.addEventListener(
     }
 );
 
+
+
+// =========================================================
+// SESSION TYPE CHANGE REQUEST
+// =========================================================
+
+function openSessionTypeChangeRequestModal() {
+
+    document.getElementById("timerSessionTypeRequestModal")?.remove();
+
+    if (!currentJob || !currentSession) {
+        showError("The active profiling session is still loading. Please try again.");
+        return;
+    }
+
+    const currentType =
+        String(currentSession.session_type || "").toUpperCase();
+
+    const nextType =
+        currentType === "TEAM"
+            ? "MEMBERS"
+            : "TEAM";
+
+    const currentLabel = formatSessionType(currentType);
+    const nextLabel = formatSessionType(nextType);
+
+    const modal = document.createElement("div");
+    modal.id = "timerSessionTypeRequestModal";
+    modal.className = "timer-request-modal-overlay";
+    modal.innerHTML = `
+        <div class="timer-request-modal" role="dialog" aria-modal="true" aria-labelledby="timerSessionTypeRequestTitle">
+            <div class="timer-request-modal-header">
+                <div class="timer-request-modal-icon">↔</div>
+                <div>
+                    <span class="timer-request-eyebrow">DEVELOPER SUPPORT</span>
+                    <h2 id="timerSessionTypeRequestTitle">Correct This Profiling Session</h2>
+                    <p>Request a correction without changing the timer yourself.</p>
+                </div>
+                <button type="button" class="timer-request-close" data-close>×</button>
+            </div>
+
+            <div class="timer-request-context">
+                <div>
+                    <span>Current session</span>
+                    <strong>${escapeHtml(currentLabel)}</strong>
+                </div>
+                <div class="timer-request-arrow">→</div>
+                <div>
+                    <span>Requested session</span>
+                    <strong>${escapeHtml(nextLabel)}</strong>
+                </div>
+            </div>
+
+            <div class="timer-request-pair-note">
+                <strong>Sequence protection</strong>
+                <p>The paired profiling session will automatically become <b>${escapeHtml(currentLabel)}</b>. This keeps the two-step order as <b>Team → Members</b> or <b>Members → Team</b> instead of creating two sessions with the same type.</p>
+            </div>
+
+            <form id="timerSessionTypeRequestForm" class="timer-request-form">
+                <label>
+                    <span>Why does this need correction?</span>
+                    <textarea name="reason" rows="3" maxlength="2000" required placeholder="Example: I selected Team by mistake. This session should be Members."></textarea>
+                </label>
+
+                <div class="timer-request-modal-actions">
+                    <button type="button" class="timer-request-secondary" data-close>Cancel</button>
+                    <button type="submit" class="timer-request-primary">Send Request to Ivee</button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const close = () => modal.remove();
+    modal.querySelectorAll("[data-close]").forEach(button => {
+        button.addEventListener("click", close);
+    });
+    modal.addEventListener("click", event => {
+        if (event.target === modal) close();
+    });
+
+    modal.querySelector("form")?.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const submit = form.querySelector("button[type='submit']");
+        const reason = String(new FormData(form).get("reason") || "").trim();
+
+        if (!reason) return;
+
+        submit.disabled = true;
+        submit.textContent = "Sending…";
+
+        const requestedChange =
+            `SESSION_TYPE_SWITCH|FROM=${currentType}|TO=${nextType}|${reason}`;
+
+        const { error } = await supabase.rpc("submit_dev_change_request", {
+            p_target_table: "timer_sessions",
+            p_target_record_id: String(currentSession.id),
+            p_action: "UPDATE",
+            p_requested_change: requestedChange,
+            p_reason: reason
+        });
+
+        if (error) {
+            console.error("Session type request error:", error);
+            submit.disabled = false;
+            submit.textContent = "Send Request to Ivee";
+            showError(error.message || "Unable to send the session type request.");
+            return;
+        }
+
+        close();
+
+        const toast = document.createElement("div");
+        toast.className = "timer-request-toast";
+        toast.innerHTML = `<strong>Request sent to Ivee</strong><span>Session type correction: ${escapeHtml(currentLabel)} → ${escapeHtml(nextLabel)}</span>`;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add("visible"));
+        setTimeout(() => {
+            toast.classList.remove("visible");
+            setTimeout(() => toast.remove(), 250);
+        }, 3200);
+    });
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+const requestSessionTypeChangeButton =
+    document.getElementById("requestSessionTypeChangeButton");
+
+requestSessionTypeChangeButton?.addEventListener(
+    "click",
+    openSessionTypeChangeRequestModal
+);
 
 // =========================================================
 // ERROR

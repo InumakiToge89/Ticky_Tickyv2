@@ -258,29 +258,57 @@
 .report-trend-card {
     grid-column: 1 / -1;
     width: 100%;
-    min-height: 400px;
-    height: 400px;
+    min-height: 440px;
+    height: 440px;
 }
 
 .report-trend-card .chart-placeholder {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
     height: auto;
+    overflow: hidden;
+    align-items: stretch;
+    justify-content: stretch;
 }
 
-/* Internal horizontal scroll only */
+/* The trend has its own horizontal scrolling viewport.
+   This keeps the page/card from becoming wider than the screen. */
 
-.trend-scroll {
+.report-trend-chart {
     width: 100%;
-    height: 100%;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
 }
 
-/* Inner chart grows only when needed */
+.report-trend-scroll {
+    width: 100%;
+    height: 220px;
+    flex: 0 0 220px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    scrollbar-width: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.report-trend-scroll::-webkit-scrollbar {
+    height: 9px;
+}
+
+.report-trend-scroll::-webkit-scrollbar-thumb {
+    background: var(--medium-green);
+    border-radius: 999px;
+}
+
+.report-trend-scroll::-webkit-scrollbar-track {
+    background: rgba(20, 150, 110, 0.10);
+    border-radius: 999px;
+}
+
+/* Inner chart has an intentional minimum width so the timeline remains
+   readable even on wide/full-screen displays. */
 
 .trend-inner {
     width: 100%;
@@ -326,7 +354,8 @@
     }
 
     .report-trend-card {
-        height: 420px;
+        height: 440px;
+        min-height: 440px;
     }
 
 }
@@ -354,7 +383,8 @@
     }
 
     .report-trend-card {
-        height: 440px;
+        height: 460px;
+        min-height: 460px;
     }
 
     .chart-placeholder {
@@ -1078,3 +1108,13 @@
         width: 100%;
     }
 }
+
+
+/* =========================================================
+   ANALYST GROUPED BAR CHART
+   ========================================================= */
+.analyst-grouped-chart{width:100%;box-sizing:border-box;padding:6px 4px 4px}.analyst-chart-legend{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:0 8px 14px;border-bottom:1px solid var(--border)}.analyst-chart-legend-item{display:inline-flex;align-items:center;gap:7px;color:var(--text-primary);font-size:12px;font-weight:700}.analyst-chart-dot{width:9px;height:9px;border-radius:3px;display:inline-block}.analyst-chart-scroll{width:100%;overflow-x:auto;overflow-y:hidden;padding:18px 0 0}.analyst-chart-canvas{position:relative;box-sizing:border-box}.analyst-chart-y-axis{position:absolute;left:0;top:0;width:48px}.analyst-chart-y-tick{position:absolute;left:0;right:0;transform:translateY(-50%);height:1px;display:flex;align-items:center}.analyst-chart-y-tick span{width:42px;text-align:right;padding-right:7px;box-sizing:border-box;color:var(--text-secondary);font-size:10px;white-space:nowrap}.analyst-chart-y-tick i{position:absolute;left:48px;right:0;height:1px;background:var(--border);opacity:.65}.analyst-chart-bars{position:absolute;top:0;display:flex;align-items:stretch;gap:8px;border-bottom:1px solid var(--border)}.analyst-bar-group{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.analyst-bars{width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:0 4px;box-sizing:border-box}.analyst-bar-wrap{width:18px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}.analyst-bar-value{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);font-size:9px;color:var(--text-secondary);white-space:nowrap;pointer-events:none}.analyst-bar{width:100%;min-height:0;border-radius:5px 5px 0 0;transition:height .25s ease,opacity .2s ease}.analyst-bar:hover{opacity:.75}.analyst-bar-label{width:100%;margin-top:10px;text-align:center;color:var(--text-primary);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.analyst-chart-note{margin:14px 8px 2px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--very-light-green);color:var(--text-secondary);font-size:11px;line-height:1.5}.analyst-chart-empty{min-height:260px;display:flex;align-items:center;justify-content:center}@media(max-width:760px){.analyst-chart-legend{gap:8px 12px}.analyst-bar-wrap{width:15px}.analyst-bar-value{font-size:8px}}
+
+
+/* Reports — grouped daily productivity trend */
+.report-trend-chart{width:100%;box-sizing:border-box;padding:6px 4px 4px}.report-trend-legend{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:0 8px 14px;border-bottom:1px solid var(--border)}.report-trend-legend-item{display:inline-flex;align-items:center;gap:7px;color:var(--text-primary);font-size:12px;font-weight:700}.report-trend-dot{width:9px;height:9px;border-radius:3px;display:inline-block}.report-trend-scroll{width:100%;overflow-x:auto;overflow-y:hidden;padding:18px 0 0}.report-trend-canvas{position:relative;box-sizing:border-box}.report-trend-y-axis{position:absolute;left:0;top:0;width:56px}.report-trend-y-tick{position:absolute;left:0;right:0;transform:translateY(-50%);height:1px;display:flex;align-items:center}.report-trend-y-tick span{width:49px;text-align:right;padding-right:7px;box-sizing:border-box;color:var(--text-secondary);font-size:9px;white-space:nowrap}.report-trend-y-tick i{position:absolute;left:56px;right:0;height:1px;background:var(--border);opacity:.65}.report-trend-groups{position:absolute;top:0;display:flex;align-items:stretch;gap:8px;border-bottom:1px solid var(--border)}.report-trend-group{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.report-trend-bars{width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:0 3px;box-sizing:border-box}.report-trend-bar-wrap{width:17px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}.report-trend-bar-value{display:none}.report-trend-bar{width:100%;min-height:0;border-radius:5px 5px 0 0;transition:height .25s ease,opacity .2s ease}.report-trend-bar:hover{opacity:.75}.report-trend-label{width:100%;margin-top:12px;text-align:center;color:var(--text-primary);font-size:10px;font-weight:700;white-space:nowrap}.report-trend-note{margin:14px 8px 2px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--very-light-green);color:var(--text-secondary);font-size:11px;line-height:1.5}.report-trend-dot.profiling-chart-segment,.report-trend-bar.profiling-chart-segment{background:var(--primary-green)}.report-trend-dot.prod-chart-segment,.report-trend-bar.prod-chart-segment{background:#4f46e5}.report-trend-dot.nonprod-chart-segment,.report-trend-bar.nonprod-chart-segment{background:#f59e0b}.report-trend-dot.prod-loss-chart-segment,.report-trend-bar.prod-loss-chart-segment{background:#dc2626}.report-trend-dot.training-chart-segment,.report-trend-bar.training-chart-segment{background:#7c3aed}@media(max-width:760px){.report-trend-legend{gap:8px 12px}.report-trend-bar-wrap{width:14px}.report-trend-bar-value{font-size:7px}}

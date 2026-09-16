@@ -637,9 +637,16 @@ async function loadDashboardData(
     // UPDATE PRODUCTIVITY
     // =================================================
 
+    // Profiling is part of Production. It is displayed separately
+    // because it is the main work, but it must be included in the
+    // Production total used for productivity calculations.
+    const productionSeconds =
+        profilingSeconds +
+        activityStats.prodSeconds;
+
     updateProductivity(
-        activityStats.prodSeconds,
-        workActivitySeconds
+        productionSeconds,
+        totalRecordedSeconds
     );
 
 
@@ -1228,29 +1235,29 @@ function updateBreakdownItem(
 
 function updateProductivity(
     prodSeconds,
-    workActivitySeconds
+    totalRecordedSeconds
 ) {
 
     const prod =
         Number(prodSeconds) || 0;
 
-    const work =
-        Number(workActivitySeconds) || 0;
+    const total =
+        Number(totalRecordedSeconds) || 0;
 
 
     const other =
         Math.max(
             0,
-            work - prod
+            total - prod
         );
 
 
     const rate =
-        work > 0
+        total > 0
             ? Math.round(
                 (
                     prod /
-                    work
+                    total
                 ) * 100
             )
             : 0;
@@ -1286,17 +1293,17 @@ function updateProductivity(
 
     if (productivityInsight) {
 
-        if (work <= 0) {
+        if (total <= 0) {
 
             productivityInsight.textContent =
-                "No Work Activity has been recorded today.";
+                "No recorded productivity or Work Activity time is available for this period.";
 
         } else {
 
             productivityInsight.textContent =
                 `Productivity rate is ${rate}%. ` +
-                `${formatDuration(prod)} of ${formatDuration(work)} ` +
-                "of total Work Activity time is classified as PROD.";
+                `${formatDuration(prod)} of ${formatDuration(total)} ` +
+                `total recorded time is classified as Production, including Profiling.`;
 
         }
 

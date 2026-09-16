@@ -15,6 +15,2364 @@ const supabase =
 
 
 // =========================================================
+// FORMAT DATE/TIME
+// =========================================================
+// Kept local to reports.js because the enhanced report renderers
+// use this formatter in their detail views and tables.
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function formatDateTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "--";
+    }
+
+    return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+    });
+}
+
+
+// =========================================================
+// FORMAT DURATION
+// =========================================================
+// Reports uses seconds throughout its calculations. Keep the
+// formatter local so every report renderer can safely display
+// durations without depending on another page's script.
+function formatDuration(totalSeconds) {
+
+    const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    return [hours, minutes, remainingSeconds]
+        .map((value) => String(value).padStart(2, "0"))
+        .join(":");
+}
+
+
+// =========================================================
+// FORMAT NUMBER
+// =========================================================
+// Used by report tables/detail views for member counts and
+// other numeric values. Kept local so reports.js does not
+// depend on a helper from another page.
+function formatNumber(value) {
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "0";
+    }
+
+    return number.toLocaleString(undefined, {
+        maximumFractionDigits: 0
+    });
+}
+
+
+
+
+// =========================================================
+// EXCEL EXPORT HELPERS
+
+function excelDuration(totalSeconds) {
+
+    return (
+        Number(
+            totalSeconds
+        ) || 0
+    ) / 86400;
+
+}
+
+function getDateStamp() {
+
+    const date =
+        new Date();
+
+
+    return [
+
+        date.getFullYear(),
+
+        String(
+            date.getMonth() + 1
+        )
+            .padStart(
+                2,
+                "0"
+            ),
+
+        String(
+            date.getDate()
+        )
+            .padStart(
+                2,
+                "0"
+            )
+
+    ].join("-");
+
+}
+
+async function exportCsv() {
+
+    // =====================================================
+    // GET CURRENTLY FILTERED DATA
+    // =====================================================
+
+    const profilingData =
+        getFilteredRecords();
+
+
+    const workActivityData =
+        getFilteredWorkActivityRecords();
+
+
+    // =====================================================
+    // CHECK IF THERE IS DATA
+    // =====================================================
+
+    if (
+        profilingData.length === 0 &&
+        workActivityData.length === 0
+    ) {
+
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice(
+                "warning",
+                "Nothing to Export",
+                "There is no report data in the current filters to export."
+            );
+        } else {
+            alert("There is no report data to export.");
+        }
+
+        return;
+
+    }
+
+
+    // =====================================================
+    // CHECK EXCEL LIBRARY
+    // =====================================================
+
+    if (
+        typeof XLSX === "undefined"
+    ) {
+
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice(
+                "error",
+                "Export Unavailable",
+                "The Excel export library failed to load. Please refresh and try again."
+            );
+        } else {
+            alert("Excel export library failed to load.");
+        }
+
+        return;
+
+    }
+
+
+    // =====================================================
+    // EXCEL COLORS
+    // =====================================================
+
+    const COLORS = {
+
+        darkGreen:
+            "174D32",
+
+        green:
+            "237A4B",
+
+        lightGreen:
+            "DDEFE4",
+
+        blue:
+            "2F62B3",
+
+        lightBlue:
+            "E8F0FB",
+
+        gray:
+            "F4F6F8",
+
+        border:
+            "D6DCE1",
+
+        white:
+            "FFFFFF",
+
+        darkText:
+            "263238",
+
+        prod:
+            "1E8449",
+
+        nonProd:
+            "E67E22",
+
+        prodLoss:
+            "C0392B",
+
+        training:
+            "6C5CE7",
+
+        teams:
+            "237A4B",
+
+        members:
+            "2F62B3"
+
+    };
+
+
+    // =====================================================
+    // COMMON BORDER
+    // =====================================================
+
+    const thinBorder = {
+
+        top: {
+            style: "thin",
+            color: {
+                rgb: COLORS.border
+            }
+        },
+
+        bottom: {
+            style: "thin",
+            color: {
+                rgb: COLORS.border
+            }
+        },
+
+        left: {
+            style: "thin",
+            color: {
+                rgb: COLORS.border
+            }
+        },
+
+        right: {
+            style: "thin",
+            color: {
+                rgb: COLORS.border
+            }
+        }
+
+    };
+
+
+    // =====================================================
+    // HELPER: STYLE RANGE
+    // =====================================================
+
+    function styleRange(
+        sheet,
+        range,
+        style
+    ) {
+
+        const decodedRange =
+            XLSX.utils.decode_range(
+                range
+            );
+
+
+        for (
+            let row = decodedRange.s.r;
+            row <= decodedRange.e.r;
+            row++
+        ) {
+
+            for (
+                let column = decodedRange.s.c;
+                column <= decodedRange.e.c;
+                column++
+            ) {
+
+                const cellAddress =
+                    XLSX.utils.encode_cell({
+                        r: row,
+                        c: column
+                    });
+
+
+                if (
+                    !sheet[cellAddress]
+                ) {
+
+                    sheet[cellAddress] = {
+                        t: "s",
+                        v: ""
+                    };
+
+                }
+
+
+                sheet[cellAddress].s = {
+
+                    ...(
+                        sheet[cellAddress].s ||
+                        {}
+                    ),
+
+                    ...style
+
+                };
+
+            }
+
+        }
+
+    }
+
+
+    // =====================================================
+    // HELPER: STYLE TABLE
+    // =====================================================
+
+    function styleTable(
+        sheet,
+        lastRow,
+        lastColumn
+    ) {
+
+        styleRange(
+            sheet,
+            `A1:${lastColumn}1`,
+            {
+
+                fill: {
+                    fgColor: {
+                        rgb: COLORS.darkGreen
+                    }
+                },
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb: COLORS.white
+                    },
+                    sz: 11
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+
+                border:
+                    thinBorder
+
+            }
+        );
+
+
+        for (
+            let row = 2;
+            row <= lastRow;
+            row++
+        ) {
+
+            styleRange(
+                sheet,
+                `A${row}:${lastColumn}${row}`,
+                {
+
+                    fill: {
+
+                        fgColor: {
+
+                            rgb:
+                                row % 2 === 0
+                                    ? COLORS.white
+                                    : COLORS.gray
+
+                        }
+
+                    },
+
+                    font: {
+
+                        color: {
+                            rgb: COLORS.darkText
+                        },
+
+                        sz: 10
+
+                    },
+
+                    alignment: {
+                        vertical: "center"
+                    },
+
+                    border:
+                        thinBorder
+
+                }
+            );
+
+        }
+
+    }
+
+
+    // =====================================================
+    // CALCULATE PROFILING TOTALS
+    // =====================================================
+
+    const totalTeamsSeconds =
+        profilingData.reduce(
+            (
+                total,
+                record
+            ) =>
+                total +
+                Number(
+                    record.teamSeconds ||
+                    0
+                ),
+            0
+        );
+
+
+    const totalMembersSeconds =
+        profilingData.reduce(
+            (
+                total,
+                record
+            ) =>
+                total +
+                Number(
+                    record.membersSeconds ||
+                    0
+                ),
+            0
+        );
+
+
+    const totalProfilingSeconds =
+        profilingData.reduce(
+            (
+                total,
+                record
+            ) =>
+                total +
+                Number(
+                    record.totalSeconds ||
+                    0
+                ),
+            0
+        );
+
+
+    const profilingBreakdownTotal =
+        totalTeamsSeconds +
+        totalMembersSeconds;
+
+    const inconsistentProfilingCount =
+        profilingData.filter(
+            record =>
+                record.accuracyStatus ===
+                "INCONSISTENT"
+        ).length;
+
+    const legacyRecoveredCount =
+        profilingData.filter(
+            record =>
+                record.wasLegacyMatched
+        ).length;
+
+
+
+    // =====================================================
+    // PROFILING PERCENTAGES
+    // =====================================================
+
+    const teamsPercentage =
+        profilingBreakdownTotal > 0
+            ? (
+                totalTeamsSeconds /
+                profilingBreakdownTotal
+            ) * 100
+            : 0;
+
+
+    const membersPercentage =
+        profilingBreakdownTotal > 0
+            ? (
+                totalMembersSeconds /
+                profilingBreakdownTotal
+            ) * 100
+            : 0;
+
+
+    // =====================================================
+    // CALCULATE WORK ACTIVITY TOTALS
+    // =====================================================
+
+        const totalWorkActivitySeconds =
+            workActivityData.reduce(
+                (
+                    total,
+                    record
+                ) =>
+                    total +
+                    Number(
+                        record.duration_seconds ||
+                        0
+                    ),
+                0
+            ) +
+            totalProfilingSeconds;
+
+
+    // =====================================================
+    // WORK ACTIVITY CATEGORIES
+    // =====================================================
+
+    const activityCategories = [
+
+        "PROD",
+        "NON-PROD",
+        "PROD LOSS",
+        "TRAINING"
+
+    ];
+
+
+    const activityCategoryTotals = {
+
+        "PROD": 0,
+
+        "NON-PROD": 0,
+
+        "PROD LOSS": 0,
+
+        "TRAINING": 0
+
+    };
+
+
+        workActivityData.forEach(
+            record => {
+
+                const category =
+                    String(
+                        record.category ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        activityCategoryTotals,
+                        category
+                    )
+                ) {
+
+                    activityCategoryTotals[
+                        category
+                    ] +=
+                        Number(
+                            record.duration_seconds ||
+                            0
+                        );
+
+                }
+
+            }
+        );
+
+
+// =====================================================
+// PROFILING TIME COUNTS AS PROD
+// =====================================================
+
+activityCategoryTotals.PROD +=
+    totalProfilingSeconds;
+
+
+    // =====================================================
+    // GET APPLIED FILTERS
+    // =====================================================
+
+    const selectedAnalyst =
+        analystFilter?.options[
+            analystFilter.selectedIndex
+        ]?.text ||
+        "All Analysts";
+
+
+    const selectedCategory =
+        workActivityCategoryFilter?.options[
+            workActivityCategoryFilter.selectedIndex
+        ]?.text ||
+        "All Categories";
+
+
+    const selectedTeam =
+        teamSearch?.value?.trim() ||
+        "All Teams";
+
+
+    const selectedFromDate =
+        fromDate?.value ||
+        "Not specified";
+
+
+    const selectedToDate =
+        toDate?.value ||
+        "Not specified";
+
+
+    // =====================================================
+    // CREATE WORKBOOK
+    // =====================================================
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    // =====================================================
+    // REPORT SUMMARY DATA
+    // =====================================================
+
+    const generatedDate =
+        new Date();
+
+
+    const summaryRows = [
+
+        // =================================================
+        // TITLE
+        // =================================================
+
+        [
+            "TICKY TICKY PRODUCTIVITY REPORT",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Executive Productivity Summary",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [],
+
+
+        // =================================================
+        // REPORT INFORMATION
+        // =================================================
+
+        [
+            "REPORT INFORMATION",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Generated",
+            formatDateTime(
+                generatedDate.toISOString()
+            ),
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Reporting Scope",
+            "Filtered Report Data",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [],
+
+
+        // =================================================
+        // KEY PERFORMANCE SUMMARY
+        // =================================================
+
+        [
+            "DATA ACCURACY",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Inconsistent Profiling Records",
+            inconsistentProfilingCount,
+            "",
+            "Legacy-Recovered Records",
+            legacyRecoveredCount,
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "KEY PERFORMANCE SUMMARY",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Total Profiling Sessions",
+            profilingData.length,
+            "",
+            "Total Profiling Time",
+            formatDuration(
+                totalProfilingSeconds
+            ),
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Total Work Activities",
+            workActivityData.length,
+            "",
+            "Total Work Activity Time",
+            formatDuration(
+                totalWorkActivitySeconds
+            ),
+            "",
+            "",
+            ""
+        ],
+
+        [],
+
+
+        // =================================================
+        // PROFILING TIME BREAKDOWN
+        // =================================================
+
+        [
+            "PROFILING TIME BREAKDOWN",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Profiling Type",
+            "Duration",
+            "% of Profiling Time",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "TEAMS",
+            formatDuration(
+                totalTeamsSeconds
+            ),
+            `${teamsPercentage.toFixed(1)}%`,
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "MEMBERS",
+            formatDuration(
+                totalMembersSeconds
+            ),
+            `${membersPercentage.toFixed(1)}%`,
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [],
+
+
+        // =================================================
+        // WORK ACTIVITY BREAKDOWN
+        // =================================================
+
+        [
+            "WORK ACTIVITY BREAKDOWN",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Category",
+            "Duration",
+            "% of Work Time",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+
+    ];
+
+
+    // =====================================================
+    // ADD WORK ACTIVITY BREAKDOWN DATA
+    // =====================================================
+
+    activityCategories.forEach(
+        category => {
+
+            const categorySeconds =
+                activityCategoryTotals[
+                    category
+                ] ||
+                0;
+
+
+            const percentage =
+                totalWorkActivitySeconds > 0
+                    ? (
+                        categorySeconds /
+                        totalWorkActivitySeconds
+                    ) * 100
+                    : 0;
+
+
+            summaryRows.push(
+                [
+
+                    category,
+
+                    formatDuration(
+                        categorySeconds
+                    ),
+
+                    `${percentage.toFixed(1)}%`,
+
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+
+                ]
+            );
+
+        }
+    );
+
+
+    // =====================================================
+    // ADD FILTERS
+    // =====================================================
+
+    summaryRows.push(
+
+        [],
+
+
+        [
+            "APPLIED FILTERS",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Analyst",
+            selectedAnalyst,
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Activity Category",
+            selectedCategory,
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "Team Search",
+            selectedTeam,
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "From Date",
+            selectedFromDate,
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+
+        [
+            "To Date",
+            selectedToDate,
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+
+    );
+
+
+    // =====================================================
+    // CREATE SUMMARY SHEET
+    // =====================================================
+
+    const summarySheet =
+        XLSX.utils.aoa_to_sheet(
+            summaryRows
+        );
+
+
+    // =====================================================
+    // SUMMARY MERGES
+    // =====================================================
+
+    summarySheet["!merges"] = [
+
+        XLSX.utils.decode_range(
+            "A1:H1"
+        ),
+
+        XLSX.utils.decode_range(
+            "A2:H2"
+        ),
+
+        XLSX.utils.decode_range(
+            "A4:H4"
+        ),
+
+        XLSX.utils.decode_range(
+            "A8:H8"
+        ),
+
+        XLSX.utils.decode_range(
+            "A12:H12"
+        ),
+
+        XLSX.utils.decode_range(
+            "A17:H17"
+        ),
+
+        XLSX.utils.decode_range(
+            "A24:H24"
+        )
+
+    ];
+
+
+    // =====================================================
+    // SUMMARY COLUMN WIDTHS
+    // =====================================================
+
+    summarySheet["!cols"] = [
+
+        { wch: 28 },
+        { wch: 24 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 }
+
+    ];
+
+
+    // =====================================================
+    // SUMMARY ROW HEIGHTS
+    // =====================================================
+
+    summarySheet["!rows"] = [
+
+        { hpt: 32 },
+        { hpt: 24 },
+        { hpt: 8 },
+        { hpt: 22 },
+        { hpt: 20 },
+        { hpt: 20 },
+        { hpt: 8 },
+        { hpt: 22 },
+        { hpt: 24 },
+        { hpt: 24 },
+        { hpt: 8 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 8 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 22 },
+        { hpt: 8 },
+        { hpt: 22 }
+
+    ];
+
+
+    // =====================================================
+    // MAIN TITLE
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A1:H1",
+        {
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.darkGreen
+                }
+            },
+
+            font: {
+                bold: true,
+                color: {
+                    rgb: COLORS.white
+                },
+                sz: 20
+            },
+
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // SUBTITLE
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A2:H2",
+        {
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.green
+                }
+            },
+
+            font: {
+                bold: true,
+                color: {
+                    rgb: COLORS.white
+                },
+                sz: 12
+            },
+
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // SECTION HEADINGS
+    // =====================================================
+
+    [
+        "A4:H4",
+        "A8:H8",
+        "A10:H10",
+        "A14:H14",
+        "A19:H19",
+        "A26:H26"
+    ].forEach(
+        range => {
+
+            styleRange(
+                summarySheet,
+                range,
+                {
+
+                    fill: {
+                        fgColor: {
+                            rgb: COLORS.blue
+                        }
+                    },
+
+                    font: {
+                        bold: true,
+                        color: {
+                            rgb: COLORS.white
+                        },
+                        sz: 11
+                    },
+
+                    alignment: {
+                        horizontal: "left",
+                        vertical: "center"
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    // =====================================================
+    // REPORT INFORMATION
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A5:B6",
+        {
+
+            border:
+                thinBorder,
+
+            alignment: {
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    [
+        "A5",
+        "A6"
+    ].forEach(
+        cell => {
+
+            summarySheet[cell].s = {
+
+                ...summarySheet[cell].s,
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb: COLORS.darkText
+                    }
+                },
+
+                fill: {
+                    fgColor: {
+                        rgb: COLORS.gray
+                    }
+                }
+
+            };
+
+        }
+    );
+
+
+    // =====================================================
+    // KPI CARDS
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A11:B12",
+        {
+
+            border:
+                thinBorder,
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.lightGreen
+                }
+            },
+
+            alignment: {
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    styleRange(
+        summarySheet,
+        "D11:E12",
+        {
+
+            border:
+                thinBorder,
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.lightBlue
+                }
+            },
+
+            alignment: {
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    [
+        "A9",
+        "A10",
+        "D9",
+        "D10"
+    ].forEach(
+        cell => {
+
+            summarySheet[cell].s = {
+
+                ...summarySheet[cell].s,
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb: COLORS.darkText
+                    }
+                }
+
+            };
+
+        }
+    );
+
+
+    [
+        "B9",
+        "B10",
+        "E9",
+        "E10"
+    ].forEach(
+        cell => {
+
+            summarySheet[cell].s = {
+
+                ...summarySheet[cell].s,
+
+                font: {
+                    bold: true,
+                    sz: 12,
+                    color: {
+                        rgb: COLORS.darkGreen
+                    }
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+
+            };
+
+        }
+    );
+
+
+    // =====================================================
+    // PROFILING BREAKDOWN TABLE
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A15:C15",
+        {
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.darkGreen
+                }
+            },
+
+            font: {
+                bold: true,
+                color: {
+                    rgb: COLORS.white
+                }
+            },
+
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            },
+
+            border:
+                thinBorder
+
+        }
+    );
+
+
+    styleRange(
+        summarySheet,
+        "A16:C17",
+        {
+
+            border:
+                thinBorder,
+
+            alignment: {
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    // TEAMS ROW
+
+    summarySheet["A16"].s = {
+
+        ...summarySheet["A16"].s,
+
+        fill: {
+            fgColor: {
+                rgb: COLORS.lightGreen
+            }
+        },
+
+        font: {
+            bold: true,
+            color: {
+                rgb: COLORS.darkText
+            }
+        }
+
+    };
+
+
+    summarySheet["B16"].s = {
+
+        ...summarySheet["B16"].s,
+
+        font: {
+            bold: true,
+            color: {
+                rgb: COLORS.teams
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+
+    };
+
+
+    summarySheet["C16"].s = {
+
+        ...summarySheet["C16"].s,
+
+        font: {
+            bold: true
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+
+    };
+
+
+    // MEMBERS ROW
+
+    summarySheet["A17"].s = {
+
+        ...summarySheet["A17"].s,
+
+        fill: {
+            fgColor: {
+                rgb: COLORS.lightBlue
+            }
+        },
+
+        font: {
+            bold: true,
+            color: {
+                rgb: COLORS.darkText
+            }
+        }
+
+    };
+
+
+    summarySheet["B17"].s = {
+
+        ...summarySheet["B17"].s,
+
+        font: {
+            bold: true,
+            color: {
+                rgb: COLORS.members
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+
+    };
+
+
+    summarySheet["C17"].s = {
+
+        ...summarySheet["C17"].s,
+
+        font: {
+            bold: true
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+
+    };
+
+
+    // =====================================================
+    // WORK ACTIVITY TABLE HEADER
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A20:C20",
+        {
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.darkGreen
+                }
+            },
+
+            font: {
+                bold: true,
+                color: {
+                    rgb: COLORS.white
+                }
+            },
+
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            },
+
+            border:
+                thinBorder
+
+        }
+    );
+
+
+    // =====================================================
+    // WORK ACTIVITY BREAKDOWN ROWS
+    // =====================================================
+
+    const categoryRowMap = {
+
+        "PROD": 19,
+
+        "NON-PROD": 20,
+
+        "PROD LOSS": 21,
+
+        "TRAINING": 22
+
+    };
+
+
+    const categoryColorMap = {
+
+        "PROD":
+            COLORS.prod,
+
+        "NON-PROD":
+            COLORS.nonProd,
+
+        "PROD LOSS":
+            COLORS.prodLoss,
+
+        "TRAINING":
+            COLORS.training
+
+    };
+
+
+    activityCategories.forEach(
+        category => {
+
+            const row =
+                categoryRowMap[
+                    category
+                ];
+
+
+            styleRange(
+                summarySheet,
+                `A${row}:C${row}`,
+                {
+
+                    border:
+                        thinBorder,
+
+                    alignment: {
+                        vertical: "center"
+                    }
+
+                }
+            );
+
+
+            // CATEGORY
+
+            summarySheet[
+                `A${row}`
+            ].s = {
+
+                ...summarySheet[
+                    `A${row}`
+                ].s,
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb: COLORS.darkText
+                    }
+                }
+
+            };
+
+
+            // DURATION
+
+            summarySheet[
+                `B${row}`
+            ].s = {
+
+                ...summarySheet[
+                    `B${row}`
+                ].s,
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb:
+                            categoryColorMap[
+                                category
+                            ]
+                    }
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+
+            };
+
+
+            // PERCENTAGE
+
+            summarySheet[
+                `C${row}`
+            ].s = {
+
+                ...summarySheet[
+                    `C${row}`
+                ].s,
+
+                font: {
+                    bold: true
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+
+            };
+
+        }
+    );
+
+
+    // =====================================================
+    // APPLIED FILTERS
+    // =====================================================
+
+    styleRange(
+        summarySheet,
+        "A27:B31",
+        {
+
+            border:
+                thinBorder,
+
+            alignment: {
+                vertical: "center"
+            }
+
+        }
+    );
+
+
+    for (
+        let row = 27;
+        row <= 31;
+        row++
+    ) {
+
+        const labelCell =
+            `A${row}`;
+
+
+        summarySheet[
+            labelCell
+        ].s = {
+
+            ...summarySheet[
+                labelCell
+            ].s,
+
+            font: {
+                bold: true,
+                color: {
+                    rgb: COLORS.darkText
+                }
+            },
+
+            fill: {
+                fgColor: {
+                    rgb: COLORS.gray
+                }
+            }
+
+        };
+
+    }
+
+
+    // =====================================================
+    // ADD SUMMARY SHEET
+    // =====================================================
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        summarySheet,
+        "Report Summary"
+    );
+
+
+    // =====================================================
+    // PRODUCTIVITY DATA
+    // =====================================================
+
+    const productivityRows = [
+
+        [
+            "Analyst",
+            "Team",
+            "Team ID",
+            "Members",
+            "Teams Time",
+            "Members Time",
+            "Total Time",
+            "Data Check",
+            "Completed"
+        ],
+
+        ...profilingData.map(
+            record => [
+
+                record.analystName ||
+                "Unknown Analyst",
+
+                record.team_name ||
+                "",
+
+                record.team_id ||
+                "",
+
+                Number(
+                    record.member_count ||
+                    0
+                ),
+
+                excelDuration(
+                    Number(
+                        record.teamSeconds ||
+                        0
+                    )
+                ),
+
+                excelDuration(
+                    Number(
+                        record.membersSeconds ||
+                        0
+                    )
+                ),
+
+                excelDuration(
+                    Number(
+                        record.totalSeconds ||
+                        0
+                    )
+                ),
+
+                record.accuracyStatus ||
+                "UNKNOWN",
+
+                formatDateTime(
+                    record.finished_at
+                )
+
+            ]
+        )
+
+    ];
+
+
+    const productivitySheet =
+        XLSX.utils.aoa_to_sheet(
+            productivityRows
+        );
+
+        for (
+            let row = 2;
+            row <= productivityRows.length;
+            row++
+        ) {
+            [
+                `E${row}`,
+                `F${row}`,
+                `G${row}`
+            ].forEach(
+                cell => {
+
+                    if (
+                        productivitySheet[cell]
+                    ) {
+                        productivitySheet[cell].z =
+                            "[h]:mm:ss";
+                    }
+
+                }
+            );
+        }        
+
+
+    // =====================================================
+    // PRODUCTIVITY DESIGN
+    // =====================================================
+
+    productivitySheet["!freeze"] = {
+
+        xSplit: 0,
+        ySplit: 1
+
+    };
+
+
+    productivitySheet["!autofilter"] = {
+
+        ref:
+            `A1:I${productivityRows.length}`
+
+    };
+
+
+    styleTable(
+        productivitySheet,
+        productivityRows.length,
+        "I"
+    );
+
+
+    productivitySheet["!cols"] = [
+
+        { wch: 24 },
+        { wch: 38 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 24 }
+
+    ];
+
+
+    productivitySheet["!rows"] = [
+
+        { hpt: 24 }
+
+    ];
+
+
+    for (
+        let row = 2;
+        row <= productivityRows.length;
+        row++
+    ) {
+
+        [
+            `C${row}`,
+            `D${row}`,
+            `E${row}`,
+            `F${row}`,
+            `G${row}`,
+            `I${row}`
+        ].forEach(
+            cell => {
+
+                if (
+                    productivitySheet[cell]
+                ) {
+
+                    productivitySheet[cell].s = {
+
+                        ...productivitySheet[cell].s,
+
+                        alignment: {
+                            horizontal: "center",
+                            vertical: "center"
+                        }
+
+                    };
+
+                }
+
+            }
+        );
+
+    }
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        productivitySheet,
+        "Productivity Data"
+    );
+
+
+    // =====================================================
+    // WORK ACTIVITY LOGS DATA
+    // =====================================================
+
+    const workActivityRows = [
+
+        [
+            "Analyst",
+            "Category",
+            "Task",
+            "Duration",
+            "Live Timer",
+            "Justification",
+            "Started",
+            "Completed"
+        ],
+
+        ...workActivityData.map(
+            record => [
+
+                record.analystName ||
+                "Unknown Analyst",
+
+                record.category ||
+                "",
+
+                record.task_name ||
+                "",
+
+                excelDuration(
+                    Number(
+                        record.duration_seconds ||
+                        0
+                    )
+                ),
+
+                excelDuration(
+                    Number(
+                        record.live_duration_seconds ??
+                        record.duration_seconds ??
+                        0
+                    )
+                ),
+
+                record.justification ||
+                "",
+
+                formatDateTime(
+                    record.started_at
+                ),
+
+                formatDateTime(
+                    record.ended_at
+                )
+
+            ]
+        )
+
+    ];
+
+
+    const workActivitySheet =
+        XLSX.utils.aoa_to_sheet(
+            workActivityRows
+        );
+
+        for (
+                let row = 2;
+                row <= workActivityRows.length;
+                row++
+            ) {
+                if (workActivitySheet[`D${row}`]) {
+                    workActivitySheet[`D${row}`].z = "[h]:mm:ss";
+                }
+                if (workActivitySheet[`E${row}`]) {
+                    workActivitySheet[`E${row}`].z = "[h]:mm:ss";
+                }
+            }
+
+
+    // =====================================================
+    // WORK ACTIVITY LOGS DESIGN
+    // =====================================================
+
+    workActivitySheet["!freeze"] = {
+
+        xSplit: 0,
+        ySplit: 1
+
+    };
+
+
+    workActivitySheet["!autofilter"] = {
+
+        ref:
+            `A1:H${workActivityRows.length}`
+
+    };
+
+
+    styleTable(
+        workActivitySheet,
+        workActivityRows.length,
+        "F"
+    );
+
+
+    workActivitySheet["!cols"] = [
+
+        { wch: 24 },
+        { wch: 18 },
+        { wch: 38 },
+        { wch: 16 },
+        { wch: 24 },
+        { wch: 24 }
+
+    ];
+
+
+    workActivitySheet["!rows"] = [
+
+        { hpt: 24 }
+
+    ];
+
+
+    // =====================================================
+    // CATEGORY COLORS
+    // =====================================================
+
+    for (
+        let row = 2;
+        row <= workActivityRows.length;
+        row++
+    ) {
+
+        const category =
+            String(
+                workActivitySheet[
+                    `B${row}`
+                ]?.v ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        let categoryColor =
+            null;
+
+
+        if (
+            category === "PROD"
+        ) {
+
+            categoryColor =
+                COLORS.prod;
+
+        }
+
+        else if (
+            category === "NON-PROD"
+        ) {
+
+            categoryColor =
+                COLORS.nonProd;
+
+        }
+
+        else if (
+            category === "PROD LOSS"
+        ) {
+
+            categoryColor =
+                COLORS.prodLoss;
+
+        }
+
+        else if (
+            category === "TRAINING"
+        ) {
+
+            categoryColor =
+                COLORS.training;
+
+        }
+
+
+        if (
+            categoryColor &&
+            workActivitySheet[
+                `B${row}`
+            ]
+        ) {
+
+            workActivitySheet[
+                `B${row}`
+            ].s = {
+
+                ...workActivitySheet[
+                    `B${row}`
+                ].s,
+
+                fill: {
+                    fgColor: {
+                        rgb: categoryColor
+                    }
+                },
+
+                font: {
+                    bold: true,
+                    color: {
+                        rgb: COLORS.white
+                    }
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+
+            };
+
+        }
+
+
+        if (
+            workActivitySheet[
+                `D${row}`
+            ]
+        ) {
+
+            workActivitySheet[
+                `D${row}`
+            ].s = {
+
+                ...workActivitySheet[
+                    `D${row}`
+                ].s,
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+
+                font: {
+                    bold: true
+                }
+
+            };
+
+        }
+
+    }
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        workActivitySheet,
+        "Work Activity Logs"
+    );
+
+
+// =====================================================
+// SEND FINISHED XLSX TO CHART SERVER
+// =====================================================
+
+const xlsxArrayBuffer =
+    XLSX.write(
+        workbook,
+        {
+            bookType: "xlsx",
+            type: "array"
+        }
+    );
+
+
+const xlsxBytes =
+    new Uint8Array(
+        xlsxArrayBuffer
+    );
+
+
+let binary =
+    "";
+
+for (
+    let i = 0;
+    i < xlsxBytes.length;
+    i++
+) {
+
+    binary += String.fromCharCode(
+        xlsxBytes[i]
+    );
+
+}
+
+
+const xlsxBase64 =
+    btoa(
+        binary
+    );
+
+
+// =====================================================
+// SEND TO SERVER
+// =====================================================
+
+const response =
+    await fetch(
+        "https://ticky-ticky-excel-server.onrender.com/add-charts",
+        {
+
+            method:
+                "POST",
+
+            headers: {
+
+                "Content-Type":
+                    "application/json"
+
+            },
+
+            body:
+                JSON.stringify({
+
+                    xlsx:
+                        xlsxBase64
+
+                })
+
+        }
+    );
+
+
+        if (
+            !response.ok
+        ) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(
+                errorText ||
+                "Excel chart server failed."
+            );
+
+        }
+
+
+        // =====================================================
+        // RECEIVE FINAL XLSX
+        // =====================================================
+
+        const finalBlob =
+            await response.blob();
+
+
+        // =====================================================
+        // DOWNLOAD FINAL FILE
+        // =====================================================
+
+        const downloadUrl =
+            URL.createObjectURL(
+                finalBlob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            downloadUrl;
+
+
+        link.download =
+            `ticky-ticky-report-${getDateStamp()}.xlsx`;
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        URL.revokeObjectURL(
+            downloadUrl
+        );
+
+}
+
+// =========================================================
+// EXCEL ALTERNATING ROW STYLE
+// =========================================================
+
+// =========================================================
 // ELEMENTS
 // =========================================================
 
@@ -4256,316 +6614,125 @@ function updateSortIndicators() {
 // =========================================================
 
 function renderAnalystChart(
-    profilingRecords,
+    profilingRecords = [],
     workRecords = []
 ) {
 
-    if (!analystChart) {
-        return;
-    }
-
+    if (!analystChart) return;
 
     const analystTotals = new Map();
 
-
-    function ensureAnalyst(name) {
-
-        if (!analystTotals.has(name)) {
-            analystTotals.set(name, {
+    const ensureAnalyst = name => {
+        const safeName = String(name || "Unknown Analyst").trim() || "Unknown Analyst";
+        if (!analystTotals.has(safeName)) {
+            analystTotals.set(safeName, {
                 profiling: 0,
                 prod: 0,
                 nonProd: 0,
-                otherWork: 0
+                prodLoss: 0,
+                training: 0
             });
         }
-
-        return analystTotals.get(name);
-
-    }
-
+        return analystTotals.get(safeName);
+    };
 
     (profilingRecords || []).forEach(record => {
-
-        const name =
-            record.analystName ||
-            "Unknown Analyst";
-
-        ensureAnalyst(name).profiling +=
-            Number(record.totalSeconds || 0);
-
+        const name = record.analystName || record.analyst_name || record.full_name || record.analyst_id || "Unknown Analyst";
+        ensureAnalyst(name).profiling += Math.max(0, Number(record.totalSeconds || record.total_seconds || 0));
     });
-
 
     (workRecords || []).forEach(record => {
+        const name = record.analystName || record.analyst_name || record.full_name || record.analyst_id || "Unknown Analyst";
+        const category = String(record.category || "").trim().toUpperCase();
+        const seconds = Math.max(0, Number(record.duration_seconds || 0));
+        const totals = ensureAnalyst(name);
 
-        const name =
-            record.analystName ||
-            "Unknown Analyst";
-
-        const category =
-            String(record.category || "")
-                .trim()
-                .toUpperCase();
-
-        const seconds =
-            Number(record.duration_seconds || 0);
-
-        const totals =
-            ensureAnalyst(name);
-
-        if (category === "PROD") {
-            totals.prod += seconds;
-        } else if (category === "NON-PROD") {
-            totals.nonProd += seconds;
-        } else {
-            totals.otherWork += seconds;
-        }
-
+        if (category === "PROD" || category === "PRODUCTION") totals.prod += seconds;
+        else if (["NON-PROD", "NON PRODUCTION", "NON-PRODUCTION", "NON-PROD ACTIVITIES"].includes(category)) totals.nonProd += seconds;
+        else if (["PROD LOSS", "PRODUCTION LOSS", "PROD_LOSS"].includes(category)) totals.prodLoss += seconds;
+        else if (category === "TRAINING") totals.training += seconds;
     });
 
+    const rows = [...analystTotals.entries()]
+        .map(([name, values]) => ({
+            name,
+            ...values,
+            total: values.profiling + values.prod + values.nonProd + values.prodLoss + values.training
+        }))
+        .filter(row => row.total > 0)
+        .sort((a, b) => b.total - a.total);
 
-    const rows =
-        [...analystTotals.entries()]
-            .map(([name, totals]) => ({
-                name,
-                ...totals,
-                total:
-                    totals.profiling +
-                    totals.prod +
-                    totals.nonProd +
-                    totals.otherWork
-            }))
-            .filter(row => row.total > 0)
-            .sort((a, b) => b.total - a.total);
-
-
-    if (rows.length === 0) {
-
-        analystChart.innerHTML = `
-            <div class="chart-empty"
-                style="
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    min-height:220px;
-                    color:var(--text-secondary);
-                    font-size:14px;
-                "
-            >
-                No productivity data available for the selected filters.
-            </div>
-        `;
-
+    if (!rows.length) {
+        analystChart.innerHTML = `<div class="chart-empty analyst-chart-empty">No productivity data available for the selected filters.</div>`;
         return;
     }
 
+    const series = [
+        { key: "profiling", label: "Profiling", className: "profiling-chart-segment" },
+        { key: "prod", label: "PROD activity", className: "prod-chart-segment" },
+        { key: "nonProd", label: "NON-PROD", className: "nonprod-chart-segment" },
+        { key: "prodLoss", label: "PROD LOSS", className: "prod-loss-chart-segment" },
+        { key: "training", label: "TRAINING", className: "training-chart-segment" }
+    ];
 
-    const maximum =
-        Math.max(
-            ...rows.map(row => row.total),
-            1
-        );
+    const maxValue = Math.max(1, ...rows.flatMap(row => series.map(item => row[item.key])));
+    const axisMax = Math.max(3600, Math.ceil(maxValue / 3600) * 3600);
+    const chartHeight = 300;
+    const groupWidth = rows.length > 8 ? 138 : 124;
 
-
-    const formatSegment =
-        (seconds, label, className) => {
-
-            if (seconds <= 0) {
-                return "";
-            }
-
-            const width =
-                (seconds / maximum) * 100;
-
-            return `
-                <div
-                    class="${className}"
-                    style="
-                        width:${width}%;
-                        height:100%;
-                        min-width:2px;
-                    "
-                    title="${label}: ${formatDuration(seconds)}"
-                ></div>
-            `;
-
-        };
-
+    const formatAxisDuration = seconds => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return hours > 0 ? `${hours}h` : `${minutes}m`;
+    };
 
     analystChart.innerHTML = `
-        <div
-            style="
-                width:100%;
-                padding:8px 4px 4px;
-                box-sizing:border-box;
-            "
-        >
+        <div class="analyst-grouped-chart">
+            <div class="analyst-chart-legend">
+                ${series.map(item => `
+                    <span class="analyst-chart-legend-item">
+                        <i class="analyst-chart-dot ${item.className}"></i>${item.label}
+                    </span>
+                `).join("")}
+            </div>
 
-            ${rows.map((row, index) => {
-
-                const share =
-                    rows.reduce(
-                        (sum, item) => sum + item.total,
-                        0
-                    ) > 0
-                        ? (
-                            row.total /
-                            rows.reduce(
-                                (sum, item) => sum + item.total,
-                                0
-                            )
-                        ) * 100
-                        : 0;
-
-                return `
-                    <div style="margin-bottom:18px;">
-
-                        <div
-                            style="
-                                display:flex;
-                                justify-content:space-between;
-                                align-items:center;
-                                gap:12px;
-                                margin-bottom:7px;
-                            "
-                        >
-
-                            <div
-                                style="
-                                    display:flex;
-                                    align-items:center;
-                                    gap:8px;
-                                    min-width:0;
-                                    flex:1;
-                                "
-                            >
-
-                                <span
-                                    style="
-                                        min-width:24px;
-                                        height:24px;
-                                        display:flex;
-                                        align-items:center;
-                                        justify-content:center;
-                                        border-radius:50%;
-                                        background:var(--light-green);
-                                        color:var(--primary-green);
-                                        font-size:11px;
-                                        font-weight:800;
-                                    "
-                                >
-                                    ${index + 1}
-                                </span>
-
-                                <span
-                                    style="
-                                        overflow:hidden;
-                                        text-overflow:ellipsis;
-                                        white-space:nowrap;
-                                        color:var(--text-primary);
-                                        font-size:13px;
-                                        font-weight:700;
-                                    "
-                                    title="${escapeHtml(row.name)}"
-                                >
-                                    ${escapeHtml(row.name)}
-                                </span>
-
+            <div class="analyst-chart-scroll">
+                <div class="analyst-chart-canvas" style="min-width:${Math.max(720, rows.length * groupWidth + 60)}px;height:${chartHeight + 72}px;">
+                    <div class="analyst-chart-y-axis" style="height:${chartHeight}px;">
+                        ${[1, .75, .5, .25, 0].map(ratio => `
+                            <div class="analyst-chart-y-tick" style="top:${(1-ratio) * 100}%">
+                                <span>${formatAxisDuration(axisMax * ratio)}</span><i></i>
                             </div>
-
-                            <div
-                                style="
-                                    display:flex;
-                                    align-items:center;
-                                    gap:8px;
-                                    white-space:nowrap;
-                                "
-                            >
-                                <span
-                                    style="
-                                        color:var(--text-secondary);
-                                        font-size:11px;
-                                    "
-                                >
-                                    ${share.toFixed(1)}%
-                                </span>
-
-                                <strong
-                                    style="
-                                        color:var(--text-primary);
-                                        font-size:13px;
-                                    "
-                                >
-                                    ${formatDuration(row.total)}
-                                </strong>
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            style="
-                                width:100%;
-                                height:14px;
-                                background:var(--light-green);
-                                border-radius:999px;
-                                overflow:hidden;
-                                display:flex;
-                            "
-                        >
-                            ${formatSegment(
-                                row.profiling,
-                                "Profiling",
-                                "profiling-chart-segment"
-                            )}
-
-                            ${formatSegment(
-                                row.prod,
-                                "PROD",
-                                "prod-chart-segment"
-                            )}
-
-                            ${formatSegment(
-                                row.nonProd,
-                                "NON-PROD",
-                                "nonprod-chart-segment"
-                            )}
-
-                            ${formatSegment(
-                                row.otherWork,
-                                "Other Work",
-                                "other-work-chart-segment"
-                            )}
-                        </div>
-
-                        <div
-                            style="
-                                display:flex;
-                                flex-wrap:wrap;
-                                gap:10px;
-                                margin-top:7px;
-                                font-size:10px;
-                                color:var(--text-secondary);
-                            "
-                        >
-                            <span>Profiling: ${formatDuration(row.profiling)}</span>
-                            <span>PROD: ${formatDuration(row.prod)}</span>
-                            <span>NON-PROD: ${formatDuration(row.nonProd)}</span>
-                            ${
-                                row.otherWork > 0
-                                    ? `<span>Other: ${formatDuration(row.otherWork)}</span>`
-                                    : ""
-                            }
-                        </div>
-
+                        `).join("")}
                     </div>
-                `;
 
-            }).join("")}
+                    <div class="analyst-chart-bars" style="height:${chartHeight}px;left:48px;">
+                        ${rows.map(row => `
+                            <div class="analyst-bar-group" style="width:${groupWidth}px;">
+                                <div class="analyst-bars" style="height:${chartHeight}px;">
+                                    ${series.map(item => {
+                                        const value = Number(row[item.key] || 0);
+                                        const height = value > 0 ? Math.max(3, (value / axisMax) * chartHeight) : 0;
+                                        return `
+                                            <div class="analyst-bar-wrap" title="${escapeHtml(item.label)}: ${escapeHtml(formatDuration(value))}">
+                                                <span class="analyst-bar-value">${value > 0 ? escapeHtml(formatDuration(value)) : ""}</span>
+                                                <div class="analyst-bar ${item.className}" style="height:${height}px"></div>
+                                            </div>
+                                        `;
+                                    }).join("")}
+                                </div>
+                                <div class="analyst-bar-label" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</div>
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            </div>
 
+            <div class="analyst-chart-note">
+                <strong>Production total = Profiling + PROD activity.</strong> Profiling remains separate in this chart because it is your main work, while the report's Production totals include both.
+            </div>
         </div>
     `;
-
 }
 
 
@@ -4839,3105 +7006,185 @@ function renderProductivityTrend(
         return;
     }
 
+    // Daily production/activity buckets.
+    // Profiling is Production, but remains a separate series so the
+    // report can show it as the main production work without double-counting.
+    const daily = new Map();
 
-    const dailyTotals = new Map();
-
-
-    function addDaily(dateKey, seconds) {
-
-        if (!dateKey || !seconds) {
-            return;
+    const ensureDay = dateKey => {
+        if (!dateKey) return null;
+        if (!daily.has(dateKey)) {
+            daily.set(dateKey, {
+                profiling: 0,
+                prod: 0,
+                nonProd: 0,
+                prodLoss: 0,
+                training: 0
+            });
         }
+        return daily.get(dateKey);
+    };
 
-        dailyTotals.set(
-            dateKey,
-            (dailyTotals.get(dateKey) || 0) +
-            Number(seconds || 0)
-        );
-
-    }
-
-
-    (profilingRecords || []).forEach(record => {
-
-        const breakdown =
-            record.dailyBreakdown || {};
-
-        Object.entries(breakdown).forEach(
-            ([dateKey, seconds]) =>
-                addDaily(dateKey, seconds)
-        );
-
-        // Legacy fallback when event history is unavailable.
-        if (
-            Object.keys(breakdown).length === 0 &&
-            record.finished_at
-        ) {
-
-            const date = new Date(record.finished_at);
-
-            if (!Number.isNaN(date.getTime())) {
-
-                const dateKey = [
-                    date.getFullYear(),
-                    String(date.getMonth() + 1).padStart(2, "0"),
-                    String(date.getDate()).padStart(2, "0")
-                ].join("-");
-
-                addDaily(
-                    dateKey,
-                    Number(record.totalSeconds || 0)
-                );
-
-            }
-
-        }
-
-    });
-
-
-    // Work activities are already stored with their actual
-    // duration. Their completion date is used for the daily
-    // report because the work log is a completed activity.
-    (workRecords || []).forEach(record => {
-
-        if (!record.ended_at) {
-            return;
-        }
-
-        const date = new Date(record.ended_at);
-
-        if (Number.isNaN(date.getTime())) {
-            return;
-        }
-
-        const dateKey = [
+    const dateKeyFrom = value => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return null;
+        return [
             date.getFullYear(),
             String(date.getMonth() + 1).padStart(2, "0"),
             String(date.getDate()).padStart(2, "0")
         ].join("-");
+    };
 
-        addDaily(
-            dateKey,
-            Number(record.duration_seconds || 0)
-        );
+    const normalizeCategory = value => {
+        const category = String(value || "").trim().toUpperCase();
+        if (category === "PROD" || category === "PRODUCTION") return "prod";
+        if (
+            category === "NON-PROD" ||
+            category === "NON PRODUCTION" ||
+            category === "NON-PRODUCTION" ||
+            category === "NON-PROD ACTIVITIES"
+        ) return "nonProd";
+        if (
+            category === "PROD LOSS" ||
+            category === "PRODUCTION LOSS" ||
+            category === "PROD_LOSS"
+        ) return "prodLoss";
+        if (category === "TRAINING") return "training";
+        return null;
+    };
 
+    (profilingRecords || []).forEach(record => {
+        const breakdown = record.dailyBreakdown || {};
+        const entries = Object.entries(breakdown);
+
+        if (entries.length) {
+            entries.forEach(([dateKey, seconds]) => {
+                const day = ensureDay(dateKey);
+                if (day) day.profiling += Math.max(0, Number(seconds) || 0);
+            });
+            return;
+        }
+
+        // Legacy fallback when daily event history is unavailable.
+        const dateKey = dateKeyFrom(record.finished_at || record.ended_at || record.stopped_at);
+        if (dateKey) {
+            const day = ensureDay(dateKey);
+            day.profiling += Math.max(0, Number(record.totalSeconds) || 0);
+        }
     });
 
+    (workRecords || []).forEach(record => {
+        if (!record.ended_at) return;
 
-    const rows =
-        [...dailyTotals.entries()]
-            .sort((a, b) => a[0].localeCompare(b[0]));
+        const dateKey = dateKeyFrom(record.ended_at);
+        const bucket = normalizeCategory(record.category);
+        if (!dateKey || !bucket) return;
 
+        const day = ensureDay(dateKey);
+        day[bucket] += Math.max(0, Number(record.duration_seconds) || 0);
+    });
 
-    if (rows.length === 0) {
+    const rows = [...daily.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]));
 
+    if (!rows.length) {
         productivityTrendChart.innerHTML = `
             <div class="chart-empty">
                 No productivity data available for the selected filters.
             </div>
         `;
-
         return;
     }
 
+    const series = [
+        { key: "profiling", label: "Profiling", className: "profiling-chart-segment" },
+        { key: "prod", label: "PROD activity", className: "prod-chart-segment" },
+        { key: "nonProd", label: "NON-PROD", className: "nonprod-chart-segment" },
+        { key: "prodLoss", label: "PROD LOSS", className: "prod-loss-chart-segment" },
+        { key: "training", label: "TRAINING", className: "training-chart-segment" }
+    ];
 
-    const maximum =
-        Math.max(
-            ...rows.map(row => row[1]),
-            1
-        );
+    const axisMax = Math.max(
+        ...rows.map(([, values]) => Math.max(...series.map(item => values[item.key]))),
+        1
+    );
 
+    // Keep the plotting area compact so bars never push outside the
+    // Reports card. The chart itself scrolls horizontally when the
+    // available viewport is narrower than the full timeline.
+    const chartHeight = 180;
+    const groupWidth = 130;
+    const chartWidth = Math.max(1450, rows.length * groupWidth + 72);
 
-    const minimumWidth =
-        Math.max(
-            100,
-            rows.length * 70
-        );
+    const ticks = 4;
+    const tickMarkup = Array.from({ length: ticks + 1 }, (_, index) => {
+        const value = axisMax * (1 - index / ticks);
+        const top = (index / ticks) * 100;
+        return `
+            <div class="report-trend-y-tick" style="top:${top}%">
+                <span>${formatDuration(Math.round(value))}</span>
+                <i></i>
+            </div>
+        `;
+    }).join("");
 
+    const groupsMarkup = rows.map(([dateKey, values]) => {
+        const date = new Date(`${dateKey}T00:00:00`);
+        const label = Number.isNaN(date.getTime())
+            ? dateKey
+            : date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+        const bars = series.map(item => {
+            const value = Math.max(0, Number(values[item.key]) || 0);
+            const height = value > 0
+                ? Math.max(3, (value / axisMax) * chartHeight)
+                : 0;
+
+            return `
+                <div class="report-trend-bar-wrap" title="${item.label}: ${formatDuration(value)}">
+                    <div class="report-trend-bar ${item.className}" style="height:${height}px"></div>
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="report-trend-group" style="width:${groupWidth}px">
+                <div class="report-trend-bars" style="height:${chartHeight}px">
+                    ${bars}
+                </div>
+                <div class="report-trend-label" title="${dateKey}">${label}</div>
+            </div>
+        `;
+    }).join("");
 
     productivityTrendChart.innerHTML = `
-        <div class="trend-scroll">
-
-            <div
-                class="trend-inner"
-                style="
-                    min-width:${minimumWidth}px;
-                    display:flex;
-                    flex-direction:column;
-                "
-            >
-
-                <div
-                    style="
-                        flex:1;
-                        min-height:200px;
-                        display:flex;
-                        align-items:flex-end;
-                        gap:10px;
-                        padding:10px 8px 0;
-                        border-bottom:1px solid var(--border);
-                        box-sizing:border-box;
-                    "
-                >
-
-                    ${rows.map(([dateKey, seconds]) => {
-
-                        const percentage =
-                            (seconds / maximum) * 100;
-
-                        const date =
-                            new Date(`${dateKey}T00:00:00`);
-
-                        const label =
-                            date.toLocaleDateString(
-                                undefined,
-                                {
-                                    month:"short",
-                                    day:"numeric"
-                                }
-                            );
-
-                        return `
-                            <div
-                                style="
-                                    flex:1;
-                                    min-width:40px;
-                                    height:100%;
-                                    display:flex;
-                                    flex-direction:column;
-                                    align-items:center;
-                                    justify-content:flex-end;
-                                    gap:6px;
-                                "
-                                title="${label}: ${formatDuration(seconds)}"
-                            >
-
-                                <span
-                                    style="
-                                        font-size:10px;
-                                        color:var(--text-secondary);
-                                        white-space:nowrap;
-                                    "
-                                >
-                                    ${formatDuration(seconds)}
-                                </span>
-
-                                <div
-                                    style="
-                                        width:70%;
-                                        max-width:48px;
-                                        height:${Math.max(percentage, 3)}%;
-                                        min-height:5px;
-                                        background:var(--primary-green);
-                                        border-radius:7px 7px 0 0;
-                                        transition:height .3s ease;
-                                    "
-                                ></div>
-
-                            </div>
-                        `;
-
-                    }).join("")}
-
-                </div>
-
-
-                <div
-                    style="
-                        display:flex;
-                        gap:10px;
-                        padding:8px 8px 4px;
-                        box-sizing:border-box;
-                    "
-                >
-
-                    ${rows.map(([dateKey]) => {
-
-                        const date =
-                            new Date(`${dateKey}T00:00:00`);
-
-                        const label =
-                            date.toLocaleDateString(
-                                undefined,
-                                {
-                                    month:"short",
-                                    day:"numeric"
-                                }
-                            );
-
-                        return `
-                            <div
-                                style="
-                                    flex:1;
-                                    min-width:40px;
-                                    text-align:center;
-                                    overflow:hidden;
-                                    text-overflow:ellipsis;
-                                    white-space:nowrap;
-                                    color:var(--text-secondary);
-                                    font-size:10px;
-                                "
-                            >
-                                ${label}
-                            </div>
-                        `;
-
-                    }).join("")}
-
-                </div>
-
+        <div class="report-trend-chart">
+            <div class="report-trend-legend">
+                ${series.map(item => `
+                    <span class="report-trend-legend-item">
+                        <i class="report-trend-dot ${item.className}"></i>
+                        ${item.label}
+                    </span>
+                `).join("")}
             </div>
 
+            <div class="report-trend-scroll">
+                <div class="report-trend-canvas" style="min-width:${chartWidth}px;height:${chartHeight + 58}px">
+                    <div class="report-trend-y-axis" style="height:${chartHeight}px">
+                        ${tickMarkup}
+                    </div>
+                    <div class="report-trend-groups" style="left:56px;height:${chartHeight}px">
+                        ${groupsMarkup}
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-trend-note">
+                <strong>Production = Profiling + PROD activity.</strong>
+                Profiling is displayed separately because it is the main production work, while the Production total includes both Profiling and PROD activity.
+            </div>
         </div>
     `;
-
-}
-
-
-// =========================================================
-// EXCEL DESIGN HELPERS
-
-
-// =========================================================
-
-function styleExcelTitle(
-    sheet,
-    cell
-) {
-
-    if (!sheet[cell]) {
-        return;
-    }
-
-
-    sheet[cell].s = {
-
-        font: {
-            bold: true,
-            sz: 20,
-            color: {
-                rgb: "FFFFFF"
-            }
-        },
-
-        fill: {
-            fgColor: {
-                rgb: "15803D"
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        }
-
-    };
-
-}
-
-
-function styleExcelSection(
-    sheet,
-    cell
-) {
-
-    if (!sheet[cell]) {
-        return;
-    }
-
-
-    sheet[cell].s = {
-
-        font: {
-            bold: true,
-            color: {
-                rgb: "FFFFFF"
-            }
-        },
-
-        fill: {
-            fgColor: {
-                rgb: "1E40AF"
-            }
-        },
-
-        alignment: {
-            vertical: "center"
-        }
-
-    };
-
-}
-
-
-function styleExcelTableHeader(
-    sheet,
-    range
-) {
-
-    const sheetRange =
-        XLSX.utils.decode_range(
-            range
-        );
-
-
-    for (
-        let column = sheetRange.s.c;
-        column <= sheetRange.e.c;
-        column++
-    ) {
-
-        const cellAddress =
-            XLSX.utils.encode_cell({
-                r: sheetRange.s.r,
-                c: column
-            });
-
-
-        if (
-            !sheet[cellAddress]
-        ) {
-            continue;
-        }
-
-
-        sheet[cellAddress].s = {
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: "FFFFFF"
-                }
-            },
-
-            fill: {
-                fgColor: {
-                    rgb: "166534"
-                }
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center"
-            }
-
-        };
-
-    }
-
-}
-
-
-function addExcelBorders(
-    sheet,
-    range
-) {
-
-    const sheetRange =
-        XLSX.utils.decode_range(
-            range
-        );
-
-
-    for (
-        let row = sheetRange.s.r;
-        row <= sheetRange.e.r;
-        row++
-    ) {
-
-        for (
-            let column = sheetRange.s.c;
-            column <= sheetRange.e.c;
-            column++
-        ) {
-
-            const cellAddress =
-                XLSX.utils.encode_cell({
-                    r: row,
-                    c: column
-                });
-
-
-            if (
-                !sheet[cellAddress]
-            ) {
-                continue;
-            }
-
-
-            sheet[cellAddress].s = {
-
-                ...(
-                    sheet[cellAddress].s ||
-                    {}
-                ),
-
-                border: {
-
-                    top: {
-                        style: "thin",
-                        color: {
-                            rgb: "D1D5DB"
-                        }
-                    },
-
-                    bottom: {
-                        style: "thin",
-                        color: {
-                            rgb: "D1D5DB"
-                        }
-                    },
-
-                    left: {
-                        style: "thin",
-                        color: {
-                            rgb: "D1D5DB"
-                        }
-                    },
-
-                    right: {
-                        style: "thin",
-                        color: {
-                            rgb: "D1D5DB"
-                        }
-                    }
-
-                }
-
-            };
-
-        }
-
-    }
-
-}
-
-// =========================================================
-// EXCEL CELL STYLE HELPER
-// =========================================================
-
-function applyExcelStyle(
-    sheet,
-    range,
-    style
-) {
-
-    const decodedRange =
-        XLSX.utils.decode_range(
-            range
-        );
-
-
-    for (
-        let row = decodedRange.s.r;
-        row <= decodedRange.e.r;
-        row++
-    ) {
-
-        for (
-            let column = decodedRange.s.c;
-            column <= decodedRange.e.c;
-            column++
-        ) {
-
-            const address =
-                XLSX.utils.encode_cell({
-                    r: row,
-                    c: column
-                });
-
-
-            if (
-                !sheet[address]
-            ) {
-
-                sheet[address] = {
-                    t: "s",
-                    v: ""
-                };
-
-            }
-
-
-            sheet[address].s = {
-
-                ...(
-                    sheet[address].s ||
-                    {}
-                ),
-
-                ...style
-
-            };
-
-        }
-
-    }
-
-}
-
-// =========================================================
-// EXCEL EXPORT
-// =========================================================
-
-async function exportCsv() {
-
-    // =====================================================
-    // GET CURRENTLY FILTERED DATA
-    // =====================================================
-
-    const profilingData =
-        getFilteredRecords();
-
-
-    const workActivityData =
-        getFilteredWorkActivityRecords();
-
-
-    // =====================================================
-    // CHECK IF THERE IS DATA
-    // =====================================================
-
-    if (
-        profilingData.length === 0 &&
-        workActivityData.length === 0
-    ) {
-
-        if (typeof window.showAppNotice === "function") {
-            window.showAppNotice(
-                "warning",
-                "Nothing to Export",
-                "There is no report data in the current filters to export."
-            );
-        } else {
-            alert("There is no report data to export.");
-        }
-
-        return;
-
-    }
-
-
-    // =====================================================
-    // CHECK EXCEL LIBRARY
-    // =====================================================
-
-    if (
-        typeof XLSX === "undefined"
-    ) {
-
-        if (typeof window.showAppNotice === "function") {
-            window.showAppNotice(
-                "error",
-                "Export Unavailable",
-                "The Excel export library failed to load. Please refresh and try again."
-            );
-        } else {
-            alert("Excel export library failed to load.");
-        }
-
-        return;
-
-    }
-
-
-    // =====================================================
-    // EXCEL COLORS
-    // =====================================================
-
-    const COLORS = {
-
-        darkGreen:
-            "174D32",
-
-        green:
-            "237A4B",
-
-        lightGreen:
-            "DDEFE4",
-
-        blue:
-            "2F62B3",
-
-        lightBlue:
-            "E8F0FB",
-
-        gray:
-            "F4F6F8",
-
-        border:
-            "D6DCE1",
-
-        white:
-            "FFFFFF",
-
-        darkText:
-            "263238",
-
-        prod:
-            "1E8449",
-
-        nonProd:
-            "E67E22",
-
-        prodLoss:
-            "C0392B",
-
-        training:
-            "6C5CE7",
-
-        teams:
-            "237A4B",
-
-        members:
-            "2F62B3"
-
-    };
-
-
-    // =====================================================
-    // COMMON BORDER
-    // =====================================================
-
-    const thinBorder = {
-
-        top: {
-            style: "thin",
-            color: {
-                rgb: COLORS.border
-            }
-        },
-
-        bottom: {
-            style: "thin",
-            color: {
-                rgb: COLORS.border
-            }
-        },
-
-        left: {
-            style: "thin",
-            color: {
-                rgb: COLORS.border
-            }
-        },
-
-        right: {
-            style: "thin",
-            color: {
-                rgb: COLORS.border
-            }
-        }
-
-    };
-
-
-    // =====================================================
-    // HELPER: STYLE RANGE
-    // =====================================================
-
-    function styleRange(
-        sheet,
-        range,
-        style
-    ) {
-
-        const decodedRange =
-            XLSX.utils.decode_range(
-                range
-            );
-
-
-        for (
-            let row = decodedRange.s.r;
-            row <= decodedRange.e.r;
-            row++
-        ) {
-
-            for (
-                let column = decodedRange.s.c;
-                column <= decodedRange.e.c;
-                column++
-            ) {
-
-                const cellAddress =
-                    XLSX.utils.encode_cell({
-                        r: row,
-                        c: column
-                    });
-
-
-                if (
-                    !sheet[cellAddress]
-                ) {
-
-                    sheet[cellAddress] = {
-                        t: "s",
-                        v: ""
-                    };
-
-                }
-
-
-                sheet[cellAddress].s = {
-
-                    ...(
-                        sheet[cellAddress].s ||
-                        {}
-                    ),
-
-                    ...style
-
-                };
-
-            }
-
-        }
-
-    }
-
-
-    // =====================================================
-    // HELPER: STYLE TABLE
-    // =====================================================
-
-    function styleTable(
-        sheet,
-        lastRow,
-        lastColumn
-    ) {
-
-        styleRange(
-            sheet,
-            `A1:${lastColumn}1`,
-            {
-
-                fill: {
-                    fgColor: {
-                        rgb: COLORS.darkGreen
-                    }
-                },
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.white
-                    },
-                    sz: 11
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                },
-
-                border:
-                    thinBorder
-
-            }
-        );
-
-
-        for (
-            let row = 2;
-            row <= lastRow;
-            row++
-        ) {
-
-            styleRange(
-                sheet,
-                `A${row}:${lastColumn}${row}`,
-                {
-
-                    fill: {
-
-                        fgColor: {
-
-                            rgb:
-                                row % 2 === 0
-                                    ? COLORS.white
-                                    : COLORS.gray
-
-                        }
-
-                    },
-
-                    font: {
-
-                        color: {
-                            rgb: COLORS.darkText
-                        },
-
-                        sz: 10
-
-                    },
-
-                    alignment: {
-                        vertical: "center"
-                    },
-
-                    border:
-                        thinBorder
-
-                }
-            );
-
-        }
-
-    }
-
-
-    // =====================================================
-    // CALCULATE PROFILING TOTALS
-    // =====================================================
-
-    const totalTeamsSeconds =
-        profilingData.reduce(
-            (
-                total,
-                record
-            ) =>
-                total +
-                Number(
-                    record.teamSeconds ||
-                    0
-                ),
-            0
-        );
-
-
-    const totalMembersSeconds =
-        profilingData.reduce(
-            (
-                total,
-                record
-            ) =>
-                total +
-                Number(
-                    record.membersSeconds ||
-                    0
-                ),
-            0
-        );
-
-
-    const totalProfilingSeconds =
-        profilingData.reduce(
-            (
-                total,
-                record
-            ) =>
-                total +
-                Number(
-                    record.totalSeconds ||
-                    0
-                ),
-            0
-        );
-
-
-    const profilingBreakdownTotal =
-        totalTeamsSeconds +
-        totalMembersSeconds;
-
-    const inconsistentProfilingCount =
-        profilingData.filter(
-            record =>
-                record.accuracyStatus ===
-                "INCONSISTENT"
-        ).length;
-
-    const legacyRecoveredCount =
-        profilingData.filter(
-            record =>
-                record.wasLegacyMatched
-        ).length;
-
-
-
-    // =====================================================
-    // PROFILING PERCENTAGES
-    // =====================================================
-
-    const teamsPercentage =
-        profilingBreakdownTotal > 0
-            ? (
-                totalTeamsSeconds /
-                profilingBreakdownTotal
-            ) * 100
-            : 0;
-
-
-    const membersPercentage =
-        profilingBreakdownTotal > 0
-            ? (
-                totalMembersSeconds /
-                profilingBreakdownTotal
-            ) * 100
-            : 0;
-
-
-    // =====================================================
-    // CALCULATE WORK ACTIVITY TOTALS
-    // =====================================================
-
-        const totalWorkActivitySeconds =
-            workActivityData.reduce(
-                (
-                    total,
-                    record
-                ) =>
-                    total +
-                    Number(
-                        record.duration_seconds ||
-                        0
-                    ),
-                0
-            ) +
-            totalProfilingSeconds;
-
-
-    // =====================================================
-    // WORK ACTIVITY CATEGORIES
-    // =====================================================
-
-    const activityCategories = [
-
-        "PROD",
-        "NON-PROD",
-        "PROD LOSS",
-        "TRAINING"
-
-    ];
-
-
-    const activityCategoryTotals = {
-
-        "PROD": 0,
-
-        "NON-PROD": 0,
-
-        "PROD LOSS": 0,
-
-        "TRAINING": 0
-
-    };
-
-
-        workActivityData.forEach(
-            record => {
-
-                const category =
-                    String(
-                        record.category ||
-                        ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                if (
-                    Object.prototype.hasOwnProperty.call(
-                        activityCategoryTotals,
-                        category
-                    )
-                ) {
-
-                    activityCategoryTotals[
-                        category
-                    ] +=
-                        Number(
-                            record.duration_seconds ||
-                            0
-                        );
-
-                }
-
-            }
-        );
-
-
-// =====================================================
-// PROFILING TIME COUNTS AS PROD
-// =====================================================
-
-activityCategoryTotals.PROD +=
-    totalProfilingSeconds;
-
-
-    // =====================================================
-    // GET APPLIED FILTERS
-    // =====================================================
-
-    const selectedAnalyst =
-        analystFilter?.options[
-            analystFilter.selectedIndex
-        ]?.text ||
-        "All Analysts";
-
-
-    const selectedCategory =
-        workActivityCategoryFilter?.options[
-            workActivityCategoryFilter.selectedIndex
-        ]?.text ||
-        "All Categories";
-
-
-    const selectedTeam =
-        teamSearch?.value?.trim() ||
-        "All Teams";
-
-
-    const selectedFromDate =
-        fromDate?.value ||
-        "Not specified";
-
-
-    const selectedToDate =
-        toDate?.value ||
-        "Not specified";
-
-
-    // =====================================================
-    // CREATE WORKBOOK
-    // =====================================================
-
-    const workbook =
-        XLSX.utils.book_new();
-
-
-    // =====================================================
-    // REPORT SUMMARY DATA
-    // =====================================================
-
-    const generatedDate =
-        new Date();
-
-
-    const summaryRows = [
-
-        // =================================================
-        // TITLE
-        // =================================================
-
-        [
-            "TICKY TICKY PRODUCTIVITY REPORT",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Executive Productivity Summary",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [],
-
-
-        // =================================================
-        // REPORT INFORMATION
-        // =================================================
-
-        [
-            "REPORT INFORMATION",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Generated",
-            formatDateTime(
-                generatedDate.toISOString()
-            ),
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Reporting Scope",
-            "Filtered Report Data",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [],
-
-
-        // =================================================
-        // KEY PERFORMANCE SUMMARY
-        // =================================================
-
-        [
-            "DATA ACCURACY",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Inconsistent Profiling Records",
-            inconsistentProfilingCount,
-            "",
-            "Legacy-Recovered Records",
-            legacyRecoveredCount,
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "KEY PERFORMANCE SUMMARY",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Total Profiling Sessions",
-            profilingData.length,
-            "",
-            "Total Profiling Time",
-            formatDuration(
-                totalProfilingSeconds
-            ),
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Total Work Activities",
-            workActivityData.length,
-            "",
-            "Total Work Activity Time",
-            formatDuration(
-                totalWorkActivitySeconds
-            ),
-            "",
-            "",
-            ""
-        ],
-
-        [],
-
-
-        // =================================================
-        // PROFILING TIME BREAKDOWN
-        // =================================================
-
-        [
-            "PROFILING TIME BREAKDOWN",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Profiling Type",
-            "Duration",
-            "% of Profiling Time",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "TEAMS",
-            formatDuration(
-                totalTeamsSeconds
-            ),
-            `${teamsPercentage.toFixed(1)}%`,
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "MEMBERS",
-            formatDuration(
-                totalMembersSeconds
-            ),
-            `${membersPercentage.toFixed(1)}%`,
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [],
-
-
-        // =================================================
-        // WORK ACTIVITY BREAKDOWN
-        // =================================================
-
-        [
-            "WORK ACTIVITY BREAKDOWN",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Category",
-            "Duration",
-            "% of Work Time",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-
-    ];
-
-
-    // =====================================================
-    // ADD WORK ACTIVITY BREAKDOWN DATA
-    // =====================================================
-
-    activityCategories.forEach(
-        category => {
-
-            const categorySeconds =
-                activityCategoryTotals[
-                    category
-                ] ||
-                0;
-
-
-            const percentage =
-                totalWorkActivitySeconds > 0
-                    ? (
-                        categorySeconds /
-                        totalWorkActivitySeconds
-                    ) * 100
-                    : 0;
-
-
-            summaryRows.push(
-                [
-
-                    category,
-
-                    formatDuration(
-                        categorySeconds
-                    ),
-
-                    `${percentage.toFixed(1)}%`,
-
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-
-                ]
-            );
-
-        }
-    );
-
-
-    // =====================================================
-    // ADD FILTERS
-    // =====================================================
-
-    summaryRows.push(
-
-        [],
-
-
-        [
-            "APPLIED FILTERS",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Analyst",
-            selectedAnalyst,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Activity Category",
-            selectedCategory,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "Team Search",
-            selectedTeam,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "From Date",
-            selectedFromDate,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-
-        [
-            "To Date",
-            selectedToDate,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-
-    );
-
-
-    // =====================================================
-    // CREATE SUMMARY SHEET
-    // =====================================================
-
-    const summarySheet =
-        XLSX.utils.aoa_to_sheet(
-            summaryRows
-        );
-
-
-    // =====================================================
-    // SUMMARY MERGES
-    // =====================================================
-
-    summarySheet["!merges"] = [
-
-        XLSX.utils.decode_range(
-            "A1:H1"
-        ),
-
-        XLSX.utils.decode_range(
-            "A2:H2"
-        ),
-
-        XLSX.utils.decode_range(
-            "A4:H4"
-        ),
-
-        XLSX.utils.decode_range(
-            "A8:H8"
-        ),
-
-        XLSX.utils.decode_range(
-            "A12:H12"
-        ),
-
-        XLSX.utils.decode_range(
-            "A17:H17"
-        ),
-
-        XLSX.utils.decode_range(
-            "A24:H24"
-        )
-
-    ];
-
-
-    // =====================================================
-    // SUMMARY COLUMN WIDTHS
-    // =====================================================
-
-    summarySheet["!cols"] = [
-
-        { wch: 28 },
-        { wch: 24 },
-        { wch: 22 },
-        { wch: 22 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 18 }
-
-    ];
-
-
-    // =====================================================
-    // SUMMARY ROW HEIGHTS
-    // =====================================================
-
-    summarySheet["!rows"] = [
-
-        { hpt: 32 },
-        { hpt: 24 },
-        { hpt: 8 },
-        { hpt: 22 },
-        { hpt: 20 },
-        { hpt: 20 },
-        { hpt: 8 },
-        { hpt: 22 },
-        { hpt: 24 },
-        { hpt: 24 },
-        { hpt: 8 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 8 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 22 },
-        { hpt: 8 },
-        { hpt: 22 }
-
-    ];
-
-
-    // =====================================================
-    // MAIN TITLE
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A1:H1",
-        {
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.darkGreen
-                }
-            },
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: COLORS.white
-                },
-                sz: 20
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    // =====================================================
-    // SUBTITLE
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A2:H2",
-        {
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.green
-                }
-            },
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: COLORS.white
-                },
-                sz: 12
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    // =====================================================
-    // SECTION HEADINGS
-    // =====================================================
-
-    [
-        "A4:H4",
-        "A8:H8",
-        "A10:H10",
-        "A14:H14",
-        "A19:H19",
-        "A26:H26"
-    ].forEach(
-        range => {
-
-            styleRange(
-                summarySheet,
-                range,
-                {
-
-                    fill: {
-                        fgColor: {
-                            rgb: COLORS.blue
-                        }
-                    },
-
-                    font: {
-                        bold: true,
-                        color: {
-                            rgb: COLORS.white
-                        },
-                        sz: 11
-                    },
-
-                    alignment: {
-                        horizontal: "left",
-                        vertical: "center"
-                    }
-
-                }
-            );
-
-        }
-    );
-
-
-    // =====================================================
-    // REPORT INFORMATION
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A5:B6",
-        {
-
-            border:
-                thinBorder,
-
-            alignment: {
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    [
-        "A5",
-        "A6"
-    ].forEach(
-        cell => {
-
-            summarySheet[cell].s = {
-
-                ...summarySheet[cell].s,
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.darkText
-                    }
-                },
-
-                fill: {
-                    fgColor: {
-                        rgb: COLORS.gray
-                    }
-                }
-
-            };
-
-        }
-    );
-
-
-    // =====================================================
-    // KPI CARDS
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A11:B12",
-        {
-
-            border:
-                thinBorder,
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.lightGreen
-                }
-            },
-
-            alignment: {
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    styleRange(
-        summarySheet,
-        "D11:E12",
-        {
-
-            border:
-                thinBorder,
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.lightBlue
-                }
-            },
-
-            alignment: {
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    [
-        "A9",
-        "A10",
-        "D9",
-        "D10"
-    ].forEach(
-        cell => {
-
-            summarySheet[cell].s = {
-
-                ...summarySheet[cell].s,
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.darkText
-                    }
-                }
-
-            };
-
-        }
-    );
-
-
-    [
-        "B9",
-        "B10",
-        "E9",
-        "E10"
-    ].forEach(
-        cell => {
-
-            summarySheet[cell].s = {
-
-                ...summarySheet[cell].s,
-
-                font: {
-                    bold: true,
-                    sz: 12,
-                    color: {
-                        rgb: COLORS.darkGreen
-                    }
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                }
-
-            };
-
-        }
-    );
-
-
-    // =====================================================
-    // PROFILING BREAKDOWN TABLE
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A15:C15",
-        {
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.darkGreen
-                }
-            },
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: COLORS.white
-                }
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center"
-            },
-
-            border:
-                thinBorder
-
-        }
-    );
-
-
-    styleRange(
-        summarySheet,
-        "A16:C17",
-        {
-
-            border:
-                thinBorder,
-
-            alignment: {
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    // TEAMS ROW
-
-    summarySheet["A16"].s = {
-
-        ...summarySheet["A16"].s,
-
-        fill: {
-            fgColor: {
-                rgb: COLORS.lightGreen
-            }
-        },
-
-        font: {
-            bold: true,
-            color: {
-                rgb: COLORS.darkText
-            }
-        }
-
-    };
-
-
-    summarySheet["B16"].s = {
-
-        ...summarySheet["B16"].s,
-
-        font: {
-            bold: true,
-            color: {
-                rgb: COLORS.teams
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        }
-
-    };
-
-
-    summarySheet["C16"].s = {
-
-        ...summarySheet["C16"].s,
-
-        font: {
-            bold: true
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        }
-
-    };
-
-
-    // MEMBERS ROW
-
-    summarySheet["A17"].s = {
-
-        ...summarySheet["A17"].s,
-
-        fill: {
-            fgColor: {
-                rgb: COLORS.lightBlue
-            }
-        },
-
-        font: {
-            bold: true,
-            color: {
-                rgb: COLORS.darkText
-            }
-        }
-
-    };
-
-
-    summarySheet["B17"].s = {
-
-        ...summarySheet["B17"].s,
-
-        font: {
-            bold: true,
-            color: {
-                rgb: COLORS.members
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        }
-
-    };
-
-
-    summarySheet["C17"].s = {
-
-        ...summarySheet["C17"].s,
-
-        font: {
-            bold: true
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        }
-
-    };
-
-
-    // =====================================================
-    // WORK ACTIVITY TABLE HEADER
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A20:C20",
-        {
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.darkGreen
-                }
-            },
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: COLORS.white
-                }
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center"
-            },
-
-            border:
-                thinBorder
-
-        }
-    );
-
-
-    // =====================================================
-    // WORK ACTIVITY BREAKDOWN ROWS
-    // =====================================================
-
-    const categoryRowMap = {
-
-        "PROD": 19,
-
-        "NON-PROD": 20,
-
-        "PROD LOSS": 21,
-
-        "TRAINING": 22
-
-    };
-
-
-    const categoryColorMap = {
-
-        "PROD":
-            COLORS.prod,
-
-        "NON-PROD":
-            COLORS.nonProd,
-
-        "PROD LOSS":
-            COLORS.prodLoss,
-
-        "TRAINING":
-            COLORS.training
-
-    };
-
-
-    activityCategories.forEach(
-        category => {
-
-            const row =
-                categoryRowMap[
-                    category
-                ];
-
-
-            styleRange(
-                summarySheet,
-                `A${row}:C${row}`,
-                {
-
-                    border:
-                        thinBorder,
-
-                    alignment: {
-                        vertical: "center"
-                    }
-
-                }
-            );
-
-
-            // CATEGORY
-
-            summarySheet[
-                `A${row}`
-            ].s = {
-
-                ...summarySheet[
-                    `A${row}`
-                ].s,
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.darkText
-                    }
-                }
-
-            };
-
-
-            // DURATION
-
-            summarySheet[
-                `B${row}`
-            ].s = {
-
-                ...summarySheet[
-                    `B${row}`
-                ].s,
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb:
-                            categoryColorMap[
-                                category
-                            ]
-                    }
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                }
-
-            };
-
-
-            // PERCENTAGE
-
-            summarySheet[
-                `C${row}`
-            ].s = {
-
-                ...summarySheet[
-                    `C${row}`
-                ].s,
-
-                font: {
-                    bold: true
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                }
-
-            };
-
-        }
-    );
-
-
-    // =====================================================
-    // APPLIED FILTERS
-    // =====================================================
-
-    styleRange(
-        summarySheet,
-        "A27:B31",
-        {
-
-            border:
-                thinBorder,
-
-            alignment: {
-                vertical: "center"
-            }
-
-        }
-    );
-
-
-    for (
-        let row = 27;
-        row <= 31;
-        row++
-    ) {
-
-        const labelCell =
-            `A${row}`;
-
-
-        summarySheet[
-            labelCell
-        ].s = {
-
-            ...summarySheet[
-                labelCell
-            ].s,
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: COLORS.darkText
-                }
-            },
-
-            fill: {
-                fgColor: {
-                    rgb: COLORS.gray
-                }
-            }
-
-        };
-
-    }
-
-
-    // =====================================================
-    // ADD SUMMARY SHEET
-    // =====================================================
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        summarySheet,
-        "Report Summary"
-    );
-
-
-    // =====================================================
-    // PRODUCTIVITY DATA
-    // =====================================================
-
-    const productivityRows = [
-
-        [
-            "Analyst",
-            "Team",
-            "Team ID",
-            "Members",
-            "Teams Time",
-            "Members Time",
-            "Total Time",
-            "Data Check",
-            "Completed"
-        ],
-
-        ...profilingData.map(
-            record => [
-
-                record.analystName ||
-                "Unknown Analyst",
-
-                record.team_name ||
-                "",
-
-                record.team_id ||
-                "",
-
-                Number(
-                    record.member_count ||
-                    0
-                ),
-
-                excelDuration(
-                    Number(
-                        record.teamSeconds ||
-                        0
-                    )
-                ),
-
-                excelDuration(
-                    Number(
-                        record.membersSeconds ||
-                        0
-                    )
-                ),
-
-                excelDuration(
-                    Number(
-                        record.totalSeconds ||
-                        0
-                    )
-                ),
-
-                record.accuracyStatus ||
-                "UNKNOWN",
-
-                formatDateTime(
-                    record.finished_at
-                )
-
-            ]
-        )
-
-    ];
-
-
-    const productivitySheet =
-        XLSX.utils.aoa_to_sheet(
-            productivityRows
-        );
-
-        for (
-            let row = 2;
-            row <= productivityRows.length;
-            row++
-        ) {
-            [
-                `E${row}`,
-                `F${row}`,
-                `G${row}`
-            ].forEach(
-                cell => {
-
-                    if (
-                        productivitySheet[cell]
-                    ) {
-                        productivitySheet[cell].z =
-                            "[h]:mm:ss";
-                    }
-
-                }
-            );
-        }        
-
-
-    // =====================================================
-    // PRODUCTIVITY DESIGN
-    // =====================================================
-
-    productivitySheet["!freeze"] = {
-
-        xSplit: 0,
-        ySplit: 1
-
-    };
-
-
-    productivitySheet["!autofilter"] = {
-
-        ref:
-            `A1:I${productivityRows.length}`
-
-    };
-
-
-    styleTable(
-        productivitySheet,
-        productivityRows.length,
-        "I"
-    );
-
-
-    productivitySheet["!cols"] = [
-
-        { wch: 24 },
-        { wch: 38 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 18 },
-        { wch: 24 }
-
-    ];
-
-
-    productivitySheet["!rows"] = [
-
-        { hpt: 24 }
-
-    ];
-
-
-    for (
-        let row = 2;
-        row <= productivityRows.length;
-        row++
-    ) {
-
-        [
-            `C${row}`,
-            `D${row}`,
-            `E${row}`,
-            `F${row}`,
-            `G${row}`,
-            `I${row}`
-        ].forEach(
-            cell => {
-
-                if (
-                    productivitySheet[cell]
-                ) {
-
-                    productivitySheet[cell].s = {
-
-                        ...productivitySheet[cell].s,
-
-                        alignment: {
-                            horizontal: "center",
-                            vertical: "center"
-                        }
-
-                    };
-
-                }
-
-            }
-        );
-
-    }
-
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        productivitySheet,
-        "Productivity Data"
-    );
-
-
-    // =====================================================
-    // WORK ACTIVITY LOGS DATA
-    // =====================================================
-
-    const workActivityRows = [
-
-        [
-            "Analyst",
-            "Category",
-            "Task",
-            "Duration",
-            "Live Timer",
-            "Justification",
-            "Started",
-            "Completed"
-        ],
-
-        ...workActivityData.map(
-            record => [
-
-                record.analystName ||
-                "Unknown Analyst",
-
-                record.category ||
-                "",
-
-                record.task_name ||
-                "",
-
-                excelDuration(
-                    Number(
-                        record.duration_seconds ||
-                        0
-                    )
-                ),
-
-                excelDuration(
-                    Number(
-                        record.live_duration_seconds ??
-                        record.duration_seconds ??
-                        0
-                    )
-                ),
-
-                record.justification ||
-                "",
-
-                formatDateTime(
-                    record.started_at
-                ),
-
-                formatDateTime(
-                    record.ended_at
-                )
-
-            ]
-        )
-
-    ];
-
-
-    const workActivitySheet =
-        XLSX.utils.aoa_to_sheet(
-            workActivityRows
-        );
-
-        for (
-                let row = 2;
-                row <= workActivityRows.length;
-                row++
-            ) {
-                if (workActivitySheet[`D${row}`]) {
-                    workActivitySheet[`D${row}`].z = "[h]:mm:ss";
-                }
-                if (workActivitySheet[`E${row}`]) {
-                    workActivitySheet[`E${row}`].z = "[h]:mm:ss";
-                }
-            }
-
-
-    // =====================================================
-    // WORK ACTIVITY LOGS DESIGN
-    // =====================================================
-
-    workActivitySheet["!freeze"] = {
-
-        xSplit: 0,
-        ySplit: 1
-
-    };
-
-
-    workActivitySheet["!autofilter"] = {
-
-        ref:
-            `A1:H${workActivityRows.length}`
-
-    };
-
-
-    styleTable(
-        workActivitySheet,
-        workActivityRows.length,
-        "F"
-    );
-
-
-    workActivitySheet["!cols"] = [
-
-        { wch: 24 },
-        { wch: 18 },
-        { wch: 38 },
-        { wch: 16 },
-        { wch: 24 },
-        { wch: 24 }
-
-    ];
-
-
-    workActivitySheet["!rows"] = [
-
-        { hpt: 24 }
-
-    ];
-
-
-    // =====================================================
-    // CATEGORY COLORS
-    // =====================================================
-
-    for (
-        let row = 2;
-        row <= workActivityRows.length;
-        row++
-    ) {
-
-        const category =
-            String(
-                workActivitySheet[
-                    `B${row}`
-                ]?.v ||
-                ""
-            )
-                .trim()
-                .toUpperCase();
-
-
-        let categoryColor =
-            null;
-
-
-        if (
-            category === "PROD"
-        ) {
-
-            categoryColor =
-                COLORS.prod;
-
-        }
-
-        else if (
-            category === "NON-PROD"
-        ) {
-
-            categoryColor =
-                COLORS.nonProd;
-
-        }
-
-        else if (
-            category === "PROD LOSS"
-        ) {
-
-            categoryColor =
-                COLORS.prodLoss;
-
-        }
-
-        else if (
-            category === "TRAINING"
-        ) {
-
-            categoryColor =
-                COLORS.training;
-
-        }
-
-
-        if (
-            categoryColor &&
-            workActivitySheet[
-                `B${row}`
-            ]
-        ) {
-
-            workActivitySheet[
-                `B${row}`
-            ].s = {
-
-                ...workActivitySheet[
-                    `B${row}`
-                ].s,
-
-                fill: {
-                    fgColor: {
-                        rgb: categoryColor
-                    }
-                },
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.white
-                    }
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                }
-
-            };
-
-        }
-
-
-        if (
-            workActivitySheet[
-                `D${row}`
-            ]
-        ) {
-
-            workActivitySheet[
-                `D${row}`
-            ].s = {
-
-                ...workActivitySheet[
-                    `D${row}`
-                ].s,
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                },
-
-                font: {
-                    bold: true
-                }
-
-            };
-
-        }
-
-    }
-
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        workActivitySheet,
-        "Work Activity Logs"
-    );
-
-
-// =====================================================
-// SEND FINISHED XLSX TO CHART SERVER
-// =====================================================
-
-const xlsxArrayBuffer =
-    XLSX.write(
-        workbook,
-        {
-            bookType: "xlsx",
-            type: "array"
-        }
-    );
-
-
-const xlsxBytes =
-    new Uint8Array(
-        xlsxArrayBuffer
-    );
-
-
-let binary =
-    "";
-
-for (
-    let i = 0;
-    i < xlsxBytes.length;
-    i++
-) {
-
-    binary += String.fromCharCode(
-        xlsxBytes[i]
-    );
-
-}
-
-
-const xlsxBase64 =
-    btoa(
-        binary
-    );
-
-
-// =====================================================
-// SEND TO SERVER
-// =====================================================
-
-const response =
-    await fetch(
-        "https://ticky-ticky-excel-server.onrender.com/add-charts",
-        {
-
-            method:
-                "POST",
-
-            headers: {
-
-                "Content-Type":
-                    "application/json"
-
-            },
-
-            body:
-                JSON.stringify({
-
-                    xlsx:
-                        xlsxBase64
-
-                })
-
-        }
-    );
-
-
-        if (
-            !response.ok
-        ) {
-
-            const errorText =
-                await response.text();
-
-            throw new Error(
-                errorText ||
-                "Excel chart server failed."
-            );
-
-        }
-
-
-        // =====================================================
-        // RECEIVE FINAL XLSX
-        // =====================================================
-
-        const finalBlob =
-            await response.blob();
-
-
-        // =====================================================
-        // DOWNLOAD FINAL FILE
-        // =====================================================
-
-        const downloadUrl =
-            URL.createObjectURL(
-                finalBlob
-            );
-
-
-        const link =
-            document.createElement(
-                "a"
-            );
-
-
-        link.href =
-            downloadUrl;
-
-
-        link.download =
-            `ticky-ticky-report-${getDateStamp()}.xlsx`;
-
-
-        document.body.appendChild(
-            link
-        );
-
-
-        link.click();
-
-
-        link.remove();
-
-
-        URL.revokeObjectURL(
-            downloadUrl
-        );
-
-}
-
-// =========================================================
-// EXCEL ALTERNATING ROW STYLE
-// =========================================================
-
-function styleExcelDataRows(
-    sheet,
-    startRow,
-    endRow,
-    endColumn
-) {
-
-    for (
-        let row = startRow;
-        row <= endRow;
-        row++
-    ) {
-
-        const fillColor =
-            row % 2 === 0
-                ? "F8FAFC"
-                : "FFFFFF";
-
-
-        for (
-            let column = 0;
-            column <= endColumn;
-            column++
-        ) {
-
-            const cellAddress =
-                XLSX.utils.encode_cell({
-                    r: row - 1,
-                    c: column
-                });
-
-
-            if (
-                !sheet[cellAddress]
-            ) {
-
-                sheet[cellAddress] = {
-                    t: "s",
-                    v: ""
-                };
-
-            }
-
-
-            sheet[cellAddress].s = {
-
-                ...(
-                    sheet[cellAddress].s ||
-                    {}
-                ),
-
-                fill: {
-                    fgColor: {
-                        rgb: fillColor
-                    }
-                },
-
-                alignment: {
-                    vertical: "center"
-                }
-
-            };
-
-        }
-
-    }
-
-}
-
-
-// =========================================================
-// FORMAT DURATION
-// =========================================================
-
-function formatDuration(
-    totalSeconds
-) {
-
-    let seconds =
-        Math.max(
-            0,
-            Math.round(
-                Number(
-                    totalSeconds
-                ) ||
-                0
-            )
-        );
-
-
-    const hours =
-        Math.floor(
-            seconds /
-            3600
-        );
-
-
-    seconds %=
-        3600;
-
-
-    const minutes =
-        Math.floor(
-            seconds /
-            60
-        );
-
-
-    seconds %=
-        60;
-
-
-    return [
-
-        String(hours)
-            .padStart(
-                2,
-                "0"
-            ),
-
-        String(minutes)
-            .padStart(
-                2,
-                "0"
-            ),
-
-        String(seconds)
-            .padStart(
-                2,
-                "0"
-            )
-
-    ].join(":");
-
-}
-
-
-// =========================================================
-// FORMAT NUMBER
-// =========================================================
-
-function formatNumber(
-    value
-) {
-
-    const number =
-        Number(
-            value
-        );
-
-
-    if (
-        !Number.isFinite(
-            number
-        )
-    ) {
-
-        return "0";
-
-    }
-
-
-    return number.toLocaleString();
-
-}
-
-
-// =========================================================
-// FORMAT DATE
-// =========================================================
-
-function formatDateTime(
-    value
-) {
-
-    if (!value) {
-        return "--";
-    }
-
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "--";
-
-    }
-
-
-    return date.toLocaleString(
-        undefined,
-        {
-            year:
-                "numeric",
-
-            month:
-                "short",
-
-            day:
-                "numeric",
-
-            hour:
-                "numeric",
-
-            minute:
-                "2-digit"
-        }
-    );
-
-}
-
-
-// =========================================================
-// DATE STAMP
-// =========================================================
-
-function getDateStamp() {
-
-    const date =
-        new Date();
-
-
-    return [
-
-        date.getFullYear(),
-
-        String(
-            date.getMonth() + 1
-        )
-            .padStart(
-                2,
-                "0"
-            ),
-
-        String(
-            date.getDate()
-        )
-            .padStart(
-                2,
-                "0"
-            )
-
-    ].join("-");
-
-}
-
-
-// =========================================================
-// CSV ESCAPE
-// =========================================================
-
-function csvEscape(
-    value
-) {
-
-    const stringValue =
-        String(
-            value ??
-            ""
-        );
-
-
-    return `"${stringValue.replace(
-        /"/g,
-        '""'
-    )}"`;
-
-}
-
-function excelDuration(totalSeconds) {
-
-    return (
-        Number(
-            totalSeconds
-        ) || 0
-    ) / 86400;
-
-}
-
-
-// =========================================================
-// HTML ESCAPE
-// =========================================================
-
-function escapeHtml(
-    value
-) {
-
-    return String(
-        value ??
-        ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
 }
 
 
@@ -10792,17 +10039,28 @@ logoutButton.addEventListener(
                                                 "
                                             ></span>
 
-                                            <span
-                                                style="
-                                                    font-size:13px;
-                                                    font-weight:700;
-                                                    color:var(--text-primary);
-                                                "
-                                            >
-                                                ${escapeHtml(
-                                                    row.label
-                                                )}
-                                            </span>
+                                            <div style="min-width:0;">
+                                                <span
+                                                    style="
+                                                        display:block;
+                                                        font-size:13px;
+                                                        font-weight:800;
+                                                        color:var(--text-primary);
+                                                    "
+                                                >
+                                                    ${escapeHtml(
+                                                        row.label
+                                                    )}
+                                                </span>
+                                                ${row.key === "PROD" && profilingRecords.length ? `
+                                                    <span style="display:block;margin-top:3px;font-size:10px;color:var(--text-secondary);">
+                                                        Includes ${formatDuration(
+                                                            (profilingRecords || []).reduce((sum, record) =>
+                                                                sum + Math.max(0, Number(record.totalSeconds || record.total_seconds || 0)), 0)
+                                                        )} profiling time
+                                                    </span>
+                                                ` : ""}
+                                            </div>
 
                                         </div>
 
@@ -11405,6 +10663,12 @@ logoutButton.addEventListener(
                 "nonprod-chart-segment":
                     "#E59A28",
 
+                "prod-loss-chart-segment":
+                    "#D85C5C",
+
+                "training-chart-segment":
+                    "#7567D8",
+
                 "other-work-chart-segment":
                     "#7567D8"
 
@@ -11445,7 +10709,7 @@ logoutButton.addEventListener(
 
             if (
                 !analystChart.querySelector(
-                    ".analyst-composition-legend"
+                    ".analyst-composition-legend, .analyst-chart-legend"
                 )
             ) {
 

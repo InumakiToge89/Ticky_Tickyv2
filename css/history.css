@@ -909,3 +909,29 @@
 
 }
 
+
+
+/* =====================================================
+   WORK ACTIVITY DETAIL ENHANCEMENTS
+   ===================================================== */
+
+.work-activity-row:focus-visible {
+    outline: 2px solid var(--primary-green);
+    outline-offset: -2px;
+}
+
+.work-activity-justification-card {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--very-light-green);
+}
+
+.work-activity-justification {
+    margin-top: 8px;
+    color: var(--text-primary);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

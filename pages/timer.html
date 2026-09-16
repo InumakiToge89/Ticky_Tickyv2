@@ -368,12 +368,23 @@
                         Session Type
                     </span>
 
-                    <strong
-                        id="sessionType"
-                        class="timer-info-value"
-                    >
-                        --
-                    </strong>
+                    <div class="timer-info-value-row">
+                        <strong
+                            id="sessionType"
+                            class="timer-info-value"
+                        >
+                            --
+                        </strong>
+
+                        <button
+                            type="button"
+                            id="requestSessionTypeChangeButton"
+                            class="timer-info-request-button"
+                            title="Request a correction to the profiling session type"
+                        >
+                            Request Session Type Change
+                        </button>
+                    </div>
 
                 </div>
 
@@ -418,6 +429,16 @@
 
 </div>
 
+
+<script
+    type="module"
+    src="../js/theme.js"
+></script>
+
+<script
+    type="module"
+    src="../js/account-menu.js"
+></script>
 
 <script
     type="module"
@@ -551,11 +572,6 @@
     </div>
 
 </div>
-
-<script
-    type="module"
-    src="../js/theme.js"
-></script>
 
 <script src="../js/mobile-navigation.js"></script>
 
