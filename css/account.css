@@ -713,3 +713,197 @@
 }
 
 
+
+
+/* =====================================================
+   CHANGE EMAIL
+   ===================================================== */
+
+.email-form-group .field-note {
+    display: block;
+    margin-top: 6px;
+}
+
+.email-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.email-input-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.change-email-button {
+    flex: 0 0 auto;
+    border: 1px solid #0b8f67;
+    background: #ffffff;
+    color: #087653;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.change-email-button:hover {
+    background: #effaf5;
+    border-color: #087653;
+}
+
+.change-email-button:focus-visible,
+.change-email-close:focus-visible,
+.change-email-dialog-actions button:focus-visible {
+    outline: 3px solid rgba(11, 143, 103, 0.2);
+    outline-offset: 2px;
+}
+
+.change-email-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.change-email-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.change-email-modal.is-open {
+    display: flex;
+}
+
+.change-email-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 18, 0.45);
+    backdrop-filter: blur(2px);
+}
+
+.change-email-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 520px);
+    background: #ffffff;
+    border: 1px solid #dce9e2;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(23, 59, 41, 0.18);
+    overflow: hidden;
+}
+
+.change-email-dialog-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid #edf3ef;
+}
+
+.change-email-dialog-header h3 {
+    margin: 0;
+    color: #173b29;
+    font-size: 20px;
+}
+
+.change-email-dialog-header p {
+    margin: 6px 0 0;
+    color: #6d8276;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.change-email-close {
+    border: 0;
+    background: transparent;
+    color: #6d8276;
+    font-size: 28px;
+    line-height: 1;
+    padding: 0 2px;
+    cursor: pointer;
+}
+
+.change-email-dialog-body {
+    padding: 22px 24px 10px;
+}
+
+.change-email-dialog-body label {
+    display: block;
+    margin-bottom: 8px;
+    color: #294937;
+    font-weight: 600;
+}
+
+.change-email-dialog-body input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #cfded6;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #173b29;
+    padding: 11px 12px;
+    font: inherit;
+}
+
+.change-email-dialog-body input:focus {
+    outline: none;
+    border-color: #0b8f67;
+    box-shadow: 0 0 0 3px rgba(11, 143, 103, 0.1);
+}
+
+.change-email-message {
+    min-height: 22px;
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.change-email-message.error {
+    color: #b42318;
+}
+
+.change-email-message.success {
+    color: #237a4b;
+}
+
+.change-email-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 22px;
+}
+
+.change-email-dialog-actions button {
+    min-width: 110px;
+}
+
+@media (max-width: 700px) {
+
+    .email-input-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .change-email-button {
+        width: 100%;
+    }
+
+    .change-email-modal {
+        padding: 16px;
+    }
+
+    .change-email-dialog-header,
+    .change-email-dialog-body,
+    .change-email-dialog-actions {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+}

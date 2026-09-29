@@ -152,17 +152,33 @@
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="form-group email-form-group">
 
                         <label for="email">
                             Email
                         </label>
 
-                        <input
-                            type="email"
-                            id="email"
-                            required
-                        >
+                        <div class="email-input-row">
+
+                            <input
+                                type="email"
+                                id="email"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                id="changeEmailButton"
+                                class="change-email-button"
+                            >
+                                Change Email
+                            </button>
+
+                        </div>
+
+                        <span class="field-note">
+                            Use Change Email to update your login email.
+                        </span>
 
                     </div>
 
@@ -281,6 +297,97 @@
 ></script>
 
 <script src="../js/mobile-navigation.js"></script>
+
+
+
+<!-- =====================================================
+     CHANGE EMAIL MODAL
+     ===================================================== -->
+
+<div
+    id="changeEmailModal"
+    class="change-email-modal"
+    aria-hidden="true"
+>
+    <div
+        class="change-email-modal-backdrop"
+        data-close-change-email
+    ></div>
+
+    <div
+        class="change-email-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="changeEmailTitle"
+    >
+
+        <div class="change-email-dialog-header">
+
+            <div>
+                <h3 id="changeEmailTitle">
+                    Change Email
+                </h3>
+
+                <p>
+                    Update the email address you use to sign in to Ticky Ticky.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="change-email-close"
+                id="changeEmailCloseButton"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="change-email-dialog-body">
+
+            <label for="newEmail">
+                New Email
+            </label>
+
+            <input
+                type="email"
+                id="newEmail"
+                autocomplete="email"
+                placeholder="Enter your new email address"
+            >
+
+            <div
+                id="changeEmailMessage"
+                class="change-email-message"
+                role="status"
+                aria-live="polite"
+            ></div>
+
+        </div>
+
+        <div class="change-email-dialog-actions">
+
+            <button
+                type="button"
+                class="cancel-button"
+                id="cancelChangeEmailButton"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="save-button"
+                id="submitChangeEmailButton"
+            >
+                Update Email
+            </button>
+
+        </div>
+
+    </div>
+</div>
 
 </body>
 

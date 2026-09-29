@@ -351,6 +351,15 @@ async function initializeAccount() {
         }
 
 
+        // -------------------------------------------------
+        // CHANGE EMAIL
+        // -------------------------------------------------
+
+        setupChangeEmail(
+            user.email || ""
+        );
+
+
         console.log(
             "Account page loaded:",
             {
@@ -717,6 +726,418 @@ async function uploadProfilePicture(
 }
 
 
+
+// =====================================================
+// CHANGE EMAIL
+// =====================================================
+
+function setupChangeEmail(
+    currentEmail
+) {
+
+    const changeEmailButton =
+        document.getElementById(
+            "changeEmailButton"
+        );
+
+    const modal =
+        document.getElementById(
+            "changeEmailModal"
+        );
+
+    const closeButton =
+        document.getElementById(
+            "changeEmailCloseButton"
+        );
+
+    const cancelButton =
+        document.getElementById(
+            "cancelChangeEmailButton"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "submitChangeEmailButton"
+        );
+
+    const newEmailInput =
+        document.getElementById(
+            "newEmail"
+        );
+
+    const message =
+        document.getElementById(
+            "changeEmailMessage"
+        );
+
+
+    if (
+        !changeEmailButton ||
+        !modal ||
+        !newEmailInput ||
+        !submitButton
+    ) {
+
+        return;
+
+    }
+
+
+    const closeModal = () => {
+
+        modal.classList.remove(
+            "is-open"
+        );
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        newEmailInput.value =
+            "";
+
+        if (
+            message
+        ) {
+
+            message.textContent =
+                "";
+
+            message.className =
+                "change-email-message";
+
+        }
+
+    };
+
+
+    const openModal = () => {
+
+        newEmailInput.value =
+            "";
+
+        if (
+            message
+        ) {
+
+            message.textContent =
+                "";
+
+            message.className =
+                "change-email-message";
+
+        }
+
+        modal.classList.add(
+            "is-open"
+        );
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        window.setTimeout(
+            () => newEmailInput.focus(),
+            0
+        );
+
+    };
+
+
+    changeEmailButton.addEventListener(
+        "click",
+        openModal
+    );
+
+
+    if (
+        closeButton
+    ) {
+
+        closeButton.addEventListener(
+            "click",
+            closeModal
+        );
+
+    }
+
+
+    if (
+        cancelButton
+    ) {
+
+        cancelButton.addEventListener(
+            "click",
+            closeModal
+        );
+
+    }
+
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.hasAttribute(
+                    "data-close-change-email"
+                )
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape" &&
+                modal.classList.contains(
+                    "is-open"
+                )
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+    newEmailInput.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                submitButton.click();
+
+            }
+
+        }
+    );
+
+
+    submitButton.addEventListener(
+        "click",
+        async () => {
+
+            const newEmail =
+                newEmailInput.value.trim();
+
+
+            if (
+                !newEmail
+            ) {
+
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        "Please enter your new email address.";
+
+                    message.className =
+                        "change-email-message error";
+
+                }
+
+                return;
+
+            }
+
+
+            const emailPattern =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+            if (
+                !emailPattern.test(
+                    newEmail
+                )
+            ) {
+
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        "Please enter a valid email address.";
+
+                    message.className =
+                        "change-email-message error";
+
+                }
+
+                return;
+
+            }
+
+
+            if (
+                newEmail.toLowerCase() ===
+                String(currentEmail || "").toLowerCase()
+            ) {
+
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        "This is already your current email address.";
+
+                    message.className =
+                        "change-email-message error";
+
+                }
+
+                return;
+
+            }
+
+
+            submitButton.disabled =
+                true;
+
+            submitButton.textContent =
+                "Updating...";
+
+
+            if (
+                message
+            ) {
+
+                message.textContent =
+                    "Updating your email address...";
+
+                message.className =
+                    "change-email-message";
+
+            }
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabase.auth.updateUser(
+                        {
+                            email:
+                                newEmail
+                        },
+                        {
+                            emailRedirectTo:
+                                "https://ticky-tickyv2.pages.dev/pages/account"
+                        }
+                    );
+
+
+                if (
+                    error
+                ) {
+
+                    throw error;
+
+                }
+
+
+                const emailInput =
+                    document.getElementById(
+                        "email"
+                    );
+
+
+                if (
+                    emailInput
+                ) {
+
+                    emailInput.value =
+                        newEmail;
+
+                }
+
+
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        "Email change submitted successfully. If email confirmation is enabled, check the new email address and follow the confirmation link.";
+
+                    message.className =
+                        "change-email-message success";
+
+                }
+
+
+                console.log(
+                    "Email update result:",
+                    data
+                );
+
+
+                window.setTimeout(
+                    closeModal,
+                    4500
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "Email change error:",
+                    error
+                );
+
+
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        error?.message ||
+                        "Failed to change your email address.";
+
+                    message.className =
+                        "change-email-message error";
+
+                }
+
+            }
+
+            finally {
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.textContent =
+                    "Update Email";
+
+            }
+
+        }
+    );
+
+}
+
 // =====================================================
 // SAVE ACCOUNT CHANGES
 // =====================================================
@@ -912,6 +1333,10 @@ async function saveAccountChanges(
                     {
                         email:
                             email
+                    },
+                    {
+                        emailRedirectTo:
+                            "https://ticky-tickyv2.pages.dev/pages/account"
                     }
                 );
 
