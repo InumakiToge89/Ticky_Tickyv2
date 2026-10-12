@@ -611,6 +611,21 @@ async function initializeTimer() {
 
         await restoreTimerState();
 
+        // A one-time navigation flag prevents accidental restarts on
+        // refresh. Only start sessions that have not already started.
+        const shouldAutoStart =
+            sessionStorage.getItem("autoStartProfilingTimer") === "1";
+
+        if (shouldAutoStart) {
+            sessionStorage.removeItem("autoStartProfilingTimer");
+
+            if (currentSession?.status === "NOT_STARTED") {
+                // Let the page finish rendering before invoking the normal
+                // start handler, so the same validation/database logic runs.
+                requestAnimationFrame(() => startButton.click());
+            }
+        }
+
 
     } catch (error) {
 
@@ -1080,17 +1095,21 @@ resumeButton.addEventListener(
 // STOP
 // =========================================================
 
+let skipNextStopConfirmation = false;
+
 stopButton.addEventListener(
     "click",
     async () => {
 
-                    const confirmed =
-                await showStopModal();
+        // The floating overlay can confirm the stop itself. In that case,
+        // skip the page-level modal once and run the same existing stop logic.
+        const confirmed = skipNextStopConfirmation
+            ? (skipNextStopConfirmation = false, true)
+            : await showStopModal();
 
-
-            if (!confirmed) {
-                return;
-            }
+        if (!confirmed) {
+            return;
+        }
 
 
         try {
@@ -1286,6 +1305,13 @@ stopButton.addEventListener(
                 sessionStorage.setItem(
                     "activeProfilingType",
                     nextType
+                );
+
+                // Automatically begin the next profiling section after
+                // navigation, using the regular Start handler.
+                sessionStorage.setItem(
+                    "autoStartProfilingTimer",
+                    "1"
                 );
 
 
@@ -2871,5 +2897,141 @@ function showError(
 // =========================================================
 // START
 // =========================================================
+
+// =========================================================
+// FLOATING TIMER (Document Picture-in-Picture)
+// =========================================================
+
+const floatingTimerButton =
+    document.getElementById("floatingTimerButton");
+
+let floatingTimerWindow = null;
+let floatingTimerSyncInterval = null;
+
+floatingTimerButton?.addEventListener("click", async () => {
+    if (!("documentPictureInPicture" in window)) {
+        showError(
+            "Floating Timer is not supported by this browser. Please use an up-to-date Chromium-based browser such as Chrome or Edge."
+        );
+        return;
+    }
+
+    try {
+        if (floatingTimerWindow && !floatingTimerWindow.closed) {
+            floatingTimerWindow.focus();
+            return;
+        }
+
+        floatingTimerWindow = await window.documentPictureInPicture.requestWindow({
+            width: 280,
+            height: 190
+        });
+
+        const pipDoc = floatingTimerWindow.document;
+        pipDoc.body.innerHTML = `
+            <main class="ticky-pip">
+                <div class="ticky-pip-brand">Ticky Ticky</div>
+                <div id="pipSession" class="ticky-pip-session">Profiling timer</div>
+                <div id="pipStatus" class="ticky-pip-status">NOT STARTED</div>
+                <div id="pipTime" class="ticky-pip-time">00:00:00</div>
+                <div class="ticky-pip-controls">
+                    <button id="pipPause" type="button">Pause</button>
+                    <button id="pipResume" type="button">Resume</button>
+                    <button id="pipStop" type="button">Stop</button>
+                </div>
+                <section id="pipStopConfirm" class="pip-confirm" role="dialog" aria-modal="true" aria-labelledby="pipConfirmTitle" hidden>
+                    <div class="pip-confirm-card">
+                        <div class="pip-confirm-icon">!</div>
+                        <h2 id="pipConfirmTitle">Stop Profiling Job?</h2>
+                        <p>Are you sure you want to stop this profiling job?</p>
+                        <p class="pip-confirm-warning">The current profiling session will be stopped.</p>
+                        <div class="pip-confirm-actions">
+                            <button id="pipCancelStop" type="button">Cancel</button>
+                            <button id="pipConfirmStop" type="button">Yes, Stop</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        `;
+
+        const pipStyle = pipDoc.createElement("style");
+        pipStyle.textContent = `
+            * { box-sizing: border-box; }
+            body { margin: 0; padding: 12px; font: 13px system-ui, sans-serif; background: #101827; color: #f8fafc; }
+            .ticky-pip { display: grid; gap: 7px; }
+            .ticky-pip-brand { font-weight: 800; color: #6ee7b7; }
+            .ticky-pip-session { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #cbd5e1; }
+            .ticky-pip-status { font-size: 10px; letter-spacing: .08em; color: #a7f3d0; }
+            .ticky-pip-time { font-size: 29px; font-weight: 800; font-variant-numeric: tabular-nums; }
+            .ticky-pip-controls { display: flex; gap: 6px; }
+            button { flex: 1; border: 0; border-radius: 6px; padding: 7px 3px; cursor: pointer; background: #334155; color: white; font-weight: 600; }
+            button:disabled { opacity: .4; cursor: default; }
+            .pip-confirm { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 12px; background: rgba(8, 15, 25, .82); }
+            .pip-confirm[hidden] { display: none; }
+            .pip-confirm-card { width: 100%; padding: 14px; border: 1px solid #475569; border-radius: 12px; background: #f8fafc; color: #15352b; box-shadow: 0 10px 28px rgba(0,0,0,.35); text-align: center; }
+            .pip-confirm-icon { display: grid; place-items: center; width: 30px; height: 30px; margin: 0 auto 7px; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 20px; font-weight: 800; }
+            .pip-confirm-card h2 { margin: 5px 0 8px; font-size: 15px; }
+            .pip-confirm-card p { margin: 5px 0; color: #47645a; font-size: 11px; line-height: 1.35; }
+            .pip-confirm-card .pip-confirm-warning { font-size: 10px; }
+            .pip-confirm-actions { display: flex; gap: 7px; margin-top: 12px; }
+            .pip-confirm-actions button { padding: 8px 5px; }
+            #pipConfirmStop { background: #dc342d; }
+        `;
+        pipDoc.head.appendChild(pipStyle);
+
+        pipDoc.getElementById("pipPause").addEventListener("click", () => pauseButton.click());
+        pipDoc.getElementById("pipResume").addEventListener("click", () => resumeButton.click());
+
+        const pipStopConfirm = pipDoc.getElementById("pipStopConfirm");
+        const pipStopButton = pipDoc.getElementById("pipStop");
+        const pipCancelStop = pipDoc.getElementById("pipCancelStop");
+        const pipConfirmStop = pipDoc.getElementById("pipConfirmStop");
+
+        // Keep the entire confirmation flow inside the floating window.
+        pipStopButton.addEventListener("click", () => {
+            if (!currentSession || !["RUNNING", "PAUSED"].includes(currentSession.status)) return;
+            pipStopConfirm.hidden = false;
+            pipCancelStop.focus();
+        });
+        pipCancelStop.addEventListener("click", () => {
+            pipStopConfirm.hidden = true;
+            pipStopButton.focus();
+        });
+        pipConfirmStop.addEventListener("click", () => {
+            pipStopConfirm.hidden = true;
+            skipNextStopConfirmation = true;
+            stopButton.click();
+        });
+
+        const syncFloatingTimer = () => {
+            if (!floatingTimerWindow || floatingTimerWindow.closed) return;
+            const pip = floatingTimerWindow.document;
+            pip.getElementById("pipSession").textContent =
+                `${currentJob?.team_name || "Profiling"} · ${currentSession?.session_type || ""}`;
+            pip.getElementById("pipStatus").textContent =
+                currentSession?.status || "NOT STARTED";
+            pip.getElementById("pipTime").textContent =
+                timerDisplay?.textContent || "00:00:00";
+            pip.getElementById("pipPause").disabled = !!pauseButton?.disabled;
+            pip.getElementById("pipResume").disabled = !!resumeButton?.disabled;
+            pip.getElementById("pipStop").disabled = !!stopButton?.disabled;
+        };
+
+        syncFloatingTimer();
+        floatingTimerSyncInterval = window.setInterval(syncFloatingTimer, 500);
+
+        floatingTimerWindow.addEventListener("pagehide", () => {
+            floatingTimerWindow = null;
+            if (floatingTimerSyncInterval) {
+                window.clearInterval(floatingTimerSyncInterval);
+                floatingTimerSyncInterval = null;
+            }
+        });
+    } catch (error) {
+        console.error("Unable to open floating timer:", error);
+        showError("Unable to open the floating timer. Check whether your browser allows Picture-in-Picture windows.");
+    }
+});
+
 
 initializeTimer();

@@ -1,0 +1,21 @@
+TICKY TICKY — DEVELOPER CONSOLE ENHANCEMENTS
+
+What changed
+- Developer Console now runs the health/integrity check automatically when the page opens.
+- Data Manager search is sent to Supabase so it searches the selected database area, not only the first 250 records already loaded in the browser. Results remain capped at 250 for performance.
+- Search requests are debounced and stale responses are ignored to reduce UI flicker/race conditions while typing.
+- Loading, refresh-button state, and search errors are handled more clearly.
+- Profile Role and Status use constrained dropdowns; numeric count/duration fields use non-negative numeric inputs.
+- Added a hint explaining database-wide search.
+
+IMPORTANT ONE-TIME DATABASE STEP
+The Developer Console SQL function signature changed to support p_search. Run the updated file `supabase_dev_console.sql` once in the Supabase SQL Editor while logged in with the project's owner privileges. The web page cannot install database functions by itself. After that setup, routine analyst/profile fixes and supported record edits can be performed in Ticky Ticky's Developer Console instead of manually editing rows in Supabase.
+
+Security and scope
+- The existing developer-owner check and whitelisted RPC-based read/update/delete design are preserved.
+- This enhancement does not expose the Supabase service-role key in browser code.
+- Search results are limited to 250 matching rows per request. Search by analyst name, employee code, or account ID in Profiles.
+
+Validation performed
+- `js/dev.js` passes `node --check` syntax validation.
+- SQL was reviewed statically but was not executed against the user's live Supabase project; verify the SQL migration in a test environment before relying on it in production.

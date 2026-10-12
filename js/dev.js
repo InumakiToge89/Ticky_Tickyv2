@@ -143,6 +143,8 @@ let currentRows = [];
 let currentRequests = [];
 let requestFilter = "PENDING";
 let searchTerm = "";
+let rowsRequestVersion = 0;
+let searchDebounceHandle = null;
 
 const $ = id => document.getElementById(id);
 
@@ -272,24 +274,39 @@ function renderDataRows() {
 }
 
 async function loadRows() {
+    const requestVersion = ++rowsRequestVersion;
     setError("");
-    dataBody.innerHTML = `<tr><td colspan="20" class="dev-loading">Loading ${escapeHtml(TABLES[currentTable].label)}…</td></tr>`;
+    dataBody.innerHTML = `<tr><td colspan="20" class="dev-loading">Searching ${escapeHtml(TABLES[currentTable].label)}…</td></tr>`;
+    refreshDataButton.disabled = true;
+    refreshDataButton.textContent = "Loading…";
 
-    const { data, error } = await supabase.rpc("dev_list_records", {
-        p_table: currentTable,
-        p_limit: 250
-    });
+    try {
+        const { data, error } = await supabase.rpc("dev_list_records", {
+            p_table: currentTable,
+            p_limit: 250,
+            p_search: searchTerm.trim() || null
+        });
 
-    if (error) {
+        if (requestVersion !== rowsRequestVersion) return;
+        if (error) throw error;
+
+        currentRows = Array.isArray(data) ? data : [];
+        renderTableHeader();
+        renderDataRows();
+        if (searchTerm.trim()) {
+            tableDescription.textContent = `${TABLES[currentTable].description} Search matches across the full selected data area; up to 250 results are shown.`;
+        }
+    } catch (error) {
+        if (requestVersion !== rowsRequestVersion) return;
         console.error("Developer data load error:", error);
-        setError(error.message || "Unable to load records.");
-        dataBody.innerHTML = `<tr><td colspan="20" class="dev-empty">Unable to load records.</td></tr>`;
-        return;
+        setError(`${error.message || "Unable to load records."}${String(error.message || "").includes("dev_list_records") ? " Run the updated supabase_dev_console.sql once to enable database-wide search." : ""}`);
+        dataBody.innerHTML = `<tr><td colspan="20" class="dev-empty">Unable to load records. Check the error above.</td></tr>`;
+    } finally {
+        if (requestVersion === rowsRequestVersion) {
+            refreshDataButton.disabled = false;
+            refreshDataButton.textContent = "↻ Refresh";
+        }
     }
-
-    currentRows = Array.isArray(data) ? data : [];
-    renderTableHeader();
-    renderDataRows();
 }
 
 function createEditModal(row) {
@@ -317,6 +334,10 @@ function createEditModal(row) {
                     const multiline = isSensitiveValueColumn(key);
                     const inputValue = value === null || value === undefined ? "" : String(value);
                     const specialSessionType = key === "session_type" && isTimerSessionEditor;
+                    const profileRole = currentTable === "profiles" && key === "role";
+                    const profileStatus = currentTable === "profiles" && key === "status";
+                    const numeric = ["no_of_members", "member_count", "total_seconds", "duration_seconds", "manual_duration_seconds", "live_duration_seconds"].includes(key);
+                    const selectOptions = profileRole ? ["ANALYST", "ADMIN"] : profileStatus ? ["ACTIVE", "INACTIVE"] : [];
                     return `
                         <label class="dev-field ${specialSessionType ? "dev-field-special" : ""}">
                             <span>${escapeHtml(label)}</span>
@@ -326,10 +347,12 @@ function createEditModal(row) {
                                     <option value="MEMBERS" ${String(inputValue).toUpperCase() === "MEMBERS" ? "selected" : ""}>MEMBERS</option>
                                    </select>
                                    <small>This is a paired profiling session. Changing it here safely swaps the companion session to keep TEAM ↔ MEMBERS.</small>`
-                                : multiline
-                                    ? `<textarea name="${escapeHtml(key)}" rows="4">${escapeHtml(inputValue)}</textarea>`
-                                    : `<input name="${escapeHtml(key)}" value="${escapeHtml(inputValue)}" autocomplete="off">`}
-                            ${specialSessionType ? "" : `<small>${escapeHtml(key)}</small>`}
+                                : selectOptions.length
+                                    ? `<select name="${escapeHtml(key)}">${selectOptions.map(option => `<option value="${option}" ${String(inputValue).toUpperCase() === option ? "selected" : ""}>${option}</option>`).join("")}</select>`
+                                    : multiline
+                                        ? `<textarea name="${escapeHtml(key)}" rows="4">${escapeHtml(inputValue)}</textarea>`
+                                        : `<input name="${escapeHtml(key)}" value="${escapeHtml(inputValue)}" autocomplete="off" ${numeric ? 'type="number" min="0" step="1" inputmode="numeric"' : ""}>`}
+                            ${specialSessionType ? "" : `<small>${escapeHtml(key)}${numeric ? " · enter a non-negative whole number" : ""}</small>`}
                         </label>
                     `;
                 }).join("")}
@@ -713,13 +736,15 @@ function bindEvents() {
     tableSelect.addEventListener("change", async () => {
         currentTable = tableSelect.value;
         searchTerm = "";
+        tableDescription.textContent = TABLES[currentTable].description;
         dataSearch.value = "";
         await loadRows();
     });
 
     dataSearch.addEventListener("input", () => {
         searchTerm = dataSearch.value;
-        renderDataRows();
+        if (searchDebounceHandle) clearTimeout(searchDebounceHandle);
+        searchDebounceHandle = setTimeout(() => loadRows(), 300);
     });
 
     refreshDataButton.addEventListener("click", loadRows);
@@ -759,5 +784,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!await requireDevOwner()) return;
     initializeTableSelect();
     bindEvents();
-    await Promise.all([loadRows(), loadRequests()]);
+    await Promise.all([loadRows(), loadRequests(), loadDevHealth()]);
 });

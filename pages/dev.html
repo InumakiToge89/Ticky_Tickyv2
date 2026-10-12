@@ -111,10 +111,11 @@
                             <button type="button" id="refreshDataButton" class="dev-secondary-button">↻ Refresh</button>
                         </div>
                         <div class="dev-toolbar-right">
-                            <input id="devDataSearch" class="dev-search" type="search" placeholder="Search records…" autocomplete="off">
+                            <input id="devDataSearch" class="dev-search" type="search" placeholder="Search all records (name, ID, status…)" autocomplete="off" aria-label="Search all records in selected data area">
                         </div>
                     </div>
                     <p id="devTableDescription" class="dev-description"></p>
+                    <p class="dev-search-hint">Tip: search Profiles by analyst name, employee code, or account ID. Search runs against the selected database area, not only the currently visible rows.</p>
                     <div class="dev-data-wrap">
                         <table class="dev-data-table">
                             <thead><tr id="devDataHeader"></tr></thead>
@@ -129,7 +130,7 @@
 
 <script type="module" src="../js/theme.js"></script>
 <script type="module" src="../js/account-menu.js"></script>
-<script type="module" src="../js/dev.js?v=20260917-0115"></script>
+<script type="module" src="../js/dev.js?v=20261013-devconsole-search"></script>
 <script src="../js/mobile-navigation.js"></script>
 
 <script>

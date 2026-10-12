@@ -3298,6 +3298,18 @@ function initializeManualTimeRequestActions() {
 // LOAD REPORTS
 // =========================================================
 
+async function fetchAllReportPages(makeQuery, pageSize = 500) {
+    const rows = [];
+    for (let offset = 0; ; offset += pageSize) {
+        const { data, error } = await makeQuery().range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        const page = data || [];
+        rows.push(...page);
+        if (page.length < pageSize) break;
+    }
+    return rows;
+}
+
 async function loadReports() {
 
     clearError();
@@ -3306,36 +3318,13 @@ async function loadReports() {
     // GET COMPLETED PROFILING JOBS
     // -----------------------------------------------------
 
-    const {
-        data: jobs,
-        error: jobsError
-    } = await supabase
+    const jobs = await fetchAllReportPages(() => supabase
         .from("profiling_jobs")
-        .select(`
-            id,
-            analyst_id,
-            team_name,
-            team_id,
-            member_count,
-            status,
-            started_at,
-            finished_at,
-            total_seconds
-        `)
-        .eq(
-            "status",
-            "COMPLETED"
-        )
-        .order(
-            "finished_at",
-            {
-                ascending: false
-            }
-        );
-
-    if (jobsError) {
-        throw jobsError;
-    }
+        .select(`id, analyst_id, team_name, team_id, member_count, status, started_at, finished_at, total_seconds`)
+        .eq("status", "COMPLETED")
+        .order("finished_at", { ascending: false })
+        .order("id", { ascending: true })
+    );
 
     console.log(
         "Completed profiling jobs:",
@@ -3448,34 +3437,13 @@ async function loadReports() {
                 i + EVENT_BATCH_SIZE
             );
 
-        const {
-            data: eventRows,
-            error: eventsError
-        } = await supabase
+        const eventRows = await fetchAllReportPages(() => supabase
             .from("timer_events")
-            .select(`
-                session_id,
-                event_type,
-                event_time
-            `)
-            .in(
-                "session_id",
-                batchIds
-            )
-            .order(
-                "event_time",
-                {
-                    ascending: true
-                }
-            );
-
-        if (eventsError) {
-            throw eventsError;
-        }
-
-        timerEvents.push(
-            ...(eventRows || [])
+            .select("session_id, event_type, event_time")
+            .in("session_id", batchIds)
+            .order("event_time", { ascending: true })
         );
+        timerEvents.push(...eventRows);
     }
 
     console.log(
@@ -4692,54 +4660,13 @@ async function loadWorkActivityReports() {
         // GET COMPLETED WORK ACTIVITY LOGS
         // -------------------------------------------------
 
-        const {
-            data: logs,
-            error: logsError
-        } =
-            await supabase
-                .from("task_logs")
-                .select(`
-                    id,
-                    analyst_id,
-                    category,
-                    task_name,
-                    started_at,
-                    ended_at,
-                    duration_seconds,
-                    manual_duration_seconds,
-                    live_duration_seconds,
-                    duration_source,
-                    justification
-                `)
-                .not(
-                    "ended_at",
-                    "is",
-                    null
-                )
-                .order(
-                    "ended_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-                console.log(
-                    "TASK LOGS RESULT:",
-                    logs
-                );
-
-                console.log(
-                    "TASK LOGS ERROR:",
-                    logsError
-                );
-
-
-        if (logsError) {
-
-            throw logsError;
-
-        }
+        const logs = await fetchAllReportPages(() => supabase
+            .from("task_logs")
+            .select(`id, analyst_id, category, task_name, started_at, ended_at, duration_seconds, manual_duration_seconds, live_duration_seconds, duration_source, justification`)
+            .not("ended_at", "is", null)
+            .order("ended_at", { ascending: false })
+            .order("id", { ascending: true })
+        );
 
 
         workActivityReportRecords =
@@ -5320,6 +5247,12 @@ function populateAnalystFilter(
 // =========================================================
 
 function applyFilters() {
+    if (fromDate?.value && toDate?.value && fromDate.value > toDate.value) {
+        showError("The From date must not be later than the To date.");
+        return;
+    }
+    clearError();
+
 
     // =====================================================
     // RESET BOTH PAGINATIONS

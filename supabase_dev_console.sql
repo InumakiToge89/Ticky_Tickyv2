@@ -164,9 +164,12 @@ $$;
 -- LIST RECORDS
 -- -------------------------------------------------------------
 
+drop function if exists public.dev_list_records(text, integer);
+
 create or replace function public.dev_list_records(
     p_table text,
-    p_limit integer default 250
+    p_limit integer default 250,
+    p_search text default null
 )
 returns jsonb
 language plpgsql
@@ -188,32 +191,32 @@ begin
 
     sql := case p_table
         when 'profiles' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, full_name, employee_code, role, status from public.profiles order by full_name nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, full_name, employee_code, role, status from public.profiles x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by full_name nulls last limit $1) x'
         when 'teams' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, team_id, team_name, no_of_members, status, created_by, created_at, updated_at from public.teams order by created_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, team_id, team_name, no_of_members, status, created_by, created_at, updated_at from public.teams x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by created_at desc nulls last limit $1) x'
         when 'profiling_jobs' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, team_id, team_name, member_count, status, started_at, finished_at, total_seconds from public.profiling_jobs order by started_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, team_id, team_name, member_count, status, started_at, finished_at, total_seconds from public.profiling_jobs x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by started_at desc nulls last limit $1) x'
         when 'timer_sessions' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, profiling_job_id, session_type, status, started_at, stopped_at, total_seconds from public.timer_sessions order by started_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, profiling_job_id, session_type, status, started_at, stopped_at, total_seconds from public.timer_sessions x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by started_at desc nulls last limit $1) x'
         when 'timer_events' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, session_id, event_type, event_time from public.timer_events order by event_time desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, session_id, event_type, event_time from public.timer_events x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by event_time desc nulls last limit $1) x'
         when 'task_logs' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, category, task_name, started_at, ended_at, duration_seconds, manual_duration_seconds, live_duration_seconds, duration_source, justification from public.task_logs order by started_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, category, task_name, started_at, ended_at, duration_seconds, manual_duration_seconds, live_duration_seconds, duration_source, justification from public.task_logs x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by started_at desc nulls last limit $1) x'
         when 'task_activity_events' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, task_log_id, event_type, event_time from public.task_activity_events order by event_time desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, task_log_id, event_type, event_time from public.task_activity_events x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by event_time desc nulls last limit $1) x'
         when 'manual_time_requests' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, assigned_admin_id, task_name, started_at, ended_at, duration_seconds, justification, status, reviewed_by, reviewed_at, rejection_reason, created_at from public.manual_time_requests order by created_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, analyst_id, assigned_admin_id, task_name, started_at, ended_at, duration_seconds, justification, status, reviewed_by, reviewed_at, rejection_reason, created_at from public.manual_time_requests x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by created_at desc nulls last limit $1) x'
         when 'app_notifications' then
-            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, recipient_id, type, title, message, reference_id, is_read, read_at, created_at from public.app_notifications order by created_at desc nulls last limit $1) x'
+            'select coalesce(jsonb_agg(to_jsonb(x)), ''[]''::jsonb) from (select id, recipient_id, type, title, message, reference_id, is_read, read_at, created_at from public.app_notifications x where ($2 is null or to_jsonb(x)::text ilike ''%'' || $2 || ''%'') order by created_at desc nulls last limit $1) x'
     end;
 
-    execute sql into result using safe_limit;
+    execute sql into result using safe_limit, nullif(trim(coalesce(p_search, '')), '');
     return coalesce(result, '[]'::jsonb);
 end;
 $$;
 
-revoke all on function public.dev_list_records(text, integer) from public;
-grant execute on function public.dev_list_records(text, integer) to authenticated;
+revoke all on function public.dev_list_records(text, integer, text) from public;
+grant execute on function public.dev_list_records(text, integer, text) to authenticated;
 
 -- -------------------------------------------------------------
 -- UPDATE ONE RECORD

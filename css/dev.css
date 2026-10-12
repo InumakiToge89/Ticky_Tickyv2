@@ -809,3 +809,29 @@
     .dev-health-actions { width:100%; justify-content:space-between; }
     .dev-health-grid { grid-template-columns:1fr; }
 }
+
+
+/* Database-wide search guidance */
+.dev-search-hint {
+    margin: -7px 0 14px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.dev-field select {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--input-background, var(--white));
+    color: var(--text-primary);
+    font: inherit;
+}
+
+.dev-field select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-green) 15%, transparent);
+}

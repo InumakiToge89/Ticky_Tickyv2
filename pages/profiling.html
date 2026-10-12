@@ -303,6 +303,7 @@
                                 </option>
                             </select>
 
+
                         </div>
 
                         <!-- TEAM NAME -->
@@ -473,22 +474,38 @@
 
                     <div class="form-actions">
 
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onclick="window.location.href='dashboard.html'"
-                        >
-                            Cancel
-                        </button>
+                        <div class="form-actions-left">
+                            <button
+                                type="button"
+                                id="deleteSelectedTeamButton"
+                                class="btn btn-danger delete-team-action"
+                                disabled
+                                aria-describedby="deleteTeamHelp"
+                            >
+                                Delete Selected Team
+                            </button>
+                            <span id="deleteTeamHelp" class="form-help">
+                                Permanently removes the selected saved team.
+                            </span>
+                        </div>
 
+                        <div class="form-actions-right">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="window.location.href='dashboard.html'"
+                            >
+                                Cancel
+                            </button>
 
-                        <button
-                            type="submit"
-                            id="continueButton"
-                            class="btn btn-primary"
-                        >
-                            Continue
-                        </button>
+                            <button
+                                type="submit"
+                                id="continueButton"
+                                class="btn btn-primary"
+                            >
+                                Continue
+                            </button>
+                        </div>
 
                     </div>
 

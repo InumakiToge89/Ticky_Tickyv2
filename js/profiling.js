@@ -852,6 +852,91 @@ teamSelect.addEventListener(
 // FORM SUBMIT
 // =========================================================
 
+
+
+// =========================================================
+// DELETE A SAVED TEAM DIRECTLY FROM THE PROFILING DROPDOWN
+// =========================================================
+
+const deleteSelectedTeamButton =
+    document.getElementById("deleteSelectedTeamButton");
+
+function updateDeleteSelectedTeamButton() {
+    if (deleteSelectedTeamButton) {
+        deleteSelectedTeamButton.disabled = !teamSelect?.value;
+    }
+}
+
+teamSelect?.addEventListener("change", updateDeleteSelectedTeamButton);
+updateDeleteSelectedTeamButton();
+
+deleteSelectedTeamButton?.addEventListener("click", async () => {
+    const selectedTeamId = teamSelect.value;
+    const selectedTeam = savedTeams.find(
+        team => String(team.id) === String(selectedTeamId)
+    );
+
+    if (!selectedTeam) {
+        showError("Select a saved team to delete.");
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `Permanently delete "${selectedTeam.team_name}" (${selectedTeam.team_id}) from your saved teams? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    deleteSelectedTeamButton.disabled = true;
+    deleteSelectedTeamButton.textContent = "Deleting...";
+
+    try {
+        const {
+            data: { user },
+            error: userError
+        } = await supabase.auth.getUser();
+
+        if (userError) throw userError;
+        if (!user) throw new Error("Your session has expired. Please sign in again.");
+
+        const { error: deleteError } = await supabase
+            .from("teams")
+            .delete()
+            .eq("id", selectedTeam.id)
+            .eq("created_by", user.id);
+
+        if (deleteError) throw deleteError;
+
+        savedTeams = savedTeams.filter(
+            team => String(team.id) !== String(selectedTeam.id)
+        );
+
+        const option = teamSelect.querySelector(
+            `option[value="${CSS.escape(String(selectedTeam.id))}"]`
+        );
+        option?.remove();
+        teamSelect.value = "";
+
+        teamNameInput.value = "";
+        teamIdInput.value = "";
+        memberCountInput.value = "";
+
+        showError("");
+        updateDeleteSelectedTeamButton();
+
+        window.alert("Team deleted successfully.");
+    } catch (error) {
+        console.error("Delete saved team error:", error);
+        showError(
+            error.message ||
+            "Unable to delete this team. If it is referenced by another record, remove or update that relationship first."
+        );
+    } finally {
+        deleteSelectedTeamButton.textContent = "Delete Selected Team";
+        updateDeleteSelectedTeamButton();
+    }
+});
+
 profilingForm.addEventListener(
     "submit",
     async (event) => {
@@ -1120,6 +1205,13 @@ profilingForm.addEventListener(
             sessionStorage.setItem(
                 "activeProfilingType",
                 profilingType
+            );
+
+            // Start the selected profiling timer automatically after
+            // the timer page has loaded and restored the session.
+            sessionStorage.setItem(
+                "autoStartProfilingTimer",
+                "1"
             );
 
 
