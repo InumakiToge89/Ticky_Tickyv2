@@ -32,7 +32,8 @@ const TASKS = {
 
         "Self QA",
         "QA (Peer Review)",
-        "Floor Support"
+        "Floor Support",
+        "Projects"
 
     ],
 
@@ -44,8 +45,7 @@ const TASKS = {
         "Meeting: 1:1",
         "Meeting: Discovery Time Out",
         "Meeting: Organizational Activities",
-        "Meeting: Team / Huddles",
-        "Projects"
+        "Meeting: Team / Huddles"
 
     ],
 
@@ -400,8 +400,12 @@ async function restoreActiveTask() {
     );
 
     currentTaskLogId = activeLog.id;
-    currentCategory = activeLog.category || "PROD";
     selectedTask = activeLog.task_name || null;
+    // Recover legacy Projects timers under PROD after the task is reclassified.
+    currentCategory =
+        String(selectedTask || "").trim().toLowerCase() === "projects"
+            ? "PROD"
+            : (activeLog.category || "PROD");
     startTime = new Date(activeLog.started_at).getTime();
     totalPausedMilliseconds = totalPausedMs;
     elapsedSeconds = recoveredElapsed;
@@ -2231,6 +2235,161 @@ manualSubmitButton?.addEventListener(
     "click",
     submitManualNonProd
 );
+
+
+// =====================================================
+// FLOATING WORK ACTIVITY TIMER (Document Picture-in-Picture)
+// =====================================================
+
+const workFloatingTimerButton = document.getElementById("workFloatingTimerButton");
+let workFloatingTimerWindow = null;
+let workFloatingTimerSyncInterval = null;
+
+function syncWorkFloatingTimer() {
+    if (!workFloatingTimerWindow || workFloatingTimerWindow.closed) return;
+
+    const pip = workFloatingTimerWindow.document;
+    const session = pip.getElementById("workPipSession");
+    const status = pip.getElementById("workPipStatus");
+    const time = pip.getElementById("workPipTime");
+    const pause = pip.getElementById("workPipPause");
+    const resume = pip.getElementById("workPipResume");
+    const stop = pip.getElementById("workPipStop");
+
+    if (!session || !status || !time || !pause || !resume || !stop) return;
+
+    session.textContent = selectedTask
+        ? `${currentCategory} · ${selectedTask}`
+        : "No activity selected";
+    status.textContent = !isRunning
+        ? "NOT STARTED"
+        : isPaused
+            ? "PAUSED"
+            : "RUNNING";
+    time.textContent = workTimerDisplay?.textContent || formatTime(elapsedSeconds);
+    pause.disabled = !isRunning || isPaused;
+    resume.disabled = !isRunning || !isPaused;
+    stop.disabled = !isRunning || !currentTaskLogId;
+}
+
+workFloatingTimerButton?.addEventListener("click", async () => {
+    if (!("documentPictureInPicture" in window)) {
+        showToast(
+            "Floating Timer is not supported by this browser. Please use an up-to-date Chromium-based browser such as Chrome or Edge."
+        );
+        return;
+    }
+
+    try {
+        if (workFloatingTimerWindow && !workFloatingTimerWindow.closed) {
+            workFloatingTimerWindow.focus();
+            syncWorkFloatingTimer();
+            return;
+        }
+
+        workFloatingTimerWindow = await window.documentPictureInPicture.requestWindow({
+            width: 300,
+            height: 205
+        });
+
+        const pipDoc = workFloatingTimerWindow.document;
+        pipDoc.body.innerHTML = `
+            <main class="work-ticky-pip">
+                <div class="work-ticky-pip-brand">Ticky Ticky · Work Activity</div>
+                <div id="workPipSession" class="work-ticky-pip-session">No activity selected</div>
+                <div id="workPipStatus" class="work-ticky-pip-status">NOT STARTED</div>
+                <div id="workPipTime" class="work-ticky-pip-time">00:00:00</div>
+                <div class="work-ticky-pip-controls">
+                    <button id="workPipPause" type="button">Pause</button>
+                    <button id="workPipResume" type="button">Resume</button>
+                    <button id="workPipStop" type="button">Stop</button>
+                </div>
+                <section id="workPipStopConfirm" class="work-pip-confirm" role="dialog" aria-modal="true" aria-labelledby="workPipConfirmTitle" hidden>
+                    <div class="work-pip-confirm-card">
+                        <div class="work-pip-confirm-icon">!</div>
+                        <h2 id="workPipConfirmTitle">Stop Work Activity?</h2>
+                        <p id="workPipConfirmMessage">Are you sure you want to stop this activity?</p>
+                        <p class="work-pip-confirm-warning">The elapsed time will be saved.</p>
+                        <div class="work-pip-confirm-actions">
+                            <button id="workPipCancelStop" type="button">Cancel</button>
+                            <button id="workPipConfirmStop" type="button">Yes, Stop</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        `;
+
+        const pipStyle = pipDoc.createElement("style");
+        pipStyle.textContent = `
+            * { box-sizing: border-box; }
+            body { margin: 0; padding: 12px; font: 13px system-ui, sans-serif; background: #101827; color: #f8fafc; }
+            .work-ticky-pip { display: grid; gap: 7px; }
+            .work-ticky-pip-brand { font-weight: 800; color: #6ee7b7; }
+            .work-ticky-pip-session { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #cbd5e1; }
+            .work-ticky-pip-status { font-size: 10px; letter-spacing: .08em; color: #a7f3d0; }
+            .work-ticky-pip-time { font-size: 29px; font-weight: 800; font-variant-numeric: tabular-nums; }
+            .work-ticky-pip-controls { display: flex; gap: 6px; }
+            button { flex: 1; border: 0; border-radius: 6px; padding: 7px 3px; cursor: pointer; background: #047857; color: white; font-weight: 700; }
+            button:disabled { opacity: .4; cursor: default; }
+            .work-pip-confirm { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 12px; background: rgba(8, 15, 25, .82); }
+            .work-pip-confirm[hidden] { display: none; }
+            .work-pip-confirm-card { width: 100%; padding: 14px; border: 1px solid #475569; border-radius: 12px; background: #f8fafc; color: #15352b; box-shadow: 0 10px 28px rgba(0,0,0,.35); text-align: center; }
+            .work-pip-confirm-icon { display: grid; place-items: center; width: 30px; height: 30px; margin: 0 auto 7px; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 20px; font-weight: 800; }
+            .work-pip-confirm-card h2 { margin: 5px 0 8px; font-size: 15px; }
+            .work-pip-confirm-card p { margin: 5px 0; color: #47645a; font-size: 11px; line-height: 1.35; }
+            .work-pip-confirm-card .work-pip-confirm-warning { font-size: 10px; }
+            .work-pip-confirm-actions { display: flex; gap: 7px; margin-top: 12px; }
+            .work-pip-confirm-actions button { padding: 8px 5px; }
+            #workPipConfirmStop { background: #dc342d; }
+        `;
+        pipDoc.head.appendChild(pipStyle);
+
+        pipDoc.getElementById("workPipPause").addEventListener("click", () => {
+            if (isRunning && !isPaused) pauseTimer();
+        });
+        pipDoc.getElementById("workPipResume").addEventListener("click", () => {
+            if (isRunning && isPaused) resumeTimer();
+        });
+
+        const confirmLayer = pipDoc.getElementById("workPipStopConfirm");
+        const stopButton = pipDoc.getElementById("workPipStop");
+        const cancelStopButton = pipDoc.getElementById("workPipCancelStop");
+        const confirmStopButton = pipDoc.getElementById("workPipConfirmStop");
+
+        stopButton.addEventListener("click", () => {
+            if (!isRunning || !currentTaskLogId) return;
+            pipDoc.getElementById("workPipConfirmMessage").textContent =
+                `Stop tracking "${selectedTask || "this activity"}"?`;
+            confirmLayer.hidden = false;
+            cancelStopButton.focus();
+        });
+
+        cancelStopButton.addEventListener("click", () => {
+            confirmLayer.hidden = true;
+            stopButton.focus();
+        });
+
+        confirmStopButton.addEventListener("click", async () => {
+            confirmLayer.hidden = true;
+            await stopTimer();
+            syncWorkFloatingTimer();
+        });
+
+        syncWorkFloatingTimer();
+        workFloatingTimerSyncInterval = window.setInterval(syncWorkFloatingTimer, 500);
+
+        workFloatingTimerWindow.addEventListener("pagehide", () => {
+            workFloatingTimerWindow = null;
+            if (workFloatingTimerSyncInterval) {
+                window.clearInterval(workFloatingTimerSyncInterval);
+                workFloatingTimerSyncInterval = null;
+            }
+        });
+    } catch (error) {
+        console.error("Unable to open Work Activity floating timer:", error);
+        showToast("Unable to open the floating timer. Check whether your browser allows Picture-in-Picture windows.");
+    }
+});
 
 // =====================================================
 // INITIALIZE

@@ -1,0 +1,25 @@
+TICKY TICKY — WORK ACTIVITY FLOATING TIMER UPDATE
+
+Included changes:
+- pages/work-timer.html: adds a Floating Timer button below the Work Activity timer.
+- css/work-timer.css: styles the button and vertically centers it beneath the timer.
+- js/work-timer.js: adds a Document Picture-in-Picture timer window with live task/category,
+  RUNNING/PAUSED status, elapsed time, Pause, Resume, and Stop controls.
+- Stop confirmation stays inside the floating window. Cancel does not stop the activity.
+  Confirming Stop calls the existing Work Activity stop/save flow.
+
+Browser requirement:
+- Document Picture-in-Picture support is required; use a recent Chromium-based browser
+  such as Chrome or Edge. If unsupported, the page displays a message.
+
+Installation:
+1. Back up your current project folder.
+2. Replace the current project with this complete extracted project, or copy the three
+   changed files into their matching paths.
+3. Deploy and open Work Activity.
+4. Click Floating Timer, start an activity, and verify timer/status updates.
+5. Test Pause, Resume, Cancel Stop, and Confirm Stop before using it for real tracking.
+
+Validation:
+- js/work-timer.js passed `node --check`.
+- This update has not been tested against the live Supabase project or deployed browser.

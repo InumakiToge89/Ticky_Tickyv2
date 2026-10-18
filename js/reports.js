@@ -4670,8 +4670,18 @@ async function loadWorkActivityReports() {
 
 
         workActivityReportRecords =
-            logs ||
-            [];
+            (logs || []).map(record => {
+                const isProjectsTask =
+                    String(record.task_name || "").trim().toLowerCase() === "projects";
+                const isLegacyNonProd =
+                    String(record.category || "").trim().toUpperCase() === "NON-PROD";
+
+                // Compatibility layer: historical Projects records count as PROD
+                // in reports and exports, even before the database migration runs.
+                return isProjectsTask && isLegacyNonProd
+                    ? { ...record, category: "PROD" }
+                    : record;
+            });
 
 
         // -------------------------------------------------
