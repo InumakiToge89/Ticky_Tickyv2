@@ -9,6 +9,8 @@ const $ = id => document.getElementById(id);
 
 const TABLES = {
   profiling_jobs: ["team_id","team_name","member_count","status","started_at","finished_at","total_seconds"],
+  // session_type and profiling_job_id are shown for context, but are not editable
+  // through this form because TEAM/MEMBERS sessions must remain a paired set.
   timer_sessions: ["status","started_at","stopped_at","total_seconds"],
   timer_events: ["event_type","event_time"],
   task_logs: ["category","task_name","started_at","ended_at","duration_seconds","manual_duration_seconds","live_duration_seconds","duration_source","justification"],
@@ -338,6 +340,12 @@ function showNotice(message, error=false) {
 }
 function statusPill(status){return `<span class="ae-status ${esc(String(status||"").toLowerCase())}">${esc(status||"PENDING")}</span>`;}
 function recordTitle(r, table) {
+  if (table === "timer_sessions") {
+    const type = String(r.session_type || "").toUpperCase();
+    if (type === "TEAM") return "Team time";
+    if (type === "MEMBERS" || type === "MEMBER") return "Members time";
+    return "Profiling timer session";
+  }
   return r.task_name || r.team_name || r.category || r.event_type || `${label(table)} · ${String(r.id||"").slice(0,8)}`;
 }
 function recordDate(r) {
@@ -347,6 +355,13 @@ function recordSummary(r, table) {
   const bits=[];
   if(r.category) bits.push(r.category);
   if(r.task_name) bits.push(r.task_name);
+  if (table === "timer_sessions") {
+    if (r.session_type) {
+      const type = String(r.session_type).toUpperCase();
+      bits.push(type === "TEAM" ? "TEAM" : (type === "MEMBERS" || type === "MEMBER") ? "MEMBERS" : type);
+    }
+    if (r.profiling_job_id != null) bits.push(`Profiling Job ${r.profiling_job_id}`);
+  }
   if(r.status) bits.push(r.status);
   if(r.duration_seconds != null) bits.push(`${r.duration_seconds}s`);
   if(r.total_seconds != null) bits.push(`${r.total_seconds}s`);

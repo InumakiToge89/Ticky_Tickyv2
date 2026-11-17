@@ -88,12 +88,17 @@ begin
     v_where := v_owner_predicate || '
         and ($2 is null or concat_ws('' '',
             r.id::text,
+            to_jsonb(r)->>''profiling_job_id'',
+            to_jsonb(r)->>''session_type'',
             to_jsonb(r)->>''team_name'',
+            to_jsonb(r)->>''team_id'',
             to_jsonb(r)->>''task_name'',
             to_jsonb(r)->>''activity_name'',
             to_jsonb(r)->>''category'',
             to_jsonb(r)->>''status'',
-            to_jsonb(r)->>''event_type''
+            to_jsonb(r)->>''event_type'',
+            (select coalesce(pj.team_name, '''') from public.profiling_jobs pj
+             where pj.id = r.profiling_job_id)
         ) ilike ''%%'' || $2 || ''%%'')
         and ($3 is null or (' || v_date_expr || ')::date >= $3)
         and ($4 is null or (' || v_date_expr || ')::date <= $4)';
