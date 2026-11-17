@@ -3278,3 +3278,452 @@ body.notification-details-open {
     transition:.18s ease;
 }
 .global-notification-detail-action:hover{background:rgba(21,154,112,.12);transform:translateY(-1px)}
+
+/* =========================================================
+   TICKY TICKY — CLOCK-STYLE TIME PICKER
+   Inspired by the soft sage Material-style analog clock UI.
+   ========================================================= */
+
+input.ticky-time-input {
+    cursor: pointer !important;
+    padding-right: 42px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235b7669' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 13px center !important;
+    background-size: 18px 18px !important;
+}
+
+input.ticky-time-input:focus {
+    outline: none;
+    border-color: var(--primary, #009b72) !important;
+    box-shadow: 0 0 0 3px rgba(0, 155, 114, .12);
+}
+
+.ticky-time-open {
+    overflow: hidden !important;
+}
+
+.ticky-time-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(28, 34, 31, .30);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.ticky-time-overlay.is-open {
+    display: flex;
+    animation: tickyTimeFadeIn .16s ease-out;
+}
+
+.ticky-time-dialog {
+    box-sizing: border-box;
+    width: min(100%, 370px);
+    padding: 24px 22px 18px;
+    border: 1px solid rgba(83, 119, 94, .13);
+    border-radius: 30px;
+    background: #edf1e5;
+    color: #17231b;
+    box-shadow: 0 24px 70px rgba(12, 35, 24, .25);
+    font-family: inherit;
+    animation: tickyTimePopIn .18s ease-out;
+}
+
+.ticky-time-kicker {
+    margin: 0 0 4px;
+    color: #8a9685;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .045em;
+}
+
+.ticky-time-hint {
+    min-height: 15px;
+    margin: 0 0 14px;
+    color: #778477;
+    font-size: 11px;
+}
+
+.ticky-time-digital {
+    display: grid;
+    grid-template-columns: 1fr 12px 1fr 48px;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 22px;
+}
+
+.ticky-time-digit {
+    min-width: 0;
+    height: 66px;
+    padding: 0 5px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #101710;
+    font-size: clamp(34px, 9vw, 43px);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ticky-time-digit.is-active {
+    background: #a7ef92;
+    color: #18351b;
+}
+
+.ticky-time-colon {
+    color: #17231b;
+    font-size: 34px;
+    font-weight: 600;
+    text-align: center;
+    transform: translateY(-2px);
+}
+
+.ticky-time-period {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #aebbaa;
+    border-radius: 9px;
+    background: rgba(255,255,255,.2);
+}
+
+.ticky-time-period button {
+    min-height: 31px;
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    color: #607064;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ticky-time-period button + button {
+    border-top: 1px solid #bdc8b9;
+}
+
+.ticky-time-period button.is-active {
+    background: #bce9e8;
+    color: #174e4c;
+    font-weight: 700;
+}
+
+.ticky-time-clock-wrap {
+    display: grid;
+    place-items: center;
+    padding: 0 0 8px;
+}
+
+.ticky-time-clock {
+    position: relative;
+    width: min(100%, 258px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #e4e9d9;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.ticky-time-numbers {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
+.ticky-time-number {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #26332a;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+.ticky-time-number:hover {
+    background: rgba(63, 112, 58, .12);
+}
+
+.ticky-time-number.is-selected {
+    background: #397b35;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(34, 75, 32, .16);
+}
+
+.ticky-time-hand {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    height: 2px;
+    width: 0;
+    border-radius: 4px;
+    background: #477e3c;
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+.ticky-time-center {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #477e3c;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.ticky-time-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 4px 0;
+}
+
+.ticky-time-footer button {
+    min-width: 48px;
+    min-height: 38px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #477e3c;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    cursor: pointer;
+}
+
+.ticky-time-footer button:hover {
+    background: rgba(71, 126, 60, .10);
+}
+
+.ticky-time-dialog button:focus-visible {
+    outline: 3px solid rgba(20, 119, 81, .38);
+    outline-offset: 2px;
+}
+
+@keyframes tickyTimeFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes tickyTimePopIn {
+    from { opacity: 0; transform: translateY(8px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 420px) {
+    .ticky-time-overlay { padding: 12px; }
+    .ticky-time-dialog { padding: 20px 16px 14px; border-radius: 24px; }
+    .ticky-time-clock { width: min(100%, 238px); }
+    .ticky-time-number { width: 34px; height: 34px; }
+    .ticky-time-digit { height: 60px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ticky-time-overlay.is-open,
+    .ticky-time-dialog { animation: none; }
+}
+
+
+/* =========================================================
+   CLOCK PICKER — RESPONSIVE / SMOOTH INTERACTION REFINEMENT
+   Overrides the first clock-picker styling without changing
+   the saved HH:mm value contract.
+   ========================================================= */
+
+.ticky-time-overlay {
+    box-sizing: border-box;
+    padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ticky-time-dialog {
+    width: min(100%, 380px);
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(17px, 4vw, 25px) clamp(15px, 4vw, 24px) 15px;
+    border-radius: clamp(22px, 5vw, 30px);
+    transform-origin: center;
+}
+
+.ticky-time-clock-wrap {
+    width: 100%;
+    padding: 0 0 6px;
+}
+
+.ticky-time-clock {
+    width: min(100%, 270px, 34dvh);
+    min-width: 0;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.ticky-time-hand {
+    height: 2px;
+    min-width: 2px;
+    transform-origin: 0% 50%;
+    transition:
+        transform 150ms cubic-bezier(.2, .75, .25, 1),
+        width 150ms cubic-bezier(.2, .75, .25, 1);
+    will-change: transform;
+}
+
+.ticky-time-center {
+    box-shadow: 0 0 0 2px rgba(71, 126, 60, .10);
+}
+
+.ticky-time-number {
+    transition:
+        background-color 130ms ease,
+        color 130ms ease,
+        transform 150ms cubic-bezier(.2, .75, .25, 1),
+        box-shadow 130ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ticky-time-number:active {
+    transform: translate(-50%, -50%) scale(.92);
+}
+
+.ticky-time-number.is-selected {
+    transform: translate(-50%, -50%) scale(1.04);
+}
+
+.ticky-time-digit {
+    transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ticky-time-digit:active {
+    transform: scale(.97);
+}
+
+.ticky-time-period button,
+.ticky-time-footer button {
+    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ticky-time-period button:active,
+.ticky-time-footer button:active {
+    transform: scale(.97);
+}
+
+.ticky-time-dialog button {
+    touch-action: manipulation;
+}
+
+.ticky-time-dialog button:focus-visible {
+    outline-offset: 3px;
+}
+
+@media (max-height: 620px) {
+    .ticky-time-dialog {
+        width: min(100%, 340px);
+        padding-top: 13px;
+        padding-bottom: 10px;
+    }
+
+    .ticky-time-hint {
+        margin-bottom: 8px;
+    }
+
+    .ticky-time-digital {
+        margin-bottom: 10px;
+    }
+
+    .ticky-time-clock {
+        width: min(100%, 215px, 29dvh);
+        min-width: 0;
+    }
+
+    .ticky-time-footer {
+        padding-top: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ticky-time-overlay {
+        align-items: center;
+        padding: 10px;
+    }
+
+    .ticky-time-dialog {
+        width: min(100%, 350px);
+        max-height: calc(100dvh - 20px);
+        padding: 18px 15px 12px;
+        border-radius: 24px;
+    }
+
+    .ticky-time-clock {
+        width: min(100%, 250px, 34dvh);
+        min-width: 0;
+    }
+
+    .ticky-time-digit {
+        height: clamp(54px, 13vw, 66px);
+        font-size: clamp(32px, 9vw, 42px);
+    }
+
+    .ticky-time-number {
+        width: clamp(32px, 9vw, 36px);
+        height: clamp(32px, 9vw, 36px);
+        font-size: 13px;
+    }
+
+    .ticky-time-footer button {
+        min-height: 42px;
+        min-width: 58px;
+    }
+}
+
+@media (max-width: 350px) {
+    .ticky-time-digital {
+        grid-template-columns: minmax(0, 1fr) 8px minmax(0, 1fr) 43px;
+        gap: 3px;
+    }
+
+    .ticky-time-clock {
+        width: min(100%, 218px, 32dvh);
+        min-width: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ticky-time-dialog *,
+    .ticky-time-overlay * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

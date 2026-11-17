@@ -806,23 +806,23 @@ async function initializeGlobalNotifications() {
         if (!value) return "--";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return "--";
-        return date.toLocaleString([], {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit"
-        });
+        const dateText = new Intl.DateTimeFormat("en-GB", {
+            day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Manila"
+        }).format(date);
+        const timeText = new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Manila"
+        }).format(date).toUpperCase();
+        return `${dateText}, ${timeText} PHT`;
     }
 
     function formatDetailDuration(seconds) {
         const total = Math.max(0, Math.round(Number(seconds) || 0));
         const hours = Math.floor(total / 3600);
         const minutes = Math.floor((total % 3600) / 60);
-        const secs = total % 60;
-        return [hours, minutes, secs]
-            .map(value => String(value).padStart(2, "0"))
-            .join(":");
+        const remainderSeconds = total % 60;
+        if (hours) return `${hours}h ${minutes}m${remainderSeconds ? ` ${remainderSeconds}s` : ""}`;
+        if (minutes) return `${minutes}m${remainderSeconds ? ` ${remainderSeconds}s` : ""}`;
+        return `${remainderSeconds}s`;
     }
 
     function createNotificationModal() {
@@ -924,6 +924,24 @@ async function initializeGlobalNotifications() {
 
         const type = String(notification?.type || "").trim().toUpperCase();
         const referenceId = String(notification?.reference_id || "").trim();
+
+        // Analyst edit requests have a dedicated approval center. Route both
+        // the requester and Admin reviewer to the page where the request is tracked.
+        if (type.includes("ANALYST_EDIT_REQUEST")) {
+            body.innerHTML = `
+                <div class="global-notification-detail-message">
+                    ${escapeHtml(notification?.message || "An analyst edit request was updated.")}
+                </div>
+                <div class="global-notification-detail-section">
+                    <div class="global-notification-detail-section-title">Record Correction</div>
+                    <div class="global-notification-detail-grid">
+                        ${detailRow("Received", formatDetailDate(notification?.created_at))}
+                    </div>
+                </div>
+                <a class="global-notification-detail-action" href="${escapeAttribute(new URL("analyst-edits.html", window.location.href).href)}">Open Record Corrections →</a>
+            `;
+            return;
+        }
 
         // Developer request decisions have their own request center. Keep the
         // notification detail compact, then give the analyst a direct route to
@@ -1315,15 +1333,16 @@ function showAppNotice(type = "info", title = "Ticky Ticky", message = "") {
 window.showAppNotice = showAppNotice;
 
 function formatNotificationTime(value) {
+    if (!value) return "";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-    });
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 function escapeHtml(value) {

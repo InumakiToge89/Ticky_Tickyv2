@@ -1993,11 +1993,16 @@ function formatDuration(
 function formatDateTime(
     timestamp
 ) {
-
-    return new Date(
-        timestamp
-    ).toLocaleString();
-
+    if (!timestamp) return "--";
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return String(timestamp);
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day:"2-digit", month:"short", year:"numeric", timeZone:"Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour:"2-digit", minute:"2-digit", hour12:true, timeZone:"Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 

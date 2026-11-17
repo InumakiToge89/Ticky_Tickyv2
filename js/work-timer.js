@@ -68,6 +68,17 @@ const TASKS = {
 };
 
 
+function isManualActivityCategory(category) {
+    return ["NON-PROD", "PROD LOSS", "TRAINING"].includes(
+        String(category || "").trim().toUpperCase()
+    );
+}
+
+function isAllowedManualDuration(seconds) {
+    const value = Number(seconds);
+    return Number.isInteger(value) && value >= 3600 && value % 1800 === 0;
+}
+
 // =====================================================
 // DOM ELEMENTS
 // =====================================================
@@ -967,6 +978,11 @@ stopTaskButton.addEventListener(
 
 async function startTimer() {
 
+    if (isManualActivityCategory(currentCategory)) {
+        showToast("NON-PROD, PROD LOSS, and TRAINING must be submitted as manual time requests.");
+        return;
+    }
+
     if (isRunning) {
 
         return;
@@ -1673,7 +1689,7 @@ async function stopTimer() {
 
 
         showToast(
-            `${completedTaskName} submitted for admin approval (${formatTime(completedDuration)}).`
+            `${completedTaskName} submitted for admin approval (${formatDurationHoursDisplay(completedDuration)}).`
        ,
             "success",
             "Work Activity Saved"
@@ -1774,19 +1790,31 @@ function syncNonProdDetailsUI() {
 
     if (!nonProdDetailsSection) return;
 
-    const isNonProd =
-        currentCategory === "NON-PROD";
+    const isManualCategory = isManualActivityCategory(currentCategory);
 
-    nonProdDetailsSection.hidden = !isNonProd;
+    nonProdDetailsSection.hidden = !isManualCategory;
 
-    if (!isNonProd) return;
+    const timerSection = document.getElementById("workTimerSection");
+    const timerControls = document.getElementById("workTimerControls");
+    const showLegacyRunningTimer = isManualCategory && isRunning;
+    if (timerSection) timerSection.hidden = isManualCategory && !showLegacyRunningTimer;
+    if (timerControls) timerControls.hidden = isManualCategory && !showLegacyRunningTimer;
+
+    if (!isManualCategory) return;
+
+    const heading = nonProdDetailsSection.querySelector(".nonprod-details-header h3");
+    const description = nonProdDetailsSection.querySelector(".nonprod-details-header p");
+    if (heading) heading.textContent = `${currentCategory} Manual Time & Justification`;
+    if (description) {
+        description.textContent =
+            `Enter the date and time range for this ${currentCategory} activity. Entries must be at least 1 hour and follow exact 30-minute increments. Your selected Admin must approve the entry before it appears in official productivity records.`;
+    }
 
     if (manualDateInput && !manualDateInput.value) {
-        const now = new Date();
-        const localYear = now.getFullYear();
-        const localMonth = String(now.getMonth() + 1).padStart(2, "0");
-        const localDay = String(now.getDate()).padStart(2, "0");
-        manualDateInput.value = `${localYear}-${localMonth}-${localDay}`;
+        const parts = new Intl.DateTimeFormat("en-CA", {
+            timeZone:"Asia/Manila", year:"numeric", month:"2-digit", day:"2-digit"
+        }).formatToParts(new Date()).reduce((acc,p) => (acc[p.type]=p.value,acc), {});
+        manualDateInput.value = `${parts.year}-${parts.month}-${parts.day}`;
     }
 
     const locked = isRunning;
@@ -1825,24 +1853,10 @@ function syncNonProdDetailsUI() {
 }
 
 function buildLocalDateTime(dateValue, timeValue) {
-
     if (!dateValue || !timeValue) return null;
-
-    const [year, month, day] = dateValue.split("-").map(Number);
-    const [hours, minutes] = timeValue.split(":").map(Number);
-
-    const date = new Date(
-        year,
-        month - 1,
-        day,
-        hours,
-        minutes,
-        0,
-        0
-    );
-
+    const normalizedTime = timeValue.length === 5 ? `${timeValue}:00` : timeValue;
+    const date = new Date(`${dateValue}T${normalizedTime}+08:00`);
     if (Number.isNaN(date.getTime())) return null;
-
     return date;
 }
 
@@ -1882,17 +1896,37 @@ function updateManualComputedDuration() {
     if (!manualComputedDuration) return;
 
     const span = getManualTimeSpan();
+    const durationHint = document.getElementById("manualDurationHint");
+
+    manualComputedDuration.classList.remove("valid", "invalid");
 
     if (span.seconds === null) {
-        manualComputedDuration.textContent = "--:--:--";
-        manualComputedDuration.classList.remove("valid");
+        manualComputedDuration.textContent = "Select a valid time range";
+        if (durationHint) {
+            durationHint.textContent = "Minimum 1 hour. Allowed durations: 1:00, 1:30, 2:00, 2:30, and so on.";
+            durationHint.classList.remove("invalid", "valid");
+        }
+        if (manualSubmitButton) manualSubmitButton.disabled = true;
         return;
     }
 
-    manualComputedDuration.textContent =
-        formatTime(span.seconds);
+    manualComputedDuration.textContent = formatDurationHoursDisplay(span.seconds);
 
-    manualComputedDuration.classList.add("valid");
+    const validDuration = isAllowedManualDuration(span.seconds);
+    manualComputedDuration.classList.toggle("valid", validDuration);
+    manualComputedDuration.classList.toggle("invalid", !validDuration);
+
+    if (durationHint) {
+        durationHint.textContent = validDuration
+            ? "Valid duration. This entry follows the 30-minute interval rule."
+            : "Not allowed. Use at least 1 hour and exact 30-minute increments (1:00, 1:30, 2:00, 2:30, and so on).";
+        durationHint.classList.toggle("valid", validDuration);
+        durationHint.classList.toggle("invalid", !validDuration);
+    }
+
+    if (manualSubmitButton) {
+        manualSubmitButton.disabled = isRunning || !selectedTask || !validDuration;
+    }
 }
 
 function getNonProdDetails() {
@@ -1912,8 +1946,8 @@ function getNonProdDetails() {
 
 async function submitManualNonProd() {
 
-    if (currentCategory !== "NON-PROD") {
-        showToast("Manual time is available only for Non-Prod activities.");
+    if (!isManualActivityCategory(currentCategory)) {
+        showToast("Manual time is available only for Non-Prod, Prod Loss, and Training activities.");
         return;
     }
 
@@ -1949,6 +1983,12 @@ async function submitManualNonProd() {
         return;
     }
 
+    if (!isAllowedManualDuration(details.manualSeconds)) {
+        showToast("Duration must be at least 1 hour and use exact 30-minute increments (1:00, 1:30, 2:00, 2:30, and so on).");
+        manualEndTimeInput?.focus();
+        return;
+    }
+
     if (!details.justification) {
         showToast("Please provide a justification for this Non-Prod activity.");
         justificationInput?.focus();
@@ -1979,9 +2019,10 @@ async function submitManualNonProd() {
             data: requestId,
             error: requestError
         } = await supabase.rpc(
-            "submit_manual_time_request",
+            "submit_manual_activity_request",
             {
                 p_admin_id: approverId,
+                p_category: currentCategory,
                 p_task_name: selectedTask,
                 p_started_at: startIso,
                 p_ended_at: endIso,
@@ -2008,7 +2049,7 @@ async function submitManualNonProd() {
         renderTasks();
 
         showToast(
-            `${completedTaskName} submitted for admin approval (${formatTime(completedDuration)}).`,
+            `${completedTaskName} submitted for admin approval (${formatDurationHoursDisplay(completedDuration)}).`,
             "success",
             "Manual Time Submitted"
         );
@@ -2019,7 +2060,7 @@ async function submitManualNonProd() {
 
         showToast(
             error.message ||
-            "Unable to submit manual Non-Prod activity."
+            "Unable to submit manual activity request."
         );
 
     } finally {
@@ -2032,7 +2073,7 @@ async function submitManualNonProd() {
 function getReportedDurationSeconds() {
 
     if (
-        currentCategory === "NON-PROD" &&
+        isManualActivityCategory(currentCategory) &&
         durationSource === "MANUAL" &&
         Number.isFinite(manualDurationSeconds)
     ) {
@@ -2045,6 +2086,16 @@ function getReportedDurationSeconds() {
 // =====================================================
 // FORMAT TIME
 // =====================================================
+
+function formatDurationHoursDisplay(totalSeconds) {
+    const total = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    if (hours) return `${hours}h ${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    if (minutes) return `${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    return `${seconds}s`;
+}
 
 function formatTime(totalSeconds) {
 
@@ -2227,6 +2278,11 @@ function showToast(message, type = "error", title = "Work Activity") {
     manualStartTimeInput,
     manualEndTimeInput
 ].forEach((input) => {
+    input?.addEventListener("change", updateManualComputedDuration);
+    input?.addEventListener("input", updateManualComputedDuration);
+});
+
+[manualDateInput, manualStartTimeInput, manualEndTimeInput].forEach((input) => {
     input?.addEventListener("change", updateManualComputedDuration);
     input?.addEventListener("input", updateManualComputedDuration);
 });

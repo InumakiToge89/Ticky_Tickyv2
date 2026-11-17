@@ -173,7 +173,8 @@
 
             </a>
 
-        </nav>
+                    <a href="analyst-edits.html" class="nav-item"><span class="nav-icon">✎</span><span>Record Corrections</span></a>
+</nav>
 
 
         <div class="sidebar-bottom">
@@ -386,9 +387,9 @@
 
                     <div class="nonprod-details-header">
                         <div>
-                            <h3>Non-Prod Manual Time &amp; Justification</h3>
+                            <h3>Manual Activity Time &amp; Justification</h3>
                             <p>
-                                Enter the date and time range, choose the admin reviewer, and provide a justification. The live timer below remains available for normal tracking. Manual entries are saved only after admin approval.
+                                Enter the date and time range, choose the admin reviewer, and provide a justification. Duration must be at least 1 hour and use exact 30-minute increments. Entries are saved only after Admin approval.
                             </p>
                         </div>
                     </div>
@@ -439,8 +440,11 @@
 
                     <div class="manual-duration-result">
                         <span>Computed Duration</span>
-                        <strong id="manualComputedDuration">--:--:--</strong>
+                        <strong id="manualComputedDuration">Select a valid time range</strong>
                     </div>
+                    <small id="manualDurationHint" class="manual-duration-hint">
+                        Minimum 1 hour. Allowed durations: 1:00, 1:30, 2:00, 2:30, and so on.
+                    </small>
 
                     <div class="nonprod-manual-bottom">
 
@@ -452,7 +456,7 @@
                                 maxlength="1000"
                                 placeholder="Explain why this Non-Prod activity was performed..."
                             ></textarea>
-                            <small>Required when submitting a manual Non-Prod activity.</small>
+                            <small>Required for manual activity submissions (maximum 1,000 characters).</small>
                         </div>
 
                         <button
@@ -471,7 +475,7 @@
 
                 <!-- TIMER -->
 
-                <div class="timer-section">
+                <div class="timer-section" id="workTimerSection">
 
                     <div
                         id="workTimerDisplay"
@@ -495,7 +499,7 @@
 
                 <!-- CONTROLS -->
 
-                <div class="timer-controls">
+                <div class="timer-controls" id="workTimerControls">
 
                     <button
                         id="startTaskButton"
@@ -628,6 +632,7 @@
 
 <script src="../js/mobile-navigation.js"></script>
 
+<script src="../js/time-picker.js"></script>
 </body>
 
 </html>

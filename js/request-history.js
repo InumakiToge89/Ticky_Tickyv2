@@ -6,13 +6,17 @@ const $ = id => document.getElementById(id);
 let requests = [];
 
 function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
-function formatDate(value) { const d = new Date(value); return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString([], {month:"short",day:"2-digit",year:"numeric",hour:"numeric",minute:"2-digit"}); }
-function statusClass(status) { return String(status || "").toLowerCase(); }
-function tableLabel(value) { return String(value || "").replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase()); }
-function prettyValue(key, value) {
-    if (value === null || value === undefined || value === "") return "—";
-    if (/(_at|_date|_time)$/.test(key)) { const d = new Date(value); if (!Number.isNaN(d.getTime())) return d.toLocaleString([], {month:"short",day:"2-digit",year:"numeric",hour:"numeric",minute:"2-digit"}); }
-    return String(value);
+function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day:"2-digit", month:"short", year:"numeric", timeZone:"Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour:"2-digit", minute:"2-digit", hour12:true, timeZone:"Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 async function requireSignedIn() {

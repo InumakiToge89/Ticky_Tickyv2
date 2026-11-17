@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticky Ticky | Record Corrections</title>
+<link id="siteFavicon" rel="icon" type="image/png">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/themes/emerald.css">
+<link rel="stylesheet" href="../css/themes/dark.css">
+<link rel="stylesheet" href="../css/themes/pink.css">
+<link rel="stylesheet" href="../css/themes/rainbow.css">
+<link rel="stylesheet" href="../css/themes/blue.css">
+<link rel="stylesheet" href="../css/analyst-edits.css">
+</head>
+<body>
+<div class="dashboard-layout">
+<aside class="sidebar">
+  <div class="sidebar-brand"><div class="sidebar-logo"><img id="tickyNavMascot" class="ticky-brand-image" src="../assets/branding/emerald/ticky-ticky-emerald-mascot.png" alt="Ticky Ticky"></div><div class="sidebar-title">Ticky Ticky</div></div>
+  <nav class="sidebar-navigation">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+    <a href="profiling.html" class="nav-item"><span class="nav-icon">◷</span><span>Profiling</span></a>
+    <a href="work-timer.html" class="nav-item"><span class="nav-icon">◷</span><span>Work Activity</span></a>
+    <a href="teams.html" class="nav-item"><span class="nav-icon">👥</span><span>Teams</span></a>
+    <a href="history.html" class="nav-item"><span class="nav-icon">▤</span><span>History</span></a>
+    <a href="reports.html" id="reportsNavItem" class="nav-item" style="display:none" aria-hidden="true" tabindex="-1"><span class="nav-icon">▥</span><span>Reports</span></a>
+    <a href="analyst-edits.html" class="nav-item active"><span class="nav-icon">✎</span><span>Record Corrections</span></a>
+  </nav>
+  <div class="sidebar-bottom"><a href="#" id="logoutButton" class="nav-item"><span class="nav-icon">↪</span><span>Logout</span></a></div>
+</aside>
+<main class="dashboard-main">
+<header class="topbar"><div class="topbar-heading"><div class="topbar-title">Record Corrections</div><div class="topbar-date">Proposed changes require Admin approval</div></div></header>
+<section class="ae-page">
+  <div class="ae-hero">
+    <div><span class="ae-eyebrow">RECORD INTEGRITY</span><h1 id="pageHeading">My Records & Edit Requests</h1><p id="pageIntro">Request corrections or deletion of your own records. Changes will not affect official productivity data until approved by an Admin.</p></div>
+    <button id="refreshButton" class="ae-button ae-button-secondary" type="button">↻ Refresh</button>
+  </div>
+  <div id="notice" class="ae-notice" role="status" hidden></div>
+  <div id="analystArea">
+    <nav class="ae-analyst-tabs" role="tablist" aria-label="My record correction sections">
+      <button class="ae-analyst-tab active" id="analystTabRecords" type="button" role="tab" aria-selected="true" aria-controls="analystPanelRecords" data-analyst-tab="records">Find a record to correct</button>
+      <button class="ae-analyst-tab" id="analystTabRequests" type="button" role="tab" aria-selected="false" aria-controls="analystPanelRequests" data-analyst-tab="requests">My edit &amp; deletion requests</button>
+    </nav>
+    <section class="ae-panel" id="analystPanelRecords" role="tabpanel" aria-labelledby="analystTabRecords">
+      <div class="ae-panel-head"><div><span class="ae-kicker">YOUR RECORDS</span><h2>Find a record to correct</h2></div></div>
+      <div class="ae-toolbar ae-record-filters">
+        <label>Record type<select id="recordType">
+          <option value="profiling_jobs">Profiling Jobs</option>
+          <option value="timer_sessions">Timer Sessions</option>
+          <option value="timer_events">Timer Events</option>
+          <option value="task_logs">Work Activity Logs</option>
+          <option value="task_activity_events">Work Activity Events</option>
+          <option value="manual_time_requests">Manual Time Requests</option>
+        </select></label>
+        <label class="ae-search-label">Search<input id="recordSearch" type="search" placeholder="Search by team, activity, status, or record ID…"></label>
+        <label>From date<input id="recordFromDate" type="date"></label>
+        <label>To date<input id="recordToDate" type="date"></label>
+        <label>Sort by<select id="recordSort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A–Z</option>
+        </select></label>
+        <div class="ae-filter-actions">
+          <button id="loadRecordsButton" class="ae-button" type="button">Apply filters</button>
+          <button id="clearRecordFilters" class="ae-button ae-button-secondary" type="button">Clear</button>
+        </div>
+      </div>
+      <div id="recordsList" class="ae-records"><div class="ae-loading">Loading your records…</div></div>
+      <div class="ae-list-pagination" id="recordsPagination" hidden>
+        <div class="ae-list-count" id="recordsPageSummary">Showing 0 records</div>
+        <div class="ae-list-controls">
+          <label>Rows per page
+            <select id="recordsPageSize"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
+          </label>
+          <button id="recordsPrevPage" class="ae-button ae-button-secondary" type="button">← Previous</button>
+          <span id="recordsPageInfo">Page 1 of 1</span>
+          <button id="recordsNextPage" class="ae-button ae-button-secondary" type="button">Next →</button>
+        </div>
+      </div>
+    </section>
+    <section class="ae-panel" id="analystPanelRequests" role="tabpanel" aria-labelledby="analystTabRequests" hidden>
+      <div class="ae-panel-head"><div><span class="ae-kicker">REQUEST TRACKER</span><h2>My edit & deletion requests</h2></div></div>
+      <div id="myRequests" class="ae-request-list"><div class="ae-loading">Loading requests…</div></div>
+      <div class="ae-list-pagination" id="requestsPagination" hidden>
+        <div class="ae-list-count" id="requestsPageSummary">Showing 0 requests</div>
+        <div class="ae-list-controls">
+          <label>Rows per page
+            <select id="requestsPageSize"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
+          </label>
+          <button id="requestsPrevPage" class="ae-button ae-button-secondary" type="button">← Previous</button>
+          <span id="requestsPageInfo">Page 1 of 1</span>
+          <button id="requestsNextPage" class="ae-button ae-button-secondary" type="button">Next →</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="adminArea" hidden>
+    <nav class="ae-admin-tabs" role="tablist" aria-label="Admin record correction sections">
+      <button class="ae-admin-tab active" id="adminTabEdits" type="button" role="tab" aria-selected="true" aria-controls="adminPanelEdits" data-admin-tab="edits">Analyst Edit &amp; Deletion <span id="pendingCount" class="ae-tab-count">0</span></button>
+      <button class="ae-admin-tab" id="adminTabManual" type="button" role="tab" aria-selected="false" aria-controls="adminPanelManual" data-admin-tab="manual">Manual Time Approvals <span id="manualPendingCount" class="ae-tab-count">0</span></button>
+      <button class="ae-admin-tab" id="adminTabHistory" type="button" role="tab" aria-selected="false" aria-controls="adminPanelHistory" data-admin-tab="history">Review History</button>
+    </nav>
+
+    <section class="ae-admin-panel" id="adminPanelEdits" role="tabpanel" aria-labelledby="adminTabEdits">
+      <section class="ae-panel">
+        <div class="ae-panel-head"><div><span class="ae-kicker">ADMIN REVIEW</span><h2>Pending analyst requests</h2><p>Review the original record, proposed changes, and both justifications before deciding.</p></div></div>
+        <div id="pendingRequests" class="ae-request-list"><div class="ae-loading">Loading pending requests…</div></div>
+      </section>
+    </section>
+
+    <section class="ae-admin-panel" id="adminPanelManual" role="tabpanel" aria-labelledby="adminTabManual" hidden>
+      <section class="ae-panel">
+        <div class="ae-panel-head"><div><span class="ae-kicker">MANUAL ACTIVITY REVIEW</span><h2>Pending manual time requests</h2><p>Review manually submitted activity time before it becomes part of official productivity records.</p></div><button id="refreshManualRequests" class="ae-button ae-button-secondary" type="button">↻ Refresh</button></div>
+        <div id="manualRequestsList" class="ae-request-list"><div class="ae-loading">Loading manual time requests…</div></div>
+      </section>
+    </section>
+
+    <section class="ae-admin-panel" id="adminPanelHistory" role="tabpanel" aria-labelledby="adminTabHistory" hidden>
+      <section class="ae-panel">
+        <div class="ae-panel-head"><div><span class="ae-kicker">AUDIT TRAIL</span><h2>Review history</h2><p>Look back at analyst edits, deletion requests, and manual time decisions made by administrators.</p></div><button id="refreshReviewHistory" class="ae-button ae-button-secondary" type="button">↻ Refresh</button></div>
+        <div class="ae-history-filters">
+          <label>Request type<select id="historyTypeFilter"><option value="ALL">All request types</option><option value="ANALYST_EDIT">Analyst edits</option><option value="ANALYST_DELETE">Analyst deletions</option><option value="MANUAL_TIME">Manual time</option></select></label>
+          <label>Decision<select id="historyStatusFilter"><option value="ALL">All decisions</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></label>
+          <label class="ae-history-search">Search<input id="historySearch" type="search" placeholder="Search analyst, record, or reviewer…"></label>
+        </div>
+        <div class="ae-history-summary" id="historyResultSummary">Loading review history…</div>
+        <div class="ae-history-table-wrap">
+          <table class="ae-history-table">
+            <thead><tr><th>Reviewed</th><th>Analyst</th><th>Request</th><th>Decision</th><th>Reviewer</th><th>Details</th></tr></thead>
+            <tbody id="reviewHistoryList"><tr><td colspan="6" class="ae-history-empty">Loading review history…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="ae-history-pagination">
+          <label>Rows per page<select id="historyPageSize"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label>
+          <div class="ae-history-page-actions"><button id="historyPrevPage" class="ae-button ae-button-secondary" type="button" disabled>← Previous</button><span id="historyPageInfo">Page 1 of 1</span><button id="historyNextPage" class="ae-button ae-button-secondary" type="button" disabled>Next →</button></div>
+        </div>
+      </section>
+    </section>
+  </div>
+</section>
+</main>
+</div>
+
+<div id="editModal" class="ae-modal" aria-hidden="true">
+ <div class="ae-modal-card">
+  <div class="ae-modal-head"><div><span class="ae-kicker">SUBMIT FOR APPROVAL</span><h2 id="editModalTitle">Request a record edit</h2></div><button type="button" class="ae-close" data-close-modal>×</button></div>
+  <div id="editFields" class="ae-fields"></div>
+  <label class="ae-full">Why are you requesting this change? <textarea id="analystJustification" rows="4" maxlength="2000" placeholder="Explain what is incorrect and why it needs to be changed…"></textarea></label>
+  <div class="ae-modal-actions"><button type="button" class="ae-button ae-button-secondary" data-close-modal>Cancel</button><button id="submitEditRequest" type="button" class="ae-button">Submit request</button></div>
+ </div>
+</div>
+
+<div id="reviewModal" class="ae-modal" aria-hidden="true">
+ <div class="ae-modal-card ae-review-card">
+  <div class="ae-modal-head"><div><span class="ae-kicker">ADMIN DECISION</span><h2>Review analyst request</h2></div><button type="button" class="ae-close" data-close-modal>×</button></div>
+  <div id="reviewDetails"></div>
+  <label class="ae-full">Admin justification <textarea id="reviewJustification" rows="4" maxlength="2000" placeholder="Explain why you are accepting or rejecting this request…"></textarea></label>
+  <div class="ae-modal-actions"><button id="rejectRequest" type="button" class="ae-button ae-button-danger">Reject</button><button id="approveRequest" type="button" class="ae-button ae-button-success">Accept & apply</button></div>
+ </div>
+</div>
+
+
+<div id="manualReviewModal" class="ae-modal" aria-hidden="true">
+ <div class="ae-modal-card">
+  <div class="ae-modal-head"><div><span class="ae-kicker">MANUAL TIME DECISION</span><h2 id="manualReviewTitle">Review manual time request</h2></div><button type="button" class="ae-close" data-close-modal>×</button></div>
+  <div id="manualReviewDetails"></div>
+  <label class="ae-full">Admin justification <textarea id="manualReviewJustification" rows="4" maxlength="2000" placeholder="Explain your approval or rejection decision…"></textarea></label>
+  <div class="ae-modal-actions"><button id="manualRejectRequest" type="button" class="ae-button ae-button-danger">Reject</button><button id="manualApproveRequest" type="button" class="ae-button ae-button-success">Accept</button></div>
+ </div>
+</div>
+
+<script type="module" src="../js/theme.js"></script>
+<script type="module" src="../js/account-menu.js"></script>
+<script type="module" src="../js/analyst-edits.js"></script>
+<script src="../js/mobile-navigation.js"></script>
+<script src="../js/time-picker.js"></script>
+</body>
+</html>

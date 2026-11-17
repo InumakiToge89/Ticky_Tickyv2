@@ -1654,3 +1654,34 @@
     outline: 2px solid currentColor;
     outline-offset: 3px;
 }
+
+
+/* Exact manual-duration interval validation */
+.manual-duration-result strong.invalid {
+    color: #dc2626;
+}
+
+.manual-duration-result strong.valid {
+    color: var(--primary-green, #06912b);
+}
+
+#workTimerSection[hidden],
+#workTimerControls[hidden] {
+    display: none !important;
+}
+
+
+.manual-duration-hint {
+    display: block;
+    margin-top: 8px;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+.manual-duration-hint.valid {
+    color: var(--primary-green, #06912b);
+}
+
+.manual-duration-hint.invalid {
+    color: #dc2626;
+}

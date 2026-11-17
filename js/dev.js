@@ -183,13 +183,13 @@ function formatDate(value) {
     if (!value) return "—";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString([], {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day:"2-digit", month:"short", year:"numeric", timeZone:"Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour:"2-digit", minute:"2-digit", hour12:true, timeZone:"Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 function looksLikeDateColumn(name) {
@@ -719,7 +719,7 @@ async function loadDevHealth() {
         const errors = items.filter(i => i.level === "ERROR").length;
         const warns = items.filter(i => i.level === "WARN").length;
         if (devHealthMessage) devHealthMessage.textContent = errors ? `${errors} issue${errors === 1 ? "" : "s"} found.` : warns ? `${warns} warning${warns === 1 ? "" : "s"} found. No critical errors.` : "All checks passed.";
-        if (devHealthLastRun) devHealthLastRun.textContent = `Last checked ${new Date().toLocaleString()}`;
+        if (devHealthLastRun) devHealthLastRun.textContent = `Last checked ${new Intl.DateTimeFormat("en-PH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Manila"}).format(new Date()) + " PHT"}`;
     } catch (error) {
         console.error("Developer health check error:", error);
         devHealthGrid.innerHTML = `<div class="dev-health-failure"><strong>Health check unavailable</strong><span>${escapeHtml(error.message || "The diagnostic function could not be reached.")}</span><small>Run the latest supabase_dev_console.sql in Supabase SQL Editor, then refresh.</small></div>`;

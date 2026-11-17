@@ -1,0 +1,24 @@
+TICKY TICKY — ADMIN REVIEW DETAILS ENHANCEMENT
+
+Updated files:
+- pages/analyst-edits.html (no markup changes required; existing Admin modals are reused)
+- js/analyst-edits.js
+- css/analyst-edits.css
+
+What changed:
+1. Analyst edit/deletion review modal now shows request metadata, original record snapshot,
+   proposed-value comparison for edits, deletion impact warning, analyst justification,
+   and an Admin review checklist.
+2. Manual time review modal now shows analyst identity, request ID, submitted timestamp,
+   analyst ID, category, activity, activity date, start/end timestamps, submitted duration,
+   calculated time-range duration, and any discrepancy, plus analyst justification and a review checklist.
+3. Both modals use a consistent responsive detail-panel design.
+4. Existing decision RPCs and permission checks were not changed. No SQL migration is required.
+
+Important workflow limitation:
+- The existing manual-time approval RPC accepts a rejection reason but does not accept/store an
+  approval justification. The approval textbox remains hidden for approval to avoid implying
+  that an approval note is persisted. Adding persisted approval notes would require a separate
+  database migration and RPC update.
+- Related-row deletion impact is described based on the existing request workflow; this UI does
+  not independently query or count related rows.

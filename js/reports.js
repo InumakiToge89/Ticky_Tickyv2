@@ -31,24 +31,16 @@ function escapeHtml(value) {
 
 
 function formatDateTime(value) {
-
-    if (!value) {
-        return "--";
-    }
-
+    if (!value) return "--";
     const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return "--";
-    }
-
-    return date.toLocaleString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-    });
+    if (Number.isNaN(date.getTime())) return String(value);
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day:"2-digit", month:"short", year:"numeric", timeZone:"Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour:"2-digit", minute:"2-digit", hour12:true, timeZone:"Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 
@@ -59,15 +51,13 @@ function formatDateTime(value) {
 // formatter local so every report renderer can safely display
 // durations without depending on another page's script.
 function formatDuration(totalSeconds) {
-
-    const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-
-    return [hours, minutes, remainingSeconds]
-        .map((value) => String(value).padStart(2, "0"))
-        .join(":");
+    const total = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    if (hours) return `${hours}h ${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    if (minutes) return `${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    return `${seconds}s`;
 }
 
 
@@ -797,7 +787,7 @@ activityCategoryTotals.PROD +=
             "Total Work Activities",
             workActivityData.length,
             "",
-            "Total Work Activity Time",
+            "Total Tracked Time (Profiling + Activities)",
             formatDuration(
                 totalWorkActivitySeconds
             ),
@@ -869,7 +859,7 @@ activityCategoryTotals.PROD +=
         // =================================================
 
         [
-            "WORK ACTIVITY BREAKDOWN",
+            "TRACKED TIME CATEGORY BREAKDOWN",
             "",
             "",
             "",
@@ -1019,6 +1009,83 @@ activityCategoryTotals.PROD +=
 
 
     // =====================================================
+    // MANAGEMENT INSIGHTS — SAME FILTERED DATA AS DETAIL SHEETS
+    // =====================================================
+    const analystMetrics = new Map();
+    const ensureAnalystMetric = name => {
+        const key = String(name || "Unknown Analyst").trim() || "Unknown Analyst";
+        if (!analystMetrics.has(key)) analystMetrics.set(key, {
+            name: key, sessions: 0, profilingSeconds: 0,
+            activityEntries: 0, activitySeconds: 0, issues: 0
+        });
+        return analystMetrics.get(key);
+    };
+
+    profilingData.forEach(record => {
+        const metric = ensureAnalystMetric(record.analystName);
+        metric.sessions += 1;
+        metric.profilingSeconds += Number(record.totalSeconds || 0);
+        if (["INCONSISTENT", "NO_BREAKDOWN"].includes(String(record.accuracyStatus || "").toUpperCase())) metric.issues += 1;
+    });
+    workActivityData.forEach(record => {
+        const metric = ensureAnalystMetric(record.analystName);
+        metric.activityEntries += 1;
+        metric.activitySeconds += Number(record.duration_seconds || 0);
+    });
+
+    const teamMetrics = new Map();
+    profilingData.forEach(record => {
+        const name = String(record.team_name || "No Team Name Found").trim() || "No Team Name Found";
+        if (!teamMetrics.has(name)) teamMetrics.set(name, {
+            name, sessions: 0, members: Number(record.member_count || 0),
+            teamsSeconds: 0, membersSeconds: 0, totalSeconds: 0, issues: 0
+        });
+        const metric = teamMetrics.get(name);
+        metric.sessions += 1;
+        metric.teamsSeconds += Number(record.teamSeconds || 0);
+        metric.membersSeconds += Number(record.membersSeconds || 0);
+        metric.totalSeconds += Number(record.totalSeconds || 0);
+        if (["INCONSISTENT", "NO_BREAKDOWN"].includes(String(record.accuracyStatus || "").toUpperCase())) metric.issues += 1;
+    });
+
+    const analystOverviewHeadingRow = summaryRows.length + 2;
+    summaryRows.push(
+        [],
+        ["ANALYST PRODUCTIVITY OVERVIEW"],
+        ["Analyst", "Profiling Sessions", "Profiling Time", "Work Activity Entries", "Work Activity Time", "Combined Tracked Time", "Data Issues"],
+        ...[...analystMetrics.values()].sort((a, b) => (b.profilingSeconds + b.activitySeconds) - (a.profilingSeconds + a.activitySeconds)).map(metric => [
+            metric.name, metric.sessions, formatDuration(metric.profilingSeconds),
+            metric.activityEntries, formatDuration(metric.activitySeconds),
+            formatDuration(metric.profilingSeconds + metric.activitySeconds), metric.issues
+        ]),
+        [],
+        ["TEAM PROFILING OVERVIEW"],
+        ["Team", "Profiling Sessions", "Members", "Teams Time", "Members Time", "Total Profiling Time", "Data Issues"],
+        ...[...teamMetrics.values()].sort((a, b) => b.totalSeconds - a.totalSeconds).map(metric => [
+            metric.name, metric.sessions, metric.members, formatDuration(metric.teamsSeconds),
+            formatDuration(metric.membersSeconds), formatDuration(metric.totalSeconds), metric.issues
+        ]),
+        [],
+        ["ACTIVITY RECORD COUNTS"],
+        ["Category", "Records", "Work Activity Duration", "Share of Work Activity Time"],
+        ...activityCategories.map(category => {
+            const records = workActivityData.filter(record => {
+                const value = String(record.category || "").trim().toUpperCase().replace(/[ _]+/g, "-");
+                return value === category || (category === "NON-PROD" && value === "NONPROD");
+            });
+            const seconds = records.reduce((sum, record) => sum + Number(record.duration_seconds || 0), 0);
+            const rawWorkSeconds = workActivityData.reduce((sum, record) => sum + Number(record.duration_seconds || 0), 0);
+            return [category, records.length, formatDuration(seconds), `${rawWorkSeconds > 0 ? (seconds / rawWorkSeconds * 100).toFixed(1) : "0.0"}%`];
+        }),
+        [],
+        ["MANAGEMENT SNAPSHOT"],
+        ["Unique Analysts", analystMetrics.size, "Unique Teams", teamMetrics.size,
+            "Verified Profiling Records", profilingData.filter(record => ["VERIFIED", "SESSION_VERIFIED"].includes(String(record.accuracyStatus || "").toUpperCase())).length,
+            "Records Without Breakdown", profilingData.filter(record => String(record.accuracyStatus || "").toUpperCase() === "NO_BREAKDOWN").length]
+    );
+
+
+    // =====================================================
     // CREATE SUMMARY SHEET
     // =====================================================
 
@@ -1032,37 +1099,19 @@ activityCategoryTotals.PROD +=
     // SUMMARY MERGES
     // =====================================================
 
+    const extraSectionRows = [];
+    summaryRows.forEach((row, index) => {
+        if (row && row.length === 1 && [
+            "ANALYST PRODUCTIVITY OVERVIEW", "TEAM PROFILING OVERVIEW",
+            "ACTIVITY RECORD COUNTS", "MANAGEMENT SNAPSHOT"
+        ].includes(row[0])) extraSectionRows.push(index + 1);
+    });
+
     summarySheet["!merges"] = [
-
-        XLSX.utils.decode_range(
-            "A1:H1"
-        ),
-
-        XLSX.utils.decode_range(
-            "A2:H2"
-        ),
-
-        XLSX.utils.decode_range(
-            "A4:H4"
-        ),
-
-        XLSX.utils.decode_range(
-            "A8:H8"
-        ),
-
-        XLSX.utils.decode_range(
-            "A12:H12"
-        ),
-
-        XLSX.utils.decode_range(
-            "A17:H17"
-        ),
-
-        XLSX.utils.decode_range(
-            "A24:H24"
-        )
-
-    ];
+        "A1:H1", "A2:H2", "A4:H4", "A8:H8", "A10:H10",
+        "A14:H14", "A19:H19", "A26:H26",
+        ...extraSectionRows.map(row => `A${row}:H${row}`)
+    ].map(range => XLSX.utils.decode_range(range));
 
 
     // =====================================================
@@ -1190,7 +1239,8 @@ activityCategoryTotals.PROD +=
         "A10:H10",
         "A14:H14",
         "A19:H19",
-        "A26:H26"
+        "A26:H26",
+        ...extraSectionRows.map(row => `A${row}:H${row}`)
     ].forEach(
         range => {
 
@@ -1582,13 +1632,13 @@ activityCategoryTotals.PROD +=
 
     const categoryRowMap = {
 
-        "PROD": 19,
+        "PROD": 21,
 
-        "NON-PROD": 20,
+        "NON-PROD": 22,
 
-        "PROD LOSS": 21,
+        "PROD LOSS": 23,
 
-        "TRAINING": 22
+        "TRAINING": 24
 
     };
 
@@ -1762,6 +1812,56 @@ activityCategoryTotals.PROD +=
         };
 
     }
+
+
+    // =====================================================
+    // MANAGEMENT TABLE FORMATTING
+    // =====================================================
+    const findSummaryRow = label => summaryRows.findIndex(row => row && row[0] === label) + 1;
+    const analystHeading = findSummaryRow("ANALYST PRODUCTIVITY OVERVIEW");
+    const analystHeader = analystHeading + 1;
+    const teamHeading = findSummaryRow("TEAM PROFILING OVERVIEW");
+    const teamHeader = teamHeading + 1;
+    const activityHeading = findSummaryRow("ACTIVITY RECORD COUNTS");
+    const activityHeader = activityHeading + 1;
+    const snapshotHeading = findSummaryRow("MANAGEMENT SNAPSHOT");
+
+    const formatManagementTable = (headerRow, rowCount, lastColumn) => {
+        styleRange(summarySheet, `A${headerRow}:${lastColumn}${headerRow}`, {
+            fill: { fgColor: { rgb: COLORS.darkGreen } },
+            font: { bold: true, color: { rgb: COLORS.white }, sz: 10 },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            border: thinBorder
+        });
+        for (let row = headerRow + 1; row <= headerRow + rowCount; row++) {
+            styleRange(summarySheet, `A${row}:${lastColumn}${row}`, {
+                fill: { fgColor: { rgb: row % 2 ? COLORS.white : COLORS.gray } },
+                font: { color: { rgb: COLORS.darkText }, sz: 9 },
+                alignment: { vertical: "center", wrapText: true },
+                border: thinBorder
+            });
+        }
+    };
+
+    formatManagementTable(analystHeader, analystMetrics.size, "G");
+    formatManagementTable(teamHeader, teamMetrics.size, "G");
+    formatManagementTable(activityHeader, activityCategories.length, "D");
+    if (snapshotHeading) {
+        styleRange(summarySheet, `A${snapshotHeading + 1}:H${snapshotHeading + 1}`, {
+            fill: { fgColor: { rgb: COLORS.lightGreen } },
+            font: { bold: true, color: { rgb: COLORS.darkGreen } },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            border: thinBorder
+        });
+    }
+
+    summarySheet["!cols"] = [
+        { wch: 30 }, { wch: 22 }, { wch: 22 }, { wch: 24 },
+        { wch: 22 }, { wch: 25 }, { wch: 18 }, { wch: 18 },
+        ...Array.from({ length: 43 }, () => ({ wch: 14 }))
+    ];
+    summarySheet["!freeze"] = { xSplit: 0, ySplit: 2 };
+    summarySheet["!autofilter"] = { ref: `A${analystHeader}:G${Math.max(analystHeader + analystMetrics.size, analystHeader)}` };
 
 
     // =====================================================
@@ -1969,41 +2069,88 @@ activityCategoryTotals.PROD +=
 
 
     // =====================================================
-    // WORK ACTIVITY LOGS DATA
+    // SEPARATE WORK ACTIVITY SHEETS
     // =====================================================
 
-    const workActivityRows = [
+    // Normalize category labels so NON-PROD, NON PROD, and
+    // NON_PROD all map to the same worksheet without changing
+    // the original category value shown in the exported rows.
+    const normalizeActivityCategory = value => {
+        const normalized = String(value || "")
+            .trim()
+            .toUpperCase()
+            .replace(/[\s_-]+/g, " ");
 
-        [
-            "Analyst",
-            "Category",
-            "Task",
-            "Duration",
-            "Live Timer",
-            "Justification",
-            "Started",
-            "Completed"
-        ],
+        if (normalized === "PROD" || normalized === "PRODUCTION") {
+            return "PROD";
+        }
+        if (normalized === "NON PROD" || normalized === "NONPROD" || normalized === "NON PRODUCTION") {
+            return "NON PROD";
+        }
+        if (normalized === "PROD LOSS" || normalized === "PRODUCTION LOSS") {
+            return "PROD LOSS";
+        }
+        if (normalized === "TRAINING") {
+            return "TRAINING";
+        }
+        return "";
+    };
 
-        ...workActivityData.map(
-            record => [
+    const activitySheetDefinitions = [
+        { key: "PROD", sheetName: "PROD", color: COLORS.prod },
+        { key: "NON PROD", sheetName: "NON PROD", color: COLORS.nonProd },
+        { key: "PROD LOSS", sheetName: "PROD LOSS", color: COLORS.prodLoss },
+        { key: "TRAINING", sheetName: "TRAINING", color: COLORS.training }
+    ];
 
-                record.analystName ||
-                "Unknown Analyst",
+    // Never silently omit a work-activity record from the export.
+    // If an unexpected category exists, stop and explain what needs
+    // attention rather than generating an incomplete workbook.
+    const unmappedActivityRecords = workActivityData.filter(
+        record => !normalizeActivityCategory(record.category)
+    );
 
-                record.category ||
-                "",
+    if (unmappedActivityRecords.length > 0) {
+        const unknownCategories = [
+            ...new Set(
+                unmappedActivityRecords.map(
+                    record => String(record.category || "(blank)").trim()
+                )
+            )
+        ];
+        const message = `The Excel export was stopped because ${unmappedActivityRecords.length} work activity record(s) have an unrecognized category: ${unknownCategories.join(", ")}. No records were omitted. Please review these records before exporting again.`;
 
-                record.task_name ||
-                "",
+        if (typeof window.showAppNotice === "function") {
+            window.showAppNotice("warning", "Unrecognized Activity Category", message);
+        } else {
+            alert(message);
+        }
+        return;
+    }
 
-                excelDuration(
-                    Number(
-                        record.duration_seconds ||
-                        0
-                    )
-                ),
+    const activityHeaders = [
+        "Analyst",
+        "Category",
+        "Task",
+        "Duration",
+        "Live Timer",
+        "Justification",
+        "Started",
+        "Completed"
+    ];
 
+    function createActivityWorksheet(definition) {
+        const categoryRecords = workActivityData.filter(
+            record => normalizeActivityCategory(record.category) === definition.key
+        );
+
+        const rows = [
+            activityHeaders,
+            ...categoryRecords.map(record => [
+                record.analystName || "Unknown Analyst",
+                record.category || definition.key,
+                record.task_name || "",
+                excelDuration(Number(record.duration_seconds || 0)),
                 excelDuration(
                     Number(
                         record.live_duration_seconds ??
@@ -2011,224 +2158,76 @@ activityCategoryTotals.PROD +=
                         0
                     )
                 ),
+                record.justification || "",
+                formatDateTime(record.started_at),
+                formatDateTime(record.ended_at)
+            ])
+        ];
 
-                record.justification ||
-                "",
+        const sheet = XLSX.utils.aoa_to_sheet(rows);
 
-                formatDateTime(
-                    record.started_at
-                ),
+        // Keep durations as real Excel time values, allowing users
+        // to sort, filter, and calculate durations in Excel.
+        for (let row = 2; row <= rows.length; row++) {
+            if (sheet[`D${row}`]) sheet[`D${row}`].z = "[h]:mm:ss";
+            if (sheet[`E${row}`]) sheet[`E${row}`].z = "[h]:mm:ss";
+        }
 
-                formatDateTime(
-                    record.ended_at
-                )
+        sheet["!freeze"] = { xSplit: 0, ySplit: 1 };
+        sheet["!autofilter"] = { ref: `A1:H${rows.length}` };
 
-            ]
-        )
+        // Style the complete eight-column table, including empty
+        // category sheets (which still retain their header row).
+        styleTable(sheet, rows.length, "H");
 
-    ];
+        sheet["!cols"] = [
+            { wch: 24 },
+            { wch: 18 },
+            { wch: 38 },
+            { wch: 16 },
+            { wch: 16 },
+            { wch: 42 },
+            { wch: 28 },
+            { wch: 28 }
+        ];
+        sheet["!rows"] = [{ hpt: 24 }];
 
-
-    const workActivitySheet =
-        XLSX.utils.aoa_to_sheet(
-            workActivityRows
-        );
-
-        for (
-                let row = 2;
-                row <= workActivityRows.length;
-                row++
-            ) {
-                if (workActivitySheet[`D${row}`]) {
-                    workActivitySheet[`D${row}`].z = "[h]:mm:ss";
-                }
-                if (workActivitySheet[`E${row}`]) {
-                    workActivitySheet[`E${row}`].z = "[h]:mm:ss";
-                }
+        // Keep the category indicator and duration alignment used
+        // by the original combined Work Activity Logs worksheet.
+        for (let row = 2; row <= rows.length; row++) {
+            if (sheet[`B${row}`]) {
+                sheet[`B${row}`].s = {
+                    ...(sheet[`B${row}`].s || {}),
+                    fill: { fgColor: { rgb: definition.color } },
+                    font: { bold: true, color: { rgb: COLORS.white } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
             }
 
-
-    // =====================================================
-    // WORK ACTIVITY LOGS DESIGN
-    // =====================================================
-
-    workActivitySheet["!freeze"] = {
-
-        xSplit: 0,
-        ySplit: 1
-
-    };
-
-
-    workActivitySheet["!autofilter"] = {
-
-        ref:
-            `A1:H${workActivityRows.length}`
-
-    };
-
-
-    styleTable(
-        workActivitySheet,
-        workActivityRows.length,
-        "F"
-    );
-
-
-    workActivitySheet["!cols"] = [
-
-        { wch: 24 },
-        { wch: 18 },
-        { wch: 38 },
-        { wch: 16 },
-        { wch: 24 },
-        { wch: 24 }
-
-    ];
-
-
-    workActivitySheet["!rows"] = [
-
-        { hpt: 24 }
-
-    ];
-
-
-    // =====================================================
-    // CATEGORY COLORS
-    // =====================================================
-
-    for (
-        let row = 2;
-        row <= workActivityRows.length;
-        row++
-    ) {
-
-        const category =
-            String(
-                workActivitySheet[
-                    `B${row}`
-                ]?.v ||
-                ""
-            )
-                .trim()
-                .toUpperCase();
-
-
-        let categoryColor =
-            null;
-
-
-        if (
-            category === "PROD"
-        ) {
-
-            categoryColor =
-                COLORS.prod;
-
-        }
-
-        else if (
-            category === "NON-PROD"
-        ) {
-
-            categoryColor =
-                COLORS.nonProd;
-
-        }
-
-        else if (
-            category === "PROD LOSS"
-        ) {
-
-            categoryColor =
-                COLORS.prodLoss;
-
-        }
-
-        else if (
-            category === "TRAINING"
-        ) {
-
-            categoryColor =
-                COLORS.training;
-
-        }
-
-
-        if (
-            categoryColor &&
-            workActivitySheet[
-                `B${row}`
-            ]
-        ) {
-
-            workActivitySheet[
-                `B${row}`
-            ].s = {
-
-                ...workActivitySheet[
-                    `B${row}`
-                ].s,
-
-                fill: {
-                    fgColor: {
-                        rgb: categoryColor
-                    }
-                },
-
-                font: {
-                    bold: true,
-                    color: {
-                        rgb: COLORS.white
-                    }
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
+            for (const column of ["D", "E"]) {
+                if (sheet[`${column}${row}`]) {
+                    sheet[`${column}${row}`].s = {
+                        ...(sheet[`${column}${row}`].s || {}),
+                        alignment: { horizontal: "center", vertical: "center" },
+                        font: { bold: true }
+                    };
                 }
-
-            };
-
+            }
         }
 
-
-        if (
-            workActivitySheet[
-                `D${row}`
-            ]
-        ) {
-
-            workActivitySheet[
-                `D${row}`
-            ].s = {
-
-                ...workActivitySheet[
-                    `D${row}`
-                ].s,
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                },
-
-                font: {
-                    bold: true
-                }
-
-            };
-
-        }
-
+        return sheet;
     }
 
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        workActivitySheet,
-        "Work Activity Logs"
-    );
+    // Add one worksheet per category in the requested order.
+    // Empty categories are intentionally included with headers.
+    activitySheetDefinitions.forEach(definition => {
+        const activitySheet = createActivityWorksheet(definition);
+        XLSX.utils.book_append_sheet(
+            workbook,
+            activitySheet,
+            definition.sheetName
+        );
+    });
 
 
 // =====================================================
@@ -2501,21 +2500,6 @@ const workActivityReportsTableBody =
         "workActivityReportsTableBody"
     );
 
-const manualTimeRequestsSection =
-    document.getElementById(
-        "manualTimeRequestsSection"
-    );
-
-const manualTimeRequestCount =
-    document.getElementById(
-        "manualTimeRequestCount"
-    );
-
-const manualTimeRequestsBody =
-    document.getElementById(
-        "manualTimeRequestsBody"
-    );
-
 // =========================================================
 // PAGINATION ELEMENTS
 // =========================================================
@@ -2764,9 +2748,6 @@ async function initializeReports() {
 
         await loadReports();
         await loadWorkActivityReports();
-        await loadManualTimeRequests();
-        initializeManualTimeRequestActions();
-
         // Include analysts who appear only in work activity logs.
         populateAnalystFilter([
             ...reportRecords,
@@ -2907,390 +2888,6 @@ async function initializeReports() {
 
     }
 
-}
-
-
-// =========================================================
-// MANUAL TIME REQUESTS
-// =========================================================
-
-async function loadManualTimeRequests() {
-
-    if (!manualTimeRequestsSection || !manualTimeRequestsBody) {
-        return;
-    }
-
-    manualTimeRequestsBody.innerHTML = `
-        <div class="manual-request-loading">Loading manual time requests...</div>
-    `;
-
-    const { data, error } = await supabase
-        .from("manual_time_requests")
-        .select(`
-            id,
-            analyst_id,
-            task_name,
-            started_at,
-            ended_at,
-            duration_seconds,
-            justification,
-            status,
-            created_at
-        `)
-        .eq("status", "PENDING")
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        console.error("Manual time requests error:", error);
-        manualTimeRequestsBody.innerHTML = `
-            <div class="manual-request-error">Unable to load manual time requests.</div>
-        `;
-        return;
-    }
-
-    const requests = Array.isArray(data) ? data : [];
-
-    const analystIds = [...new Set(
-        requests.map(request => request.analyst_id).filter(Boolean)
-    )];
-
-    let analystMap = new Map();
-
-    if (analystIds.length > 0) {
-        const { data: analystRows, error: analystError } = await supabase
-            .from("profiles")
-            .select("id, full_name")
-            .in("id", analystIds);
-
-        if (analystError) {
-            console.error("Manual request analyst lookup error:", analystError);
-        } else {
-            analystMap = new Map(
-                (analystRows || []).map(row => [String(row.id), row.full_name || "Unknown Analyst"])
-            );
-        }
-    }
-    manualTimeRequestCount.textContent = String(requests.length);
-
-    if (requests.length === 0) {
-        manualTimeRequestsBody.innerHTML = `
-            <div class="manual-request-empty">No pending manual time requests.</div>
-        `;
-        return;
-    }
-
-    manualTimeRequestsBody.innerHTML = requests.map(request => {
-        const analystName = analystMap.get(String(request.analyst_id)) || "Unknown Analyst";
-        const duration = formatDuration(Number(request.duration_seconds || 0));
-        return `
-            <article class="manual-request-card" data-request-id="${escapeHtml(String(request.id))}">
-                <div class="manual-request-card-header">
-                    <div>
-                        <h3>${escapeHtml(analystName)}</h3>
-                        <span class="manual-request-status">PENDING REVIEW</span>
-                    </div>
-                    <div class="manual-request-duration">${escapeHtml(duration)}</div>
-                </div>
-
-                <div class="manual-request-grid">
-                    <div><span>Activity</span><strong>${escapeHtml(request.task_name || "--")}</strong></div>
-                    <div><span>Date</span><strong>${escapeHtml(formatDateTime(request.started_at).split(",")[0] || "--")}</strong></div>
-                    <div><span>Start</span><strong>${escapeHtml(formatDateTime(request.started_at))}</strong></div>
-                    <div><span>End</span><strong>${escapeHtml(formatDateTime(request.ended_at))}</strong></div>
-                </div>
-
-                <div class="manual-request-justification">
-                    <span>Justification / Comment</span>
-                    <p>${escapeHtml(request.justification || "--")}</p>
-                </div>
-
-                <div class="manual-request-actions">
-                    <button type="button" class="manual-request-approve" data-request-action="approve" data-request-id="${escapeHtml(String(request.id))}">✓ Accept</button>
-                    <button type="button" class="manual-request-reject" data-request-action="reject" data-request-id="${escapeHtml(String(request.id))}">✕ Reject</button>
-                </div>
-            </article>
-        `;
-    }).join("");
-}
-
-function requestManualRejectionReason() {
-    return new Promise(resolve => {
-        const existingModal = document.getElementById("manualRejectReasonModal");
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        if (!document.getElementById("manualRejectReasonModalStyles")) {
-            const style = document.createElement("style");
-            style.id = "manualRejectReasonModalStyles";
-            style.textContent = `
-                #manualRejectReasonModal {
-                    position: fixed;
-                    inset: 0;
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 24px;
-                    background: rgba(9, 30, 24, 0.52);
-                    backdrop-filter: blur(3px);
-                }
-                #manualRejectReasonModal .manual-reject-dialog {
-                    width: min(520px, 100%);
-                    border: 1px solid rgba(0, 148, 104, 0.25);
-                    border-radius: 18px;
-                    background: var(--card-bg, #ffffff);
-                    color: var(--text-primary, #17352d);
-                    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.20);
-                    overflow: hidden;
-                }
-                #manualRejectReasonModal .manual-reject-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 16px;
-                    padding: 20px 22px 14px;
-                    border-bottom: 1px solid rgba(0, 148, 104, 0.14);
-                }
-                #manualRejectReasonModal .manual-reject-title {
-                    margin: 0;
-                    font-size: 18px;
-                    font-weight: 700;
-                }
-                #manualRejectReasonModal .manual-reject-close {
-                    width: 34px;
-                    height: 34px;
-                    border: 0;
-                    border-radius: 9px;
-                    background: transparent;
-                    color: inherit;
-                    font-size: 22px;
-                    line-height: 1;
-                    cursor: pointer;
-                }
-                #manualRejectReasonModal .manual-reject-close:hover {
-                    background: rgba(0, 148, 104, 0.08);
-                }
-                #manualRejectReasonModal .manual-reject-body {
-                    padding: 20px 22px 8px;
-                }
-                #manualRejectReasonModal .manual-reject-label {
-                    display: block;
-                    margin-bottom: 8px;
-                    font-size: 13px;
-                    font-weight: 600;
-                }
-                #manualRejectReasonModal .manual-reject-hint {
-                    margin: 0 0 12px;
-                    color: var(--text-secondary, #657b74);
-                    font-size: 12px;
-                }
-                #manualRejectReasonModal textarea {
-                    width: 100%;
-                    min-height: 120px;
-                    resize: vertical;
-                    box-sizing: border-box;
-                    padding: 12px 14px;
-                    border: 1px solid rgba(0, 148, 104, 0.24);
-                    border-radius: 11px;
-                    background: var(--input-bg, #f8fffc);
-                    color: inherit;
-                    font: inherit;
-                    outline: none;
-                }
-                #manualRejectReasonModal textarea:focus {
-                    border-color: rgba(0, 148, 104, 0.60);
-                    box-shadow: 0 0 0 3px rgba(0, 148, 104, 0.10);
-                }
-                #manualRejectReasonModal .manual-reject-actions {
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 10px;
-                    padding: 14px 22px 20px;
-                }
-                #manualRejectReasonModal .manual-reject-btn {
-                    border: 0;
-                    border-radius: 10px;
-                    padding: 10px 16px;
-                    font: inherit;
-                    font-weight: 700;
-                    cursor: pointer;
-                }
-                #manualRejectReasonModal .manual-reject-cancel {
-                    background: rgba(0, 148, 104, 0.08);
-                    color: inherit;
-                }
-                #manualRejectReasonModal .manual-reject-confirm {
-                    background: #d9534f;
-                    color: #fff;
-                }
-                #manualRejectReasonModal .manual-reject-confirm:hover {
-                    filter: brightness(0.95);
-                }
-                @media (max-width: 520px) {
-                    #manualRejectReasonModal { padding: 14px; }
-                    #manualRejectReasonModal .manual-reject-actions {
-                        flex-direction: column-reverse;
-                    }
-                    #manualRejectReasonModal .manual-reject-btn {
-                        width: 100%;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        const modal = document.createElement("div");
-        modal.id = "manualRejectReasonModal";
-        modal.innerHTML = `
-            <div class="manual-reject-dialog" role="dialog" aria-modal="true" aria-labelledby="manualRejectReasonTitle">
-                <div class="manual-reject-header">
-                    <h2 id="manualRejectReasonTitle" class="manual-reject-title">Reject Manual Time</h2>
-                    <button type="button" class="manual-reject-close" aria-label="Close">&times;</button>
-                </div>
-                <div class="manual-reject-body">
-                    <label class="manual-reject-label" for="manualRejectReasonInput">Rejection reason <span style="font-weight:400;opacity:.7;">(optional)</span></label>
-                    <p class="manual-reject-hint">Tell the analyst why this Non-Prod time request is being rejected.</p>
-                    <textarea id="manualRejectReasonInput" maxlength="1000" placeholder="Enter a reason..."></textarea>
-                </div>
-                <div class="manual-reject-actions">
-                    <button type="button" class="manual-reject-btn manual-reject-cancel">Cancel</button>
-                    <button type="button" class="manual-reject-btn manual-reject-confirm">Reject Request</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        const input = modal.querySelector("#manualRejectReasonInput");
-        const closeButton = modal.querySelector(".manual-reject-close");
-        const cancelButton = modal.querySelector(".manual-reject-cancel");
-        const confirmButton = modal.querySelector(".manual-reject-confirm");
-
-        let settled = false;
-        const finish = value => {
-            if (settled) return;
-            settled = true;
-            document.removeEventListener("keydown", onKeyDown);
-            modal.remove();
-            resolve(value);
-        };
-
-        const onKeyDown = event => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-                finish(null);
-            } else if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-                event.preventDefault();
-                finish(String(input.value).trim() || null);
-            }
-        };
-
-        closeButton.addEventListener("click", () => finish(null));
-        cancelButton.addEventListener("click", () => finish(null));
-        confirmButton.addEventListener("click", () => {
-            finish(String(input.value).trim() || null);
-        });
-        modal.addEventListener("click", event => {
-            if (event.target === modal) {
-                finish(null);
-            }
-        });
-        document.addEventListener("keydown", onKeyDown);
-
-        requestAnimationFrame(() => input.focus());
-    });
-}
-
-async function reviewManualTimeRequest(requestId, decision) {
-
-    let rejectionReason = null;
-
-    if (decision === "REJECTED") {
-        rejectionReason = await requestManualRejectionReason();
-
-        if (rejectionReason === null) {
-            return;
-        }
-    }
-
-    const buttons = document.querySelectorAll(
-        `[data-request-id="${CSS.escape(String(requestId))}"][data-request-action]`
-    );
-    buttons.forEach(button => {
-        button.disabled = true;
-    });
-
-    const { error } = await supabase.rpc(
-        "review_manual_time_request",
-        {
-            p_request_id: requestId,
-            p_decision: decision,
-            p_rejection_reason: rejectionReason
-        }
-    );
-
-    if (error) {
-        console.error("Manual time review error:", error);
-        if (typeof window.showAppNotice === "function") {
-            window.showAppNotice(
-                "error",
-                "Review Failed",
-                error.message || "Unable to review this manual time request."
-            );
-        } else {
-            alert(error.message || "Unable to review manual time request.");
-        }
-        buttons.forEach(button => {
-            button.disabled = false;
-        });
-        return;
-    }
-
-    await loadManualTimeRequests();
-    await loadWorkActivityReports();
-
-    if (typeof window.showAppNotice === "function") {
-        window.showAppNotice(
-            decision === "APPROVED" ? "success" : "warning",
-            decision === "APPROVED"
-                ? "Manual Time Approved"
-                : "Manual Time Rejected",
-            decision === "APPROVED"
-                ? "The manual Non-Prod entry was accepted and the analyst has been notified."
-                : "The manual Non-Prod entry was rejected and the analyst has been notified."
-        );
-    } else {
-        alert(
-            decision === "APPROVED"
-                ? "Manual time accepted. The analyst has been notified."
-                : "Manual time rejected. The analyst has been notified."
-        );
-    }
-}
-
-function initializeManualTimeRequestActions() {
-
-    if (!manualTimeRequestsBody || manualTimeRequestsBody.dataset.bound === "1") {
-        return;
-    }
-
-    manualTimeRequestsBody.dataset.bound = "1";
-
-    manualTimeRequestsBody.addEventListener("click", event => {
-        const button = event.target.closest("[data-request-action]");
-        if (!button) return;
-
-        const requestId = button.dataset.requestId;
-        const action = button.dataset.requestAction;
-
-        if (!requestId || !action) return;
-
-        reviewManualTimeRequest(
-            requestId,
-            action === "approve" ? "APPROVED" : "REJECTED"
-        );
-    });
 }
 
 
@@ -7075,7 +6672,7 @@ function renderProductivityTrend(
         const date = new Date(`${dateKey}T00:00:00`);
         const label = Number.isNaN(date.getTime())
             ? dateKey
-            : date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            : new Intl.DateTimeFormat("en-PH", { month:"short", day:"2-digit", timeZone:"Asia/Manila" }).format(date);
 
         const bars = series.map(item => {
             const value = Math.max(0, Number(values[item.key]) || 0);

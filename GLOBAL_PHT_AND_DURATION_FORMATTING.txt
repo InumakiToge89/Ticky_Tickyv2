@@ -1,0 +1,41 @@
+TICKY TICKY — GLOBAL PHILIPPINE TIME & DURATION DISPLAY STANDARD
+
+Implemented in this project copy.
+
+DISPLAY STANDARD
+- Timestamp display: DD MMM YYYY, hh:mm AM/PM PHT
+  Example: 13 Nov 2026, 12:08 PM PHT
+- Date-only display: DD MMM YYYY (or long month name where used)
+- Timezone: Asia/Manila (UTC+08:00)
+- Historical/productivity duration display: 6h 30m (seconds retained in the display if non-zero)
+- Decimal/underlying duration values and database seconds remain unchanged.
+
+AREAS UPDATED
+- Dashboard date labels, timestamp labels, and productivity duration summaries
+- History timestamp and duration displays
+- Reports timestamp and duration displays
+- Analyst Record Corrections: record dates, proposed-value comparisons, snapshots, duration labels
+- Admin Record Corrections: edit/deletion/manual-time review details and request metadata
+- Request history timestamps
+- Global notification timestamps and duration details
+- Developer console timestamp displays
+- Profiling timer session timestamp formatting
+
+TIME INPUTS
+- Analyst datetime-local edit fields are rendered as Asia/Manila wall-clock values and converted back to UTC ISO timestamps on submission.
+- Work Activity manual time date/time inputs are interpreted as Asia/Manila (UTC+08:00).
+- Work Activity manual time default date is derived from Asia/Manila.
+
+INTENTIONAL EXCEPTION
+- Live stopwatch/timer counters remain HH:MM:SS while actively running. This keeps the live timer readable and precise.
+- Historical durations, productivity totals, review panels, and manual-entry computed durations use human-readable hours/minutes.
+
+DATA SAFETY
+- No Supabase timestamps or stored duration values were rewritten.
+- UTC remains the storage convention; only display and input conversion are timezone-aware.
+- No SQL migration is required.
+
+VALIDATION
+- Node syntax check passed for all 18 JavaScript files.
+- A sample UTC-to-PHT conversion was checked: 2026-11-13 04:08 UTC -> 13 Nov 2026, 12:08 PM PHT.
+- Browser and live Supabase integration testing is still required.

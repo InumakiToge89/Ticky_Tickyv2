@@ -301,49 +301,13 @@ async function loadCompletionSummary() {
 function formatDuration(
     totalSeconds
 ) {
-
-    totalSeconds =
-        Math.max(
-            0,
-            Math.floor(
-                Number(
-                    totalSeconds
-                ) || 0
-            )
-        );
-
-
-    const hours =
-        Math.floor(
-            totalSeconds / 3600
-        );
-
-
-    const minutes =
-        Math.floor(
-            (
-                totalSeconds % 3600
-            ) / 60
-        );
-
-
-    const seconds =
-        totalSeconds % 60;
-
-
-    return [
-
-        String(hours)
-            .padStart(2, "0"),
-
-        String(minutes)
-            .padStart(2, "0"),
-
-        String(seconds)
-            .padStart(2, "0")
-
-    ].join(":");
-
+    const total = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    if (hours) return `${hours}h ${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    if (minutes) return `${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    return `${seconds}s`;
 }
 
 

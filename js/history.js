@@ -2045,63 +2045,13 @@ if (workActivityModal) {
 function formatDuration(
     totalSeconds
 ) {
-
-    totalSeconds =
-        Math.max(
-            0,
-            Math.floor(
-                Number(
-                    totalSeconds
-                ) ||
-                0
-            )
-        );
-
-
-    const hours =
-        Math.floor(
-            totalSeconds /
-            3600
-        );
-
-
-    const minutes =
-        Math.floor(
-            (
-                totalSeconds %
-                3600
-            ) /
-            60
-        );
-
-
-    const seconds =
-        totalSeconds %
-        60;
-
-
-    return [
-
-        String(hours)
-            .padStart(
-                2,
-                "0"
-            ),
-
-        String(minutes)
-            .padStart(
-                2,
-                "0"
-            ),
-
-        String(seconds)
-            .padStart(
-                2,
-                "0"
-            )
-
-    ].join(":");
-
+    const total = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    if (hours) return `${hours}h ${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    if (minutes) return `${minutes}m${seconds ? ` ${seconds}s` : ""}`;
+    return `${seconds}s`;
 }
 
 
@@ -2112,47 +2062,16 @@ function formatDuration(
 function formatDateTime(
     value
 ) {
-
-    if (!value) {
-        return "--";
-    }
-
-
-    const date =
-        new Date(value);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "--";
-
-    }
-
-
-    return date.toLocaleString(
-        undefined,
-        {
-            year:
-                "numeric",
-
-            month:
-                "short",
-
-            day:
-                "numeric",
-
-            hour:
-                "numeric",
-
-            minute:
-                "2-digit"
-        }
-    );
-
+    if (!value) return "--";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        day:"2-digit", month:"short", year:"numeric", timeZone:"Asia/Manila"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        hour:"2-digit", minute:"2-digit", hour12:true, timeZone:"Asia/Manila"
+    }).format(date).toUpperCase();
+    return `${dateText}, ${timeText} PHT`;
 }
 
 
