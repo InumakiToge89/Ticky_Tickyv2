@@ -165,44 +165,25 @@ app.post(
                 }
 
 
-                const parts =
-                    String(
-                        value || "0:0:0"
-                    ).split(":");
+                const text = String(value || "0").trim();
 
-
-                if (
-                    parts.length !== 3
-                ) {
-
-                    return 0;
-
+                // Current report duration format: 12h 34m 56s.
+                const labeled = text.match(/^(?:(\d+(?:\.\d+)?)h)?\s*(?:(\d+(?:\.\d+)?)m)?\s*(?:(\d+(?:\.\d+)?)s)?$/i);
+                if (labeled && (/[hms]/i.test(text))) {
+                    return (Number(labeled[1] || 0) * 3600) +
+                        (Number(labeled[2] || 0) * 60) +
+                        Number(labeled[3] || 0);
                 }
 
+                // Backward compatibility for older HH:MM:SS exports.
+                const parts = text.split(":");
+                if (parts.length === 3) {
+                    return (Number(parts[0]) || 0) * 3600 +
+                        (Number(parts[1]) || 0) * 60 +
+                        (Number(parts[2]) || 0);
+                }
 
-                const hours =
-                    Number(
-                        parts[0]
-                    ) || 0;
-
-
-                const minutes =
-                    Number(
-                        parts[1]
-                    ) || 0;
-
-
-                const seconds =
-                    Number(
-                        parts[2]
-                    ) || 0;
-
-
-                return (
-                    hours * 3600 +
-                    minutes * 60 +
-                    seconds
-                );
+                return Number(text) || 0;
 
             }
 
@@ -210,7 +191,7 @@ app.post(
             const teamsCell =
                 getCell(
                     summarySheet,
-                    14,
+                    16,
                     2
                 );
 
@@ -218,7 +199,7 @@ app.post(
             const membersCell =
                 getCell(
                     summarySheet,
-                    15,
+                    17,
                     2
                 );
 
@@ -405,7 +386,7 @@ app.post(
             ) {
 
                 const reportRow =
-                    19 + i;
+                    21 + i;
 
 
                 const helperRow =
@@ -512,7 +493,7 @@ app.post(
                         },
 
                         title:
-                            "Work Activity Breakdown",
+                            "Tracked Time by Category",
 
                         legend: {
 
