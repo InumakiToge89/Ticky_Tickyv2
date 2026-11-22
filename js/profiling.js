@@ -54,6 +54,31 @@ const teamSelect =
     );
 
 let savedTeams = [];
+let selectedProfilingMethod = "SEPARATE";
+
+const profilingMethodTabs = document.querySelectorAll("[data-profiling-method]");
+const separateTypeSection = document.querySelector(".type-section");
+const methodPageSubtitle = document.querySelector(".page-subtitle");
+
+profilingMethodTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        selectedProfilingMethod = tab.dataset.profilingMethod === "MERGED" ? "MERGED" : "SEPARATE";
+        profilingMethodTabs.forEach(item => {
+            const active = item === tab;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        if (separateTypeSection) {
+            separateTypeSection.style.display = selectedProfilingMethod === "MERGED" ? "none" : "block";
+        }
+        if (methodPageSubtitle) {
+            methodPageSubtitle.textContent = selectedProfilingMethod === "MERGED"
+                ? "Use one continuous timer for the entire team. Team details remain attached to this profiling job."
+                : "Enter the team information before starting the separate Teams and Members timers.";
+        }
+        hideError();
+    });
+});
 
 
 // =========================================================
@@ -191,6 +216,7 @@ async function initializeProfiling() {
                 team_name,
                 team_id,
                 member_count,
+                profiling_method,
                 status,
                 started_at,
                 finished_at
@@ -255,7 +281,7 @@ async function initializeProfiling() {
             return !hasRunning && hasIncomplete;
         });
 
-        renderPendingProfilingJobs(pendingJobs);
+        renderPendingProfilingJobs(pendingJobs, sessionsByJob);
 
         // -------------------------------------------------
         // No active profiling
@@ -474,107 +500,115 @@ async function initializeProfiling() {
 // PENDING PROFILING JOBS
 // =========================================================
 
-function renderPendingProfilingJobs(jobs) {
-
+function renderPendingProfilingJobs(jobs, sessionsByJob = new Map()) {
     const card = document.getElementById("pendingProfilingCard");
     const list = document.getElementById("pendingProfilingList");
-
     if (!card || !list) return;
-
-    if (!jobs || jobs.length === 0) {
-        card.style.display = "none";
-        list.innerHTML = "";
-        return;
-    }
 
     card.style.display = "block";
 
-    list.innerHTML = jobs.map(job => `
-        <div class="pending-profiling-item">
-            <div class="pending-profiling-info">
-                <div class="pending-profiling-name">
-                    ${escapeHtml(job.team_name || "Unnamed Team")}
+    if (!jobs || jobs.length === 0) {
+        list.innerHTML = '<div class="pending-profiling-empty">You have no pending profiling jobs. Jobs paused using “Pause & Switch Team” will appear here.</div>';
+        return;
+    }
+
+    list.innerHTML = jobs.map(job => {
+        const method = String(job.profiling_method || "SEPARATE").toUpperCase();
+        const sessions = sessionsByJob.get(job.id) || [];
+        const accumulatedSeconds = sessions.reduce((sum, session) => {
+            const seconds = Number(session.total_seconds || 0);
+            return sum + (Number.isFinite(seconds) ? seconds : 0);
+        }, 0);
+        return `
+            <div class="pending-profiling-item">
+                <div class="pending-profiling-info">
+                    <div class="pending-profiling-name">${escapeHtml(job.team_name || "Unnamed Team")}</div>
+                    <div class="pending-profiling-meta">
+                        Team ID: ${escapeHtml(String(job.team_id || "--"))}
+                        &nbsp;•&nbsp; Members: ${Number(job.member_count || 0)}
+                    </div>
+                    <div class="pending-profiling-details">
+                        <span class="pending-method-pill">${method === "MERGED" ? "Merged Method Timer" : "Separate Method Timer"}</span>
+                        <span>Saved time: ${formatPendingDuration(accumulatedSeconds)}</span>
+                        <span>Status: ${escapeHtml(job.status || "PAUSED")}</span>
+                    </div>
                 </div>
-                <div class="pending-profiling-meta">
-                    Team ID: ${escapeHtml(String(job.team_id || "--"))}
-                    &nbsp;•&nbsp; Members: ${Number(job.member_count || 0)}
-                </div>
+                <button type="button" class="btn btn-primary resume-pending-profiling" data-job-id="${escapeHtml(String(job.id))}">Resume</button>
             </div>
-            <button
-                type="button"
-                class="btn btn-primary resume-pending-profiling"
-                data-job-id="${job.id}"
-            >
-                Resume
-            </button>
-        </div>
-    `).join("");
+        `;
+    }).join("");
 
     list.querySelectorAll(".resume-pending-profiling").forEach(button => {
         button.addEventListener("click", async () => {
             const jobId = button.dataset.jobId;
             button.disabled = true;
             button.textContent = "Resuming...";
-
             try {
-                // The profiling job remains IN_PROGRESS while its timer session
-                // is paused by "Finish Later". Do NOT update the profiling job here.
-                // Updating it and using .single() can cause a 406 error when no
-                // row is returned by Supabase.
-
                 const { data: job, error: jobError } = await supabase
                     .from("profiling_jobs")
-                    .select("id, analyst_id, status")
+                    .select("id, analyst_id, status, profiling_method")
                     .eq("id", jobId)
                     .eq("analyst_id", currentUserIdForPending)
                     .maybeSingle();
-
                 if (jobError) throw jobError;
+                if (!job) throw new Error("The pending profiling job could not be found.");
+                if (job.status === "COMPLETED" || job.status === "CANCELLED") {
+                    throw new Error("This profiling job is no longer available to resume.");
+                }
 
-                if (!job) {
-                    throw new Error("The pending profiling job could not be found.");
+                // Release/claim the single active-job slot safely: pause any other
+                // active job through the timer's Pause & Switch Team action first.
+                const { data: activeJobs, error: activeJobsError } = await supabase
+                    .from("profiling_jobs")
+                    .select("id")
+                    .eq("analyst_id", currentUserIdForPending)
+                    .eq("status", "IN_PROGRESS")
+                    .neq("id", job.id);
+                if (activeJobsError) throw activeJobsError;
+                if (activeJobs?.length) {
+                    throw new Error("Another profiling job is still active. Pause it using 'Pause & Switch Team' before resuming this team.");
                 }
 
                 const { data: sessions, error: sessionsError } = await supabase
                     .from("timer_sessions")
-                    .select(
-                        "id, session_type, status, started_at, stopped_at, total_seconds"
-                    )
+                    .select("id, session_type, status, started_at, stopped_at, total_seconds")
                     .eq("profiling_job_id", job.id)
                     .order("id", { ascending: true });
-
                 if (sessionsError) throw sessionsError;
 
-                const selectedSession =
-                    sessions?.find(session => session.status === "RUNNING") ||
-                    sessions?.find(session => session.status === "PAUSED") ||
-                    sessions?.find(session => session.status === "NOT_STARTED");
+                const selectedSession = sessions?.find(session => session.status === "RUNNING")
+                    || sessions?.find(session => session.status === "PAUSED")
+                    || sessions?.find(session => session.status === "NOT_STARTED");
+                if (!selectedSession) throw new Error("No resumable timer session is available for this profiling job.");
 
-                if (!selectedSession) {
-                    throw new Error(
-                        "No timer session is available for this pending profiling job."
-                    );
+                const method = String(job.profiling_method || "SEPARATE").toUpperCase();
+                if (method === "MERGED" && selectedSession.session_type !== "MERGED") {
+                    throw new Error("This Merged Method job does not have its expected MERGED timer session.");
+                }
+                if (method !== "MERGED" && !["TEAM", "MEMBERS"].includes(selectedSession.session_type)) {
+                    throw new Error("This Separate Method job does not have a valid TEAM or MEMBERS timer session.");
                 }
 
-                sessionStorage.setItem(
-                    "activeProfilingJobId",
-                    String(job.id)
-                );
+                if (job.status === "PAUSED") {
+                    const { error: activateError } = await supabase
+                        .from("profiling_jobs")
+                        .update({ status: "IN_PROGRESS" })
+                        .eq("id", job.id)
+                        .eq("analyst_id", currentUserIdForPending)
+                        .eq("status", "PAUSED");
+                    if (activateError) throw activateError;
+                }
 
-                sessionStorage.setItem(
-                    "activeProfilingType",
-                    selectedSession.session_type
-                );
-
-                console.log(
-                    "Resuming pending profiling:",
-                    job.id,
-                    selectedSession.session_type,
-                    selectedSession.status
-                );
-
+                sessionStorage.setItem("activeProfilingJobId", String(job.id));
+                sessionStorage.setItem("activeProfilingType", selectedSession.session_type);
+                sessionStorage.removeItem("autoStartProfilingTimer");
+                sessionStorage.removeItem("autoResumeProfilingTimer");
+                if (selectedSession.status === "PAUSED") {
+                    sessionStorage.setItem("autoResumeProfilingTimer", "1");
+                } else if (selectedSession.status === "NOT_STARTED") {
+                    sessionStorage.setItem("autoStartProfilingTimer", "1");
+                }
                 window.location.href = "timer.html";
-
             } catch (error) {
                 console.error("Resume pending profiling error:", error);
                 showError(error.message || "Unable to resume profiling.");
@@ -583,6 +617,14 @@ function renderPendingProfilingJobs(jobs) {
             }
         });
     });
+}
+
+function formatPendingDuration(totalSeconds) {
+    const total = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return [hours, minutes, seconds].map(value => String(value).padStart(2, "0")).join(":");
 }
 
 function escapeHtml(value) {
@@ -648,11 +690,16 @@ async function loadSavedTeams() {
                     id,
                     team_id,
                     team_name,
-                    no_of_members
+                    no_of_members,
+                    status
                 `)
                 .eq(
                     "created_by",
                     user.id
+                )
+                .eq(
+                    "status",
+                    "PENDING"
                 )
                 .order(
                     "team_name",
@@ -1024,18 +1071,14 @@ profilingForm.addEventListener(
         // Validate Profiling Type
         // -------------------------------------------------
 
-        if (!selectedType) {
-
-            showError(
-                "Please select Teams or Members."
-            );
-
+        if (selectedProfilingMethod === "SEPARATE" && !selectedType) {
+            showError("Please select Teams or Members.");
             return;
         }
 
-
-        const profilingType =
-            selectedType.value;
+        const profilingType = selectedProfilingMethod === "MERGED"
+            ? "MERGED"
+            : selectedType.value;
 
 
         // -------------------------------------------------
@@ -1131,6 +1174,9 @@ profilingForm.addEventListener(
                     member_count:
                         memberCount,
 
+                    profiling_method:
+                        selectedProfilingMethod,
+
                     status:
                         "IN_PROGRESS",
 
@@ -1151,31 +1197,24 @@ profilingForm.addEventListener(
             // Create TEAM and MEMBERS sessions
             // -------------------------------------------------
 
-            const sessions = [
-
-                {
-                    profiling_job_id:
-                        job.id,
-
-                    session_type:
-                        "TEAM",
-
-                    status:
-                        "NOT_STARTED"
-                },
-
-                {
-                    profiling_job_id:
-                        job.id,
-
-                    session_type:
-                        "MEMBERS",
-
-                    status:
-                        "NOT_STARTED"
-                }
-
-            ];
+            const sessions = selectedProfilingMethod === "MERGED"
+                ? [{
+                    profiling_job_id: job.id,
+                    session_type: "MERGED",
+                    status: "NOT_STARTED"
+                }]
+                : [
+                    {
+                        profiling_job_id: job.id,
+                        session_type: "TEAM",
+                        status: "NOT_STARTED"
+                    },
+                    {
+                        profiling_job_id: job.id,
+                        session_type: "MEMBERS",
+                        status: "NOT_STARTED"
+                    }
+                ];
 
 
             const {
@@ -1209,6 +1248,7 @@ profilingForm.addEventListener(
 
             // Start the selected profiling timer automatically after
             // the timer page has loaded and restored the session.
+            sessionStorage.removeItem("autoResumeProfilingTimer");
             sessionStorage.setItem(
                 "autoStartProfilingTimer",
                 "1"

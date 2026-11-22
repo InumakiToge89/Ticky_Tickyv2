@@ -424,6 +424,7 @@ async function loadDashboardData(
                 team_name,
                 team_id,
                 member_count,
+                profiling_method,
                 status,
                 started_at,
                 finished_at,
@@ -1520,10 +1521,8 @@ function renderRecentProfiling(
                         <tr>
 
                             <td class="table-primary">
-                                ${escapeHtml(
-                                    job.team_name ||
-                                    "--"
-                                )}
+                                ${escapeHtml(job.team_name || "--")}
+                                <span class="dashboard-method-badge">${String(job.profiling_method || "SEPARATE").toUpperCase() === "MERGED" ? "Merged Method" : "Separate Method"}</span>
                             </td>
 
                             <td>

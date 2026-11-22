@@ -177,6 +177,9 @@ const modalMembersTime =
         "modalMembersTime"
     );
 
+const modalMergedTime =
+    document.getElementById("modalMergedTime");
+
 const modalTotalTime =
     document.getElementById(
         "modalTotalTime"
@@ -392,6 +395,7 @@ async function loadHistory() {
                 team_name,
                 team_id,
                 member_count,
+                profiling_method,
                 status,
                 started_at,
                 finished_at,
@@ -488,51 +492,46 @@ async function loadHistory() {
                     );
 
 
-                const teamSession =
-                    jobSessions.find(
+                const mergedSessions =
+                    jobSessions.filter(
                         session =>
-                            session.session_type ===
-                            "TEAM"
+                            String(session.session_type || '').toUpperCase() === 'MERGED'
                     );
 
+                const safeSessionSeconds = session => {
+                    const value = Number(session?.total_seconds || 0);
+                    return Number.isFinite(value) && value > 0 ? value : 0;
+                };
 
-                const membersSession =
-                    jobSessions.find(
-                        session =>
-                            session.session_type ===
-                            "MEMBERS"
-                    );
+                const teamSeconds = jobSessions
+                    .filter(session => String(session.session_type || '').toUpperCase() === 'TEAM')
+                    .reduce((sum, session) => sum + safeSessionSeconds(session), 0);
 
+                const membersSeconds = jobSessions
+                    .filter(session => String(session.session_type || '').toUpperCase() === 'MEMBERS')
+                    .reduce((sum, session) => sum + safeSessionSeconds(session), 0);
 
-                const teamSeconds =
-                    Number(
-                        teamSession?.total_seconds ||
-                        0
-                    );
+                const actualMergedSeconds = mergedSessions
+                    .reduce((sum, session) => sum + safeSessionSeconds(session), 0);
 
-
-                const membersSeconds =
-                    Number(
-                        membersSession?.total_seconds ||
-                        0
-                    );
-
-
-                const totalSeconds =
-                    teamSeconds +
-                    membersSeconds;
-
+                const method = String(job.profiling_method || 'SEPARATE').toUpperCase();
+                const storedJobSeconds = Number(job.total_seconds || 0);
+                const sessionTotalSeconds = teamSeconds + membersSeconds + actualMergedSeconds;
+                const hasStoredJobSeconds = Number.isFinite(storedJobSeconds) && storedJobSeconds > 0;
+                const mergedSeconds = method === 'MERGED' && actualMergedSeconds === 0 && hasStoredJobSeconds
+                    ? storedJobSeconds
+                    : actualMergedSeconds;
+                const totalSeconds = sessionTotalSeconds > 0
+                    ? sessionTotalSeconds
+                    : (hasStoredJobSeconds ? storedJobSeconds : 0);
 
                 return {
-
                     ...job,
-
+                    profiling_method: method,
                     teamSeconds,
-
                     membersSeconds,
-
+                    mergedSeconds,
                     totalSeconds
-
                 };
 
             }
@@ -1167,9 +1166,10 @@ function createHistoryRow(
                 <div class="team-cell">
 
                     <span class="team-name">
-                        ${escapeHtml(
-                            record.team_name
-                        )}
+                        ${escapeHtml(record.team_name || "--")}
+                    </span>
+                    <span class="history-method-badge ${String(record.profiling_method || 'SEPARATE').toLowerCase()}">
+                        ${String(record.profiling_method || 'SEPARATE') === 'MERGED' ? 'Merged Method' : 'Separate Method'}
                     </span>
 
                 </div>
@@ -1230,6 +1230,12 @@ function createHistoryRow(
 
             </td>
 
+
+            <td>
+                <span class="duration-cell">
+                    ${formatDuration(record.mergedSeconds || 0)}
+                </span>
+            </td>
 
             <td>
 
@@ -1312,6 +1318,10 @@ function showHistoryDetails(
             record.membersSeconds
         );
 
+
+    if (modalMergedTime) {
+        modalMergedTime.textContent = formatDuration(record.mergedSeconds || 0);
+    }
 
     modalTotalTime.textContent =
         formatDuration(

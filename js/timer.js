@@ -242,6 +242,7 @@ async function initializeTimer() {
                         team_name,
                         team_id,
                         member_count,
+                        profiling_method,
                         status,
                         started_at,
                         finished_at
@@ -289,6 +290,7 @@ async function initializeTimer() {
                         team_name,
                         team_id,
                         member_count,
+                        profiling_method,
                         status,
                         started_at,
                         finished_at
@@ -623,6 +625,16 @@ async function initializeTimer() {
                 // Let the page finish rendering before invoking the normal
                 // start handler, so the same validation/database logic runs.
                 requestAnimationFrame(() => startButton.click());
+            }
+        }
+
+        const shouldAutoResume =
+            sessionStorage.getItem("autoResumeProfilingTimer") === "1";
+
+        if (shouldAutoResume) {
+            sessionStorage.removeItem("autoResumeProfilingTimer");
+            if (currentSession?.status === "PAUSED") {
+                requestAnimationFrame(() => resumeButton.click());
             }
         }
 
@@ -1371,20 +1383,21 @@ stopButton.addEventListener(
 
 
             // -------------------------------------------------
-            // BOTH TIMERS COMPLETED
+            // ALL REQUIRED SESSIONS COMPLETED
             // -------------------------------------------------
 
-            timerStatus.textContent =
-                "BOTH SESSIONS COMPLETED";
+            const isMergedMethod =
+                String(currentJob.profiling_method || "SEPARATE").toUpperCase() === "MERGED";
 
+            timerStatus.textContent = isMergedMethod
+                ? "MERGED PROFILING COMPLETED"
+                : "BOTH SESSIONS COMPLETED";
 
-            timerStatus.className =
-                "timer-status completed";
+            timerStatus.className = "timer-status completed";
 
-
-            timerSubtext.textContent =
-                "Teams and Members profiling are complete. " +
-                "You can now finish this profiling job.";
+            timerSubtext.textContent = isMergedMethod
+                ? "The merged profiling timer is complete. You can now finish this profiling job."
+                : "Teams and Members profiling are complete. You can now finish this profiling job.";
 
 
             // -------------------------------------------------
@@ -1945,11 +1958,12 @@ function formatSessionType(
         sessionType ===
         "MEMBERS"
     ) {
-
         return "Members";
-
     }
 
+    if (sessionType === "MERGED") {
+        return "Merged";
+    }
 
     return sessionType;
 
@@ -2256,6 +2270,8 @@ if (saveForLaterButton) {
 
             sessionStorage.removeItem("activeProfilingJobId");
             sessionStorage.removeItem("activeProfilingType");
+            sessionStorage.removeItem("autoStartProfilingTimer");
+            sessionStorage.removeItem("autoResumeProfilingTimer");
 
             window.location.href = "profiling.html";
 
@@ -2294,7 +2310,7 @@ finishedButton.addEventListener(
 
 
             // -------------------------------------------------
-            // Get both sessions
+            // Validate required timer sessions by profiling method
             // -------------------------------------------------
 
             const {
@@ -2308,85 +2324,31 @@ finishedButton.addEventListener(
                     status,
                     total_seconds
                 `)
-                .eq(
-                    "profiling_job_id",
-                    currentJob.id
-                );
+                .eq("profiling_job_id", currentJob.id);
 
+            if (sessionsError) throw sessionsError;
 
-            if (sessionsError) {
-                throw sessionsError;
+            const method = String(currentJob.profiling_method || "SEPARATE").toUpperCase();
+            let totalSeconds = 0;
+
+            if (method === "MERGED") {
+                const mergedSession = sessions.find(session => session.session_type === "MERGED");
+                if (!mergedSession) throw new Error("The MERGED timer session is missing.");
+                if (mergedSession.status !== "COMPLETED") {
+                    throw new Error("The merged profiling timer must be completed first.");
+                }
+                totalSeconds = Number(mergedSession.total_seconds || 0);
+            } else {
+                const teamSession = sessions.find(session => session.session_type === "TEAM");
+                const membersSession = sessions.find(session => session.session_type === "MEMBERS");
+                if (!teamSession || !membersSession) {
+                    throw new Error("Both TEAM and MEMBERS timer sessions must exist before finishing.");
+                }
+                if (teamSession.status !== "COMPLETED" || membersSession.status !== "COMPLETED") {
+                    throw new Error("Both Teams and Members timers must be completed first.");
+                }
+                totalSeconds = Number(teamSession.total_seconds || 0) + Number(membersSession.total_seconds || 0);
             }
-
-
-            // -------------------------------------------------
-            // Make sure BOTH sessions are completed
-            // -------------------------------------------------
-
-            const teamSession =
-                sessions.find(
-                    session =>
-                        session.session_type ===
-                        "TEAM"
-                );
-
-
-            const membersSession =
-                sessions.find(
-                    session =>
-                        session.session_type ===
-                        "MEMBERS"
-                );
-
-
-            if (
-                !teamSession
-                ||
-                !membersSession
-            ) {
-
-                throw new Error(
-                    "Both timer sessions must exist before finishing."
-                );
-            }
-
-
-            if (
-                teamSession.status !==
-                    "COMPLETED"
-                ||
-                membersSession.status !==
-                    "COMPLETED"
-            ) {
-
-                throw new Error(
-                    "Both Teams and Members timers must be completed first."
-                );
-            }
-
-
-            // -------------------------------------------------
-            // Calculate totals
-            // -------------------------------------------------
-
-            const teamSeconds =
-                Number(
-                    teamSession.total_seconds
-                    || 0
-                );
-
-
-            const memberSeconds =
-                Number(
-                    membersSession.total_seconds
-                    || 0
-                );
-
-
-            const totalSeconds =
-                teamSeconds +
-                memberSeconds;
-
 
             // -------------------------------------------------
             // Complete profiling job
@@ -2738,148 +2700,6 @@ logoutButton.addEventListener(
 );
 
 
-
-// =========================================================
-// SESSION TYPE CHANGE REQUEST
-// =========================================================
-
-function openSessionTypeChangeRequestModal() {
-
-    document.getElementById("timerSessionTypeRequestModal")?.remove();
-
-    if (!currentJob || !currentSession) {
-        showError("The active profiling session is still loading. Please try again.");
-        return;
-    }
-
-    const currentType =
-        String(currentSession.session_type || "").toUpperCase();
-
-    const nextType =
-        currentType === "TEAM"
-            ? "MEMBERS"
-            : "TEAM";
-
-    const currentLabel = formatSessionType(currentType);
-    const nextLabel = formatSessionType(nextType);
-
-    const modal = document.createElement("div");
-    modal.id = "timerSessionTypeRequestModal";
-    modal.className = "timer-request-modal-overlay";
-    modal.innerHTML = `
-        <div class="timer-request-modal" role="dialog" aria-modal="true" aria-labelledby="timerSessionTypeRequestTitle">
-            <div class="timer-request-modal-header">
-                <div class="timer-request-modal-icon">↔</div>
-                <div>
-                    <span class="timer-request-eyebrow">DEVELOPER SUPPORT</span>
-                    <h2 id="timerSessionTypeRequestTitle">Correct This Profiling Session</h2>
-                    <p>Request a correction without changing the timer yourself.</p>
-                </div>
-                <button type="button" class="timer-request-close" data-close>×</button>
-            </div>
-
-            <div class="timer-request-context">
-                <div>
-                    <span>Current session</span>
-                    <strong>${escapeHtml(currentLabel)}</strong>
-                </div>
-                <div class="timer-request-arrow">→</div>
-                <div>
-                    <span>Requested session</span>
-                    <strong>${escapeHtml(nextLabel)}</strong>
-                </div>
-            </div>
-
-            <div class="timer-request-pair-note">
-                <strong>Sequence protection</strong>
-                <p>The paired profiling session will automatically become <b>${escapeHtml(currentLabel)}</b>. This keeps the two-step order as <b>Team → Members</b> or <b>Members → Team</b> instead of creating two sessions with the same type.</p>
-            </div>
-
-            <form id="timerSessionTypeRequestForm" class="timer-request-form">
-                <label>
-                    <span>Why does this need correction?</span>
-                    <textarea name="reason" rows="3" maxlength="2000" required placeholder="Example: I selected Team by mistake. This session should be Members."></textarea>
-                </label>
-
-                <div class="timer-request-modal-actions">
-                    <button type="button" class="timer-request-secondary" data-close>Cancel</button>
-                    <button type="submit" class="timer-request-primary">Send Request to Ivee</button>
-                </div>
-            </form>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    const close = () => modal.remove();
-    modal.querySelectorAll("[data-close]").forEach(button => {
-        button.addEventListener("click", close);
-    });
-    modal.addEventListener("click", event => {
-        if (event.target === modal) close();
-    });
-
-    modal.querySelector("form")?.addEventListener("submit", async event => {
-        event.preventDefault();
-
-        const form = event.currentTarget;
-        const submit = form.querySelector("button[type='submit']");
-        const reason = String(new FormData(form).get("reason") || "").trim();
-
-        if (!reason) return;
-
-        submit.disabled = true;
-        submit.textContent = "Sending…";
-
-        const requestedChange =
-            `SESSION_TYPE_SWITCH|FROM=${currentType}|TO=${nextType}|${reason}`;
-
-        const { error } = await supabase.rpc("submit_dev_change_request", {
-            p_target_table: "timer_sessions",
-            p_target_record_id: String(currentSession.id),
-            p_action: "UPDATE",
-            p_requested_change: requestedChange,
-            p_reason: reason
-        });
-
-        if (error) {
-            console.error("Session type request error:", error);
-            submit.disabled = false;
-            submit.textContent = "Send Request to Ivee";
-            showError(error.message || "Unable to send the session type request.");
-            return;
-        }
-
-        close();
-
-        const toast = document.createElement("div");
-        toast.className = "timer-request-toast";
-        toast.innerHTML = `<strong>Request sent to Ivee</strong><span>Session type correction: ${escapeHtml(currentLabel)} → ${escapeHtml(nextLabel)}</span>`;
-        document.body.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add("visible"));
-        setTimeout(() => {
-            toast.classList.remove("visible");
-            setTimeout(() => toast.remove(), 250);
-        }, 3200);
-    });
-}
-
-function escapeHtml(value) {
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-const requestSessionTypeChangeButton =
-    document.getElementById("requestSessionTypeChangeButton");
-
-requestSessionTypeChangeButton?.addEventListener(
-    "click",
-    openSessionTypeChangeRequestModal
-);
 
 // =========================================================
 // ERROR

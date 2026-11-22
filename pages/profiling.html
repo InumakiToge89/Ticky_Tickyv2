@@ -250,19 +250,30 @@
             </div>
 
 
+            <!-- PROFILING METHOD TABS -->
+            <section class="profiling-method-switch" aria-label="Choose profiling method">
+                <button type="button" class="profiling-method-tab active" data-profiling-method="SEPARATE" aria-selected="true">
+                    <span class="method-tab-title">Separate Method Timer</span>
+                    <span class="method-tab-description">Profile Teams and Members separately</span>
+                </button>
+                <button type="button" class="profiling-method-tab" data-profiling-method="MERGED" aria-selected="false">
+                    <span class="method-tab-title">Merged Method Timer</span>
+                    <span class="method-tab-description">Use one timer for the whole team</span>
+                </button>
+            </section>
+
             <!-- PENDING PROFILING JOBS -->
 
             <section
                 id="pendingProfilingCard"
                 class="profiling-card pending-profiling-card"
-                style="display:none;"
             >
 
                 <div class="section-header">
                     <div>
                         <h2 class="section-title">Pending Profiling</h2>
                         <p class="section-subtitle">
-                            Resume a team you previously saved for later.
+                            View and resume any unfinished profiling job, including jobs paused when switching teams.
                         </p>
                     </div>
                 </div>

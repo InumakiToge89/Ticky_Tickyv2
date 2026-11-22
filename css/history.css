@@ -935,3 +935,7 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+
+
+.history-method-badge{display:inline-block;margin-top:4px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(16,185,129,.12);color:var(--primary-green)}
+.history-method-badge.merged{background:rgba(59,130,246,.12);color:#2563eb}

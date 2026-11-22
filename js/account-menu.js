@@ -297,68 +297,6 @@ function initializeAnalystDeveloperRequest(fullName, role) {
         launcher.insertAdjacentElement("afterend", requestsButton);
     }
 
-    // On the active Profiling Timer, give the analyst a direct way to request
-    // a correction to the member count of the profiling job they are currently
-    // working on. This does not change the count directly; it creates the same
-    // protected request that Ivee reviews in the Developer Console.
-    initializeTimerMemberCountRequest();
-}
-
-function initializeTimerMemberCountRequest() {
-    const path = window.location.pathname.toLowerCase();
-    if (!path.includes("timer.html")) return;
-    if (document.getElementById("timerMemberCountRequestButton")) return;
-
-    const memberCountElement = document.getElementById("memberCount");
-    if (!memberCountElement) return;
-
-    const infoCard = memberCountElement.closest(".timer-info-card");
-    if (!infoCard) return;
-
-    const button = document.createElement("button");
-    button.id = "timerMemberCountRequestButton";
-    button.type = "button";
-    button.className = "timer-member-count-request";
-    button.textContent = "Request Member Count Change";
-    button.title = "Ask Ivee to correct the member count for this profiling job";
-
-    const valueRow = document.createElement("div");
-    valueRow.className = "timer-member-count-value-row";
-    memberCountElement.parentNode.insertBefore(valueRow, memberCountElement);
-    valueRow.appendChild(memberCountElement);
-    valueRow.appendChild(button);
-
-    button.addEventListener("click", () => {
-        window.openDeveloperRequestModal?.();
-
-        const modal = document.getElementById("globalDeveloperRequestModal");
-        if (!modal) return;
-
-        const area = modal.querySelector("select[name='target_table']");
-        if (area) {
-            area.value = "profiling_jobs";
-            area.dispatchEvent(new Event("change"));
-        }
-
-        const action = modal.querySelector("select[name='action']");
-        if (action) action.value = "UPDATE";
-
-        const reference = modal.querySelector("input[name='target_record_reference']");
-        const teamId = document.getElementById("teamId")?.textContent?.replace(/^Team ID:\s*/i, "").trim() || "";
-        if (reference && teamId) reference.value = `Team ID ${teamId}`;
-
-        const change = modal.querySelector("textarea[name='requested_change']");
-        const currentCount = memberCountElement.textContent?.trim() || "current member count";
-        if (change) {
-            change.value = `Please change the member count from ${currentCount} to `;
-            change.focus();
-        }
-
-        const reason = modal.querySelector("textarea[name='reason']");
-        if (reason && !reason.value) {
-            reason.value = "Member count correction while profiling this team.";
-        }
-    });
 }
 
 function detectDeveloperRequestTarget() {

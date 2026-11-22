@@ -2137,3 +2137,6 @@
     .dashboard-date-input,.dashboard-today-button { width:100%; }
     .dashboard-kpi-grid,.time-breakdown-grid { grid-template-columns:1fr; }
 }
+
+
+.dashboard-method-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(16,185,129,.12);color:var(--primary-green);white-space:nowrap}

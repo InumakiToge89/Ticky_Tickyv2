@@ -392,3 +392,51 @@
         width: 100%;
     }
 }
+
+
+/* =========================================================
+   PROFILING METHOD TABS
+   ========================================================= */
+.profiling-method-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.profiling-method-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 17px 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.profiling-method-tab:hover { border-color: var(--primary-green); }
+.profiling-method-tab.active {
+    border: 2px solid var(--primary-green);
+    background: var(--very-light-green);
+    box-shadow: 0 0 0 3px rgba(22,163,74,.08);
+}
+.method-tab-title { font-weight: 750; font-size: 15px; }
+.method-tab-description { color: var(--text-secondary); font-size: 12px; }
+.pending-profiling-empty {
+    padding: 18px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+.pending-profiling-item { align-items: center; }
+.pending-profiling-details { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:7px; color:var(--text-secondary); font-size:12px; }
+.pending-method-pill {
+    display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px;
+    background:var(--very-light-green); color:var(--primary-green); font-size:11px; font-weight:700;
+}
+@media (max-width:700px) { .profiling-method-switch { grid-template-columns:1fr; } }

@@ -54,9 +54,10 @@ const teamTimeElement =
     );
 
 const membersTimeElement =
-    document.getElementById(
-        "membersTime"
-    );
+    document.getElementById("membersTime");
+
+const mergedTimeElement = document.getElementById("mergedTime");
+const mergedTimeCard = document.getElementById("mergedTimeCard");
 
 const totalTimeElement =
     document.getElementById(
@@ -112,6 +113,7 @@ async function loadCompletionSummary() {
                 team_name,
                 team_id,
                 member_count,
+                profiling_method,
                 status,
                 started_at,
                 finished_at,
@@ -173,6 +175,25 @@ async function loadCompletionSummary() {
             throw sessionsError;
         }
 
+
+        const method = String(job.profiling_method || "SEPARATE").toUpperCase();
+        const mergedSession = sessions.find(session => session.session_type === "MERGED");
+
+        if (method === "MERGED") {
+            const mergedSeconds = Number(mergedSession?.total_seconds || 0);
+            teamTimeElement.closest(".time-card").style.display = "none";
+            membersTimeElement.closest(".time-card").style.display = "none";
+            if (mergedTimeCard) mergedTimeCard.style.display = "block";
+            if (mergedTimeElement) mergedTimeElement.textContent = formatDuration(mergedSeconds);
+            totalTimeElement.textContent = formatDuration(Number(job.total_seconds ?? mergedSeconds));
+            teamNameElement.textContent = job.team_name;
+            teamIdElement.textContent = `Team ID: ${job.team_id}`;
+            loading.style.display = "none";
+            completionContent.style.display = "block";
+            return;
+        }
+
+        if (mergedTimeCard) mergedTimeCard.style.display = "none";
 
         // -------------------------------------------------
         // Find TEAM session

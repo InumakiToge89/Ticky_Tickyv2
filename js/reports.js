@@ -467,6 +467,11 @@ async function exportCsv() {
         );
 
 
+    const totalMergedSeconds = profilingData.reduce(
+        (total, record) => total + Number(record.mergedSeconds || 0),
+        0
+    );
+
     const totalProfilingSeconds =
         profilingData.reduce(
             (
@@ -484,7 +489,8 @@ async function exportCsv() {
 
     const profilingBreakdownTotal =
         totalTeamsSeconds +
-        totalMembersSeconds;
+        totalMembersSeconds +
+        totalMergedSeconds;
 
     const inconsistentProfilingCount =
         profilingData.filter(
@@ -516,10 +522,12 @@ async function exportCsv() {
 
     const membersPercentage =
         profilingBreakdownTotal > 0
-            ? (
-                totalMembersSeconds /
-                profilingBreakdownTotal
-            ) * 100
+            ? (totalMembersSeconds / profilingBreakdownTotal) * 100
+            : 0;
+
+    const mergedPercentage =
+        profilingBreakdownTotal > 0
+            ? (totalMergedSeconds / profilingBreakdownTotal) * 100
             : 0;
 
 
@@ -840,15 +848,16 @@ activityCategoryTotals.PROD +=
 
         [
             "MEMBERS",
-            formatDuration(
-                totalMembersSeconds
-            ),
+            formatDuration(totalMembersSeconds),
             `${membersPercentage.toFixed(1)}%`,
-            "",
-            "",
-            "",
-            "",
-            ""
+            "", "", "", "", ""
+        ],
+
+        [
+            "MERGED METHOD",
+            formatDuration(totalMergedSeconds),
+            `${mergedPercentage.toFixed(1)}%`,
+            "", "", "", "", ""
         ],
 
         [],
@@ -1038,12 +1047,13 @@ activityCategoryTotals.PROD +=
         const name = String(record.team_name || "No Team Name Found").trim() || "No Team Name Found";
         if (!teamMetrics.has(name)) teamMetrics.set(name, {
             name, sessions: 0, members: Number(record.member_count || 0),
-            teamsSeconds: 0, membersSeconds: 0, totalSeconds: 0, issues: 0
+            teamsSeconds: 0, membersSeconds: 0, mergedSeconds: 0, totalSeconds: 0, issues: 0
         });
         const metric = teamMetrics.get(name);
         metric.sessions += 1;
         metric.teamsSeconds += Number(record.teamSeconds || 0);
         metric.membersSeconds += Number(record.membersSeconds || 0);
+        metric.mergedSeconds += Number(record.mergedSeconds || 0);
         metric.totalSeconds += Number(record.totalSeconds || 0);
         if (["INCONSISTENT", "NO_BREAKDOWN"].includes(String(record.accuracyStatus || "").toUpperCase())) metric.issues += 1;
     });
@@ -1060,10 +1070,10 @@ activityCategoryTotals.PROD +=
         ]),
         [],
         ["TEAM PROFILING OVERVIEW"],
-        ["Team", "Profiling Sessions", "Members", "Teams Time", "Members Time", "Total Profiling Time", "Data Issues"],
+        ["Team", "Profiling Sessions", "Members", "Teams Time", "Members Time", "Merged Time", "Total Profiling Time", "Data Issues"],
         ...[...teamMetrics.values()].sort((a, b) => b.totalSeconds - a.totalSeconds).map(metric => [
             metric.name, metric.sessions, metric.members, formatDuration(metric.teamsSeconds),
-            formatDuration(metric.membersSeconds), formatDuration(metric.totalSeconds), metric.issues
+            formatDuration(metric.membersSeconds), formatDuration(metric.mergedSeconds), formatDuration(metric.totalSeconds), metric.issues
         ]),
         [],
         ["ACTIVITY RECORD COUNTS"],
@@ -1888,6 +1898,7 @@ activityCategoryTotals.PROD +=
             "Members",
             "Teams Time",
             "Members Time",
+            "Merged Time",
             "Total Time",
             "Data Check",
             "Completed"
@@ -1924,6 +1935,8 @@ activityCategoryTotals.PROD +=
                     )
                 ),
 
+                excelDuration(Number(record.mergedSeconds || 0)),
+
                 excelDuration(
                     Number(
                         record.totalSeconds ||
@@ -1957,7 +1970,8 @@ activityCategoryTotals.PROD +=
             [
                 `E${row}`,
                 `F${row}`,
-                `G${row}`
+                `G${row}`,
+                `H${row}`
             ].forEach(
                 cell => {
 
@@ -1988,7 +2002,7 @@ activityCategoryTotals.PROD +=
     productivitySheet["!autofilter"] = {
 
         ref:
-            `A1:I${productivityRows.length}`
+            `A1:J${productivityRows.length}`
 
     };
 
@@ -1996,7 +2010,7 @@ activityCategoryTotals.PROD +=
     styleTable(
         productivitySheet,
         productivityRows.length,
-        "I"
+        "J"
     );
 
 
@@ -2010,7 +2024,8 @@ activityCategoryTotals.PROD +=
         { wch: 16 },
         { wch: 16 },
         { wch: 18 },
-        { wch: 24 }
+        { wch: 24 },
+        { wch: 26 }
 
     ];
 
@@ -2034,7 +2049,8 @@ activityCategoryTotals.PROD +=
             `E${row}`,
             `F${row}`,
             `G${row}`,
-            `I${row}`
+            `I${row}`,
+            `J${row}`
         ].forEach(
             cell => {
 
@@ -2917,7 +2933,7 @@ async function loadReports() {
 
     const jobs = await fetchAllReportPages(() => supabase
         .from("profiling_jobs")
-        .select(`id, analyst_id, team_name, team_id, member_count, status, started_at, finished_at, total_seconds`)
+        .select(`id, analyst_id, team_name, team_id, member_count, profiling_method, status, started_at, finished_at, total_seconds`)
         .eq("status", "COMPLETED")
         .order("finished_at", { ascending: false })
         .order("id", { ascending: true })
@@ -3898,6 +3914,10 @@ async function loadReports() {
                         }
                     );
 
+                const mergedSessions = jobSessions.filter(
+                    session => String(session.session_type || "").trim().toUpperCase() === "MERGED"
+                );
+
                 const teamSeconds =
                     teamSessions.reduce(
                         (
@@ -3924,14 +3944,25 @@ async function loadReports() {
                         0
                     );
 
+                const actualMergedSeconds =
+                    mergedSessions.reduce(
+                        (total, session) => total + getAccurateSessionSeconds(session),
+                        0
+                    );
+
+                const jobTotalSeconds = safeSeconds(job.total_seconds);
+                const profilingMethod = String(job.profiling_method || "SEPARATE").toUpperCase();
+                const mergedSeconds = profilingMethod === "MERGED" && actualMergedSeconds === 0 && jobTotalSeconds > 0
+                    ? jobTotalSeconds
+                    : actualMergedSeconds;
+
+                // Keep the accuracy comparison based on actual session data.
+                // The job-total fallback is displayed in Merged Time but must
+                // not falsely make a missing timer-session breakdown look verified.
                 const sessionTotalSeconds =
                     teamSeconds +
-                    membersSeconds;
-
-                const jobTotalSeconds =
-                    safeSeconds(
-                        job.total_seconds
-                    );
+                    membersSeconds +
+                    actualMergedSeconds;
 
                 // -------------------------------------------------
                 // STAGE 2:
@@ -3951,7 +3982,7 @@ async function loadReports() {
                 // -------------------------------------------------
                 // STAGE 5:
                 // VALIDATE the stored job total against the
-                // detailed TEAM + MEMBERS total.
+                // detailed session total (TEAM + MEMBERS + MERGED).
                 // -------------------------------------------------
 
                 const differenceSeconds =
@@ -4065,11 +4096,17 @@ async function loadReports() {
                     finished_at:
                         job.finished_at,
 
+                    profiling_method:
+                        profilingMethod,
+
                     teamSeconds:
                         teamSeconds,
 
                     membersSeconds:
                         membersSeconds,
+
+                    mergedSeconds:
+                        mergedSeconds,
 
                     totalSeconds:
                         totalSeconds,
@@ -4094,6 +4131,9 @@ async function loadReports() {
 
                     membersSessionCount:
                         membersSessions.length,
+
+                    mergedSessionCount:
+                        mergedSessions.length,
 
                     dailyBreakdown:
                         dailyBreakdown,
@@ -5154,14 +5194,15 @@ function getFilteredWorkActivityRecords() {
                     .toUpperCase();
 
 
-            if (
+            if (selectedCategory === "NONPROD-GROUP") {
+                if (!["NON-PROD", "PROD LOSS", "TRAINING"].includes(recordCategory)) {
+                    return false;
+                }
+            } else if (
                 selectedCategory &&
-                recordCategory !==
-                selectedCategory
+                recordCategory !== selectedCategory
             ) {
-
                 return false;
-
             }
 
 
@@ -5291,27 +5332,22 @@ function resetFilters() {
         toDate.value = "";
     }
 
-    if (
-    workActivityCategoryFilter
-    ) {
+    const activeReportTab =
+        document.querySelector("[data-report-tab].active")?.dataset.reportTab || "summary";
 
+    if (workActivityCategoryFilter) {
         workActivityCategoryFilter.value =
-            "";
-
+            activeReportTab === "profiling"
+                ? "PROD"
+                : activeReportTab === "categories"
+                    ? "NONPROD-GROUP"
+                    : "";
     }
 
     currentPage = 1;
-
     workActivityCurrentPage = 1;
 
-
-    renderReports(
-        reportRecords
-    );
-
-    renderWorkActivityReports(
-    workActivityReportRecords
-    );
+    applyFilters();
 
 }
 
@@ -5560,9 +5596,9 @@ function renderTable(
 
         const title =
             status === "INCONSISTENT"
-                ? `Detailed TEAM + MEMBERS time differs from the stored job total by ${formatDuration(record.differenceSeconds)}.`
+                ? `Detailed profiling session time differs from the stored job total by ${formatDuration(record.differenceSeconds)}.`
                 : status === "JOB_TOTAL_ONLY"
-                    ? "No usable TEAM/MEMBERS session duration was found. The stored profiling job total is being used."
+                    ? "No usable detailed timer-session duration was found. The stored profiling job total is being used."
                     : isLegacy
                         ? "This report recovered a legacy timer session using its profiling-job time window."
                         : status === "NO_BREAKDOWN"
@@ -5612,9 +5648,8 @@ function renderTable(
                         </td>
 
                         <td>
-                            ${escapeHtml(
-                                record.team_name
-                            )}
+                            ${escapeHtml(record.team_name || "--")}
+                            <span class="report-method-badge ${String(record.profiling_method || "SEPARATE").toLowerCase()}">${String(record.profiling_method || "SEPARATE") === "MERGED" ? "Merged Method" : "Separate Method"}</span>
                         </td>
 
                         <td>
@@ -5641,6 +5676,10 @@ function renderTable(
                             ${formatDuration(
                                 record.membersSeconds
                             )}
+                        </td>
+
+                        <td>
+                            ${formatDuration(record.mergedSeconds || 0)}
                         </td>
 
                         <td>
@@ -6035,6 +6074,11 @@ function sortRecords(
                     break;
 
 
+                case "mergedTime":
+                    valueA = Number(a.mergedSeconds || 0);
+                    valueB = Number(b.mergedSeconds || 0);
+                    break;
+
                 case "totalTime":
 
                     valueA =
@@ -6322,9 +6366,15 @@ function renderSessionChart(
         );
 
 
+    const mergedSeconds = records.reduce(
+        (total, record) => total + Number(record.mergedSeconds || 0),
+        0
+    );
+
     const total =
         teamSeconds +
-        membersSeconds;
+        membersSeconds +
+        mergedSeconds;
 
 
     if (
@@ -6349,10 +6399,10 @@ function renderSessionChart(
 
 
     const membersPercent =
-        (
-            membersSeconds /
-            total
-        ) * 100;
+        (membersSeconds / total) * 100;
+
+    const mergedPercent =
+        (mergedSeconds / total) * 100;
 
 
     sessionChart.innerHTML = `
@@ -6430,6 +6480,8 @@ function renderSessionChart(
                     title="Members: ${formatDuration(membersSeconds)}"
                 ></div>
 
+                <div style="width:${mergedPercent}%;background:#6b8fe8" title="Merged: ${formatDuration(mergedSeconds)}"></div>
+
             </div>
 
 
@@ -6438,7 +6490,7 @@ function renderSessionChart(
             <div
                 style="
                     display:grid;
-                    grid-template-columns:repeat(2, minmax(0, 1fr));
+                    grid-template-columns:repeat(3, minmax(0, 1fr));
                     gap:16px;
                 "
             >
@@ -6522,6 +6574,12 @@ function renderSessionChart(
                         ${membersPercent.toFixed(1)}% of total time
                     </div>
 
+                </div>
+
+                <div>
+                    <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;margin-bottom:6px">Merged Method</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--text-primary)">${formatDuration(mergedSeconds)}</div>
+                    <div style="margin-top:4px;font-size:12px;color:var(--text-secondary)">${mergedPercent.toFixed(1)}% of total time</div>
                 </div>
 
             </div>
@@ -8043,7 +8101,7 @@ logoutButton.addEventListener(
     // CLICKABLE REPORT DETAILS / TIMER AUDIT PANEL
     // =========================================================
     // Clicking any completed profiling row opens a detailed view
-    // showing TEAM + MEMBERS sessions, START/PAUSE/RESUME/STOP
+    // showing TEAM, MEMBERS, or MERGED sessions and their timer events
     // events, active time, pause time, and total reconciliation.
 
     function ensureReportDetailsStyles() {
@@ -8439,12 +8497,12 @@ logoutButton.addEventListener(
         const status = String(record.accuracyStatus || "UNKNOWN");
         const isWarning = status === "INCONSISTENT" || status === "JOB_TOTAL_ONLY";
         const statusText = {
-            VERIFIED: "✓ Verified — detailed TEAM + MEMBERS time agrees with the stored profiling total.",
+            VERIFIED: "✓ Verified — detailed session time agrees with the stored profiling total.",
             SESSION_VERIFIED: "✓ Session verified — detailed timer sessions are available; no stored job total was available for comparison.",
             LEGACY_VERIFIED: "✓ Legacy match — the timer session was recovered using the profiling job time window and the totals agree.",
             LEGACY_SESSION: "✓ Legacy session — the timer session was recovered using the profiling job time window.",
-            INCONSISTENT: `⚠ Check total — detailed TEAM + MEMBERS time differs from the stored profiling total by ${formatDuration(record.differenceSeconds)}.`,
-            JOB_TOTAL_ONLY: "⚠ Job total only — no usable detailed TEAM/MEMBERS session duration was found.",
+            INCONSISTENT: `⚠ Check total — detailed session time differs from the stored profiling total by ${formatDuration(record.differenceSeconds)}.`,
+            JOB_TOTAL_ONLY: "⚠ Job total only — no usable detailed timer-session duration was found.",
             NO_BREAKDOWN: "— No detailed timer breakdown was available."
         }[status] || "— Report accuracy status is unavailable.";
 
@@ -8466,15 +8524,18 @@ logoutButton.addEventListener(
                         <div class="report-detail-card"><span class="report-detail-label">Team</span><span class="report-detail-value">${escapeHtml(record.team_name)}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">Team ID</span><span class="report-detail-value">${escapeHtml(String(record.team_id))}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">Members</span><span class="report-detail-value">${escapeHtml(formatNumber(record.member_count))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">Profiling Method</span><span class="report-detail-value">${escapeHtml(record.profiling_method || "SEPARATE")}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">Started</span><span class="report-detail-value">${escapeHtml(formatDateTime(record.started_at))}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">Completed</span><span class="report-detail-value">${escapeHtml(formatDateTime(record.finished_at))}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">TEAM Sessions</span><span class="report-detail-value">${escapeHtml(String(record.teamSessionCount || 0))}</span></div>
                         <div class="report-detail-card"><span class="report-detail-label">MEMBERS Sessions</span><span class="report-detail-value">${escapeHtml(String(record.membersSessionCount || 0))}</span></div>
+                        <div class="report-detail-card"><span class="report-detail-label">MERGED Sessions</span><span class="report-detail-value">${escapeHtml(String(record.mergedSessionCount || 0))}</span></div>
                     </div>
 
                     <div class="report-details-summary">
                         <div class="report-time-card"><span class="report-detail-label">Teams Time</span><strong>${escapeHtml(formatDuration(record.teamSeconds))}</strong></div>
                         <div class="report-time-card"><span class="report-detail-label">Members Time</span><strong>${escapeHtml(formatDuration(record.membersSeconds))}</strong></div>
+                        <div class="report-time-card"><span class="report-detail-label">Merged Time</span><strong>${escapeHtml(formatDuration(record.mergedSeconds || 0))}</strong></div>
                         <div class="report-time-card"><span class="report-detail-label">Total Time</span><strong>${escapeHtml(formatDuration(record.totalSeconds))}</strong></div>
                     </div>
 
@@ -8488,7 +8549,7 @@ logoutButton.addEventListener(
                     <div style="font-size:15px;font-weight:800;margin-bottom:8px;">Timer Timeline</div>
                     ${sessions.length
                         ? sessions.map((session, index) => renderDetailSession(session, index)).join("")
-                        : `<div class="report-no-events">No detailed TEAM/MEMBERS sessions are attached to this profiling job.</div>`}
+                        : `<div class="report-no-events">No detailed timer sessions are attached to this profiling job.</div>`}
                 </div>
             </div>
         `;
@@ -10377,6 +10438,10 @@ logoutButton.addEventListener(
             {
                 value: "TRAINING",
                 text: "Training"
+            },
+            {
+                value: "NONPROD-GROUP",
+                text: "NON-PROD + PROD LOSS + TRAINING"
             }
         ];
 
@@ -10410,6 +10475,63 @@ logoutButton.addEventListener(
 
     }
 
+
+    // ---------------------------------------------------------
+    // REPORT SECTION TABS
+    // ---------------------------------------------------------
+
+    function initializeReportTabs() {
+        const tabButtons = Array.from(document.querySelectorAll("[data-report-tab]"));
+        const tabPanels = Array.from(document.querySelectorAll("[data-report-panel]"));
+        const activityBody = document.getElementById("workActivityReportsTableBody");
+        const activitySection = activityBody?.closest("section");
+        const activityTitle = document.getElementById("workActivitySectionTitle");
+        const profilingSlot = document.getElementById("reportWorkActivitySlotProfiling");
+        const categoriesSlot = document.getElementById("reportWorkActivitySlotCategories");
+
+        if (!tabButtons.length || !tabPanels.length || !activitySection) return;
+
+        const activate = (tabName) => {
+            tabButtons.forEach(button => {
+                const active = button.dataset.reportTab === tabName;
+                button.classList.toggle("active", active);
+                button.setAttribute("aria-selected", active ? "true" : "false");
+            });
+
+            tabPanels.forEach(panel => {
+                const active = panel.dataset.reportPanel === tabName;
+                panel.classList.toggle("active", active);
+                panel.hidden = !active;
+            });
+
+            if (tabName === "profiling") {
+                profilingSlot?.appendChild(activitySection);
+                if (workActivityCategoryFilter) workActivityCategoryFilter.value = "PROD";
+                if (activityTitle) activityTitle.textContent = "Production (PROD) Work Activity Logs";
+            } else if (tabName === "categories") {
+                categoriesSlot?.appendChild(activitySection);
+                if (workActivityCategoryFilter) workActivityCategoryFilter.value = "NONPROD-GROUP";
+                if (activityTitle) activityTitle.textContent = "NON-PROD, PROD LOSS & TRAINING Work Activity Logs";
+            } else {
+                if (workActivityCategoryFilter) workActivityCategoryFilter.value = "";
+            }
+
+            if (typeof applyFilters === "function") {
+                applyFilters();
+            }
+        };
+
+        tabButtons.forEach(button => {
+            button.addEventListener("click", () => activate(button.dataset.reportTab));
+        });
+
+        // Keep the activity table in the first report table panel until its tab is selected.
+        if (profilingSlot) profilingSlot.appendChild(activitySection);
+        if (workActivityCategoryFilter) workActivityCategoryFilter.value = "";
+        activate("summary");
+    }
+
+    initializeReportTabs();
 
     // ---------------------------------------------------------
     // START REPORTS
