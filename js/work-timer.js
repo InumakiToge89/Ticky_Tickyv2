@@ -30,9 +30,7 @@ const TASKS = {
 
     "PROD": [
 
-        "Self QA",
         "QA (Peer Review)",
-        "Floor Support",
         "Projects"
 
     ],
@@ -43,7 +41,6 @@ const TASKS = {
         "Clinic / Health Issues",
         "Feedback",
         "Meeting: 1:1",
-        "Meeting: Discovery Time Out",
         "Meeting: Organizational Activities",
         "Meeting: Team / Huddles"
 
